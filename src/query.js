@@ -11,6 +11,7 @@ class Query {
     this._conditions = null;
     this._lastCondition = null;
     this._op = 'find';
+    this._opData = null;
     this._path = path;
     this._promise = null;
   }
@@ -32,25 +33,73 @@ class Query {
     return this;
   }
 
-  lt(value) {
-    this._conditions[this._lastCondition] = {
-      $lt: value
-    };
+  compute(type, value) {
+    if (type.indexOf('$') >= 0) {
+      this._conditions[this._lastCondition][type] = value;
+    } else {
+      this._conditions[this._lastCondition] = value;
+    }
+    this._lastCondition = null;
     return this;
+  }
+
+  equals(value) {
+    this.compute('eq', value);
+  }
+
+  eq(value) {
+    this.compute('eq', value);
+  }
+
+  lt(value) {
+    this.compute('$lt', value);
+  }
+
+  lte(value) {
+    this.compute('$lte', value);
   }
 
   gt(value) {
-    this._conditions[this._lastCondition] = {
-      $gt: value
-    };
+    this.compute('$gt', value);
+  }
+
+  gte(value) {
+    this.compute('$gte', value);
+  }
+
+  limit(size) {
+    this.compute('limit', size);
+  }
+
+  page(size) {
+    this.compute('page', size);
+  }
+
+  sort(sortBy) {
+    this.compute('sort', sortBy);
+  }
+
+  create(data) {
+    this._op = 'create';
+    this._opData = { data };
     return this;
   }
 
-  remove() {
+  update(id, data) {
+    this._op = 'update';
+    this._opData = { id, data };
+    return this;
+  }
+
+  remove(conditions) {
     this._op = 'remove';
+    this._opData = {data:conditions};
     return this;
   }
-
+  count(conditions) {
+    this._op = 'count';
+    this._opData = {data:conditions};
+  }
   exec() {
     if (!this._promise) {
       if (this._op == 'remove') {

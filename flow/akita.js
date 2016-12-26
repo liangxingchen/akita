@@ -8,6 +8,8 @@ declare class Query {
   where(conditions: Object|string):Query;
   where(conditions: string, value: any):Query;
 
+  compute(type: string, value: any) :Query;
+
   eq(value: any):Query;
   equals(value: any):Query;
 
