@@ -81,31 +81,81 @@ class Query {
 
   create(data) {
     this._op = 'create';
-    this._opData = { data };
+    this._opData = data;
     return this;
   }
 
   update(id, data) {
     this._op = 'update';
-    this._opData = { id, data };
+    if (typeof id === 'object') {
+      this._opData = id;
+    } else {
+      this._opData = Object.assign({ id }, data);
+    }
     return this;
   }
 
   remove(conditions) {
     this._op = 'remove';
-    this._opData = {data:conditions};
+    if (typeof conditions === 'object') {
+      this._opData = conditions;
+    } else {
+      this._opData = { id: conditions };
+    }
     return this;
   }
+
   count(conditions) {
     this._op = 'count';
-    this._opData = {data:conditions};
+    this._opData = conditions;
   }
+
+  find(conditions) {
+    this._op = 'find';
+    this._opData = conditions;
+  }
+
+  findOne(conditions) {
+    this._op = 'find';
+    if (typeof conditions === 'object') {
+      this._opData = conditions;
+    } else {
+      this._opData = { id: conditions };
+    }
+    return this;
+  }
+
+  findAll() {
+    this._op = 'find';
+    this._opData = null;
+    return this;
+  }
+
   exec() {
     if (!this._promise) {
-      if (this._op == 'remove') {
-        let url = this._client.options.apiRoot + this._path;
-        this._promise = this._client.delete(url).then(onSuccess, onFail);
+      let url = this._client.options.apiRoot + this._path;
+      // this._promise = this._client.delete(url).then(onSuccess, onFail);
+      let p: Promise;
+      switch (this._op) {
+        case 'create':
+          p = this._client.post(url, this._opData);
+          break;
+        case 'update':
+          p = this._client.put(url, this._opData);
+          break;
+        case 'remove':
+          p = this._client.delete(url, this._opData);
+          break;
+        case 'count':
+          p = this._client.get(url, this._opData);
+          break;
+        case 'find':
+          p = this._client.get(url, this._opData);
+          break;
+        default:
+          p = new Promise;
       }
+      this._promise = p;
     }
     return this._promise;
   }
