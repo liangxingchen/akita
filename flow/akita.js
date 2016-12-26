@@ -4,40 +4,40 @@
  * @author Liang <liang@maichong.it>
  */
 
-declare class Query {
-  where(conditions: Object|string):Query;
-  where(conditions: string, value: any):Query;
+declare class AkitaQuery {
+  where(conditions: Object|string):AkitaQuery;
+  where(conditions: string, value: any):AkitaQuery;
 
-  compute(type: string, value: any) :Query;
+  compute(type: string, value: any) :AkitaQuery;
 
-  eq(value: any):Query;
-  equals(value: any):Query;
+  eq(value: any):AkitaQuery;
+  equals(value: any):AkitaQuery;
 
   // less than
-  lt(value: any):Query;
-  lte(value: any):Query;
+  lt(value: any):AkitaQuery;
+  lte(value: any):AkitaQuery;
 
   // greater than
-  gt(value: any):Query;
-  gte(value: any):Query;
+  gt(value: any):AkitaQuery;
+  gte(value: any):AkitaQuery;
 
 
-  limit(size: number):Query;
-  page(size: number):Query;
-  sort(sortBy: string):Query;
+  limit(size: number):AkitaQuery;
+  page(size: number):AkitaQuery;
+  sort(sortBy: string):AkitaQuery;
 
-  create(data: Object):Query;
-  update(data: Object):Query;
-  update(id: string|number, data: Object):Query;
+  create(data: Object):AkitaQuery;
+  update(data: Object):AkitaQuery;
+  update(id: string|number, data: Object):AkitaQuery;
 
-  remove(conditions?: Object|string|number):Query;
+  remove(conditions?: Object|string|number):AkitaQuery;
 
-  count(conditions?: Object):Query;
+  count(conditions?: Object):AkitaQuery;
 
-  find(conditions?: Object):Query;
+  find(conditions?: Object):AkitaQuery;
 
-  findOne(conditions?: Object|number|string):Query;
-  findAll():Query;
+  findOne(conditions?: Object|number|string):AkitaQuery;
+  findAll():AkitaQuery;
 }
 
 type RequestOption = {
@@ -47,7 +47,7 @@ type RequestOption = {
   headers?:Object,
 };
 
-declare class Client {
+type Client = {
   setOptions(options: Object);
   create(options: Object):Client;
   request(path: string, RequestOption);
@@ -60,7 +60,7 @@ declare class Client {
   trace(path: string, options?: RequestOption);
   connect(path: string, options?: RequestOption);
 
-  (path: string):Query;
+  (path: string):AkitaQuery;
 }
 
 declare module 'akita' {

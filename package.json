@@ -2,26 +2,14 @@
   "name": "akita",
   "version": "0.1.0",
   "description": "akita api client",
-  "main": "src/client.js",
+  "main": "lib/client.js",
   "scripts": {
-    "build": "babel ./src --out-dir ./lib",
-    "watch": "babel ./src --out-dir ./lib -w",
-    "prebuild": "rimraf lib",
-    "prepublish": "npm run build"
+    "test": "mocha -t 5000 ./test",
+    "prepublish": "npm run test"
   },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/maichong/akita.git"
-  },
-  "devDependencies": {
-    "babel-cli": "^6.18.0",
-    "babel-core": "^6.21.0",
-    "babel-plugin-syntax-async-functions": "^6.13.0",
-    "babel-plugin-transform-async-to-generator": "^6.16.0",
-    "babel-plugin-transform-es2015-destructuring": "^6.19.0",
-    "babel-plugin-transform-es2015-parameters": "^6.21.0",
-    "babel-plugin-transform-object-rest-spread": "^6.20.2",
-    "rimraf": "^2.5.4"
   },
   "author": {
     "name": "Liang",
@@ -35,5 +23,9 @@
   "homepage": "https://github.com/maichong/akita#readme",
   "dependencies": {
     "qs": "^6.3.0"
+  },
+  "devDependencies": {
+    "node-fetch": "^1.6.3",
+    "whatwg-fetch": "^2.0.1"
   }
 }
