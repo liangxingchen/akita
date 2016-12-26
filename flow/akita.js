@@ -40,17 +40,25 @@ declare class Query {
   findAll():Query;
 }
 
+type RequestOption = {
+  method?:string,
+  params?:Object,
+  body?:Object,
+  headers?:Object,
+};
+
 declare class Client {
   setOptions(options: Object);
   create(options: Object):Client;
-  get(apiName: string, params?: Object, header?: Object, options?: Object);
-  post(apiName: string, data?: Object, header?: Object, options?: Object);
-  put(apiName: string, data?: Object, header?: Object, options?: Object);
-  delete(apiName: string, data?: Object, header?: Object, options?: Object);
-  head(apiName: string, data?: Object, header?: Object, options?: Object);
-  options(apiName: string, data?: Object, header?: Object, options?: Object);
-  trace(apiName: string, data?: Object, header?: Object, options?: Object);
-  connect(apiName: string, data?: Object, header?: Object, options?: Object);
+  request(path: string, RequestOption);
+  get(path: string, options?: RequestOption);
+  post(path: string, options?: RequestOption);
+  put(path: string, options?: RequestOption);
+  delete(path: string, options?: RequestOption);
+  head(path: string, options?: RequestOption);
+  options(path: string, options?: RequestOption);
+  trace(path: string, options?: RequestOption);
+  connect(path: string, options?: RequestOption);
 
   (path: string):Query;
 }
