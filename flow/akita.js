@@ -50,6 +50,7 @@ type RequestOption = {
 type Client = {
   setOptions(options: Object);
   create(options: Object):Client;
+  resolve(key: string):Client;
   request(path: string, RequestOption);
   get(path: string, options?: RequestOption);
   post(path: string, options?: RequestOption);
