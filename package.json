@@ -25,7 +25,7 @@
     "qs": "^6.3.0"
   },
   "devDependencies": {
-    "node-fetch": "^1.6.3",
-    "whatwg-fetch": "^2.0.1"
+    "mocha": "^3.2.0",
+    "node-fetch": "^1.6.3"
   }
 }
