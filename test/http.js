@@ -22,7 +22,7 @@ describe('HTTP', function () {
   });
 
   it('test params', function (done) {
-    client.get('get', { foo: { bar: 'baz' } }).then((res) => {
+    client.get('get', { params: { foo: { bar: 'baz' } } }).then((res) => {
       if (res.url !== 'https://httpbin.org/get?foo[bar]=baz') {
         return done(new Error('error'));
       }
@@ -31,7 +31,7 @@ describe('HTTP', function () {
   });
 
   it('test headers', function (done) {
-    client.get('get', null, { headers: { foo: 'bar' } }).then((res) => {
+    client.get('get', { headers: { foo: 'bar' } }).then((res) => {
       if (res.headers.Foo !== 'bar') {
         return done(new Error('error'));
       }
@@ -40,11 +40,28 @@ describe('HTTP', function () {
   });
 
   it('test post', function (done) {
-    client.post('post', { foo: 'bar' }).then((res) => {
-      if (res.data !== '[object Object]') {
+    client.post('post', {
+      body: { foo: 'bar' }
+    }).then((res) => {
+      if (res.data !== '{"foo":"bar"}' || res.headers['Content-Type'] !== 'application/json') {
         return done(new Error('error'));
       }
       done();
     }, done)
+  });
+});
+
+describe('Query', function () {
+
+  client.setOptions({ fetch, apiRoot: 'https://httpbin.org/get?path=' });
+
+  it('test findOne', function (done) {
+
+    client('object').findOne(1).then((res) => {
+      if (res.url !== 'https://httpbin.org/get?path=object%2F1') {
+        return done(new Error('error'));
+      }
+      done();
+    }, done);
   });
 });
