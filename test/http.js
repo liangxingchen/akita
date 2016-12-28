@@ -94,13 +94,14 @@ describe('Query', function () {
 describe('Query', function () {
 
     it('test7 where Object', function (done) {
-        client('https://httpbin.org/get?path=object').where({ params: { foo: 1 } }).then((res) => {
+        client('https://httpbin.org/get?path=object').where({ foo: 1 }).then((res) => {
+            console.log('test7-res:', res);
             if (res.url !== 'https://httpbin.org/get?path=object%3Ffoo=1') {
                 return done(new Error('error'));
             }
             done();
         }, error => {
-            console.log('test6.2-error:', error);
+            console.log('test7-error:', error);
             done();
         });
     });
