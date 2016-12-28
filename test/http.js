@@ -112,40 +112,45 @@ describe('Query', function () {
             }
             done();
         }, error => {
-            console.log('test7-error:', error);
+            console.log('test8-error:', error);
             done();
         });
     });
 
     it('test9 where eq', function (done) {
         client('https://httpbin.org/get?path=object').where('age').eq(12).then((res) => {
-            console.log('test9-res:', res);
             if (res.url !== 'https://httpbin.org/get?path=object%3Fage=12') {
                 return done(new Error('error'));
             }
             done();
         }, error => {
-            console.log('test7-error:', error);
+            console.log('test9-error:', error);
             done();
         });
     });
 
     it('test10 where equals', function (done) {
         client('https://httpbin.org/get?path=object').where('age').equals(12).then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&filters[age]=12') {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Fage=12') {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test10-error:', error);
+            done();
+        });
     });
 
     it('test11 where lt', function (done) {
         client('https://httpbin.org/get?path=object').where('age').lt(12).then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&filters[age]=12') {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Fage[%24lt]=12') {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test11-error:', error);
+            done();
+        });
     });
 
     it('test12 where lte', function (done) {
@@ -172,41 +177,52 @@ describe('Query', function () {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test14-error:', error);
+            done();
+        });
     });
 });
 
 describe('Query', function () {
-
     it('test15 limit', function (done) {
         client('https://httpbin.org/get?path=object').limit(12).then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&limit=12') {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Flimit=12') {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test15-error:', error);
+            done();
+        });
     });
 });
 
 describe('Query', function () {
     it('test16 page', function (done) {
         client('https://httpbin.org/get?path=object').page(12).then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&page=12') {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Fpage=12') {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test16-error:', error);
+            done();
+        });
     });
 });
 
 describe('Query', function () {
     it('test17 sort', function (done) {
         client('https://httpbin.org/get?path=object').sort('-creatAt').then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&sort=-creatAt') {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Fsort=-creatAt') {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test17-error:', error);
+            done();
+        });
     });
 });
 
@@ -239,15 +255,81 @@ describe('Query', function () {
     });
 });
 
+
+describe('Query', function () {
+    it('test20 update {foo: 2}', function (done) {
+        client('https://httpbin.org/put?path=object').update({ foo: 2 }).then((res) => {
+            if (res.url !== 'https://httpbin.org/put?path=object') {
+                return done(new Error('error'));
+            }
+            done();
+        }, error => {
+            console.error('test-20-error:', error);
+            done();
+        });
+    });
+
+    it('test21 update id "foo"', function (done) {
+        client('https://httpbin.org/put?path=object').update('123', { foo: 2 }).then((res) => {
+            if (res.url !== 'https://httpbin.org/put?path=object%2F123') {
+                return done(new Error('error'));
+            }
+            done();
+        }, error => {
+            console.error('test-21-error:', error);
+            done();
+        });
+    });
+});
+
+describe('Query', function () {
+    it('test22 remove', function (done) {
+        client('https://httpbin.org/delete?path=object').remove().then((res) => {
+            if (res.url !== 'https://httpbin.org/delete?path=object') {
+                return done(new Error('error'));
+            }
+            done();
+        }, error => {
+            console.error('test-22-error:', error);
+            done();
+        });
+    });
+    it('test23 remove object', function (done) {
+        client('https://httpbin.org/delete?path=object').remove({ foo: 2 }).then((res) => {
+            if (res.url !== 'https://httpbin.org/delete?path=object') {
+                return done(new Error('error'));
+            }
+            done();
+        }, error => {
+            console.error('test-23-error:', error);
+            done();
+        });
+    });
+    it('test24 remove string', function (done) {
+        client('https://httpbin.org/delete?path=object').remove('123').then((res) => {
+            if (res.url !== 'https://httpbin.org/delete?path=object%2F123') {
+                return done(new Error('error'));
+            }
+            done();
+        }, error => {
+            console.error('test-24-error:', error);
+            done();
+        });
+    });
+    it('test24 remove string', function (done) {
+        client('https://httpbin.org/delete?path=object').remove(123).then((res) => {
+            console.log('test-24-res:', res);
+            if (res.url !== 'https://httpbin.org/delete?path=object%2F123') {
+                return done(new Error('error'));
+            }
+            done();
+        }, error => {
+            console.error('test-24-error:', error);
+            done();
+        });
+    });
+});
 /*
- describe('Query', function () {
-
- });
-
- describe('Query', function () {
-
- });
-
  describe('Query', function () {
 
  });
