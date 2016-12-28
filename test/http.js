@@ -201,10 +201,13 @@ describe('Query', function () {
     });
 });
 
+
 describe('Query', function () {
-    it('test18 count', function (done) {
-        client('https://httpbin.org/get?path=object').count({ foo: 2 }).then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object%2Fcount&filters[foo]=2') {
+    it('test18 create', function (done) {
+        console.log('####18###');
+        client('https://httpbin.org/get?path=create').create({ foo: 2 }).then((res) => {
+            console.log('test18-res:', res);
+            if (res.url !== 'https://httpbin.org/get?path=create&foo=2') {
                 return done(new Error('error'));
             }
             done();
@@ -216,18 +219,14 @@ describe('Query', function () {
 });
 
 describe('Query', function () {
-
-    it('test19 create', function (done) {
-        console.log('####19###');
-        client.post('https://httpbin.org/create', {
-            body: { title: 'demo' }
-        }).then((res) => {
-            if (res.form !== '{"title":"demo"}' || res.headers['Content-Type'] !== 'application/x-www-form-urlencoded; charset=UTF-8') {
+    it('test19 count', function (done) {
+        client('https://httpbin.org/get?path=count').count({ foo: 2 }).then((res) => {
+            if (res.url !== 'https://httpbin.org/get?path=count') {
                 return done(new Error('error'));
             }
             done();
         }, error => {
-            console.error('create-error:', error);
+            console.error('count-error:', error);
             done();
         });
     });
