@@ -95,7 +95,6 @@ describe('Query', function () {
 
     it('test7 where Object', function (done) {
         client('https://httpbin.org/get?path=object').where({ foo: 1 }).then((res) => {
-            console.log('test7-res:', res);
             if (res.url !== 'https://httpbin.org/get?path=object%3Ffoo=1') {
                 return done(new Error('error'));
             }
@@ -112,16 +111,23 @@ describe('Query', function () {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test7-error:', error);
+            done();
+        });
     });
 
     it('test9 where eq', function (done) {
         client('https://httpbin.org/get?path=object').where('age').eq(12).then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&filters[age]=12') {
+            console.log('test9-res:', res);
+            if (res.url !== 'https://httpbin.org/get?path=object%3Fage=12') {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test7-error:', error);
+            done();
+        });
     });
 
     it('test10 where equals', function (done) {
@@ -207,7 +213,7 @@ describe('Query', function () {
 
 describe('Query', function () {
     it('test18 create', function (done) {
-        client('https://httpbin.org/post?path=create').create({ body: { foo: 2 } }).then((res) => {
+        client('https://httpbin.org/post?path=create').create({ foo: 2 }).then((res) => {
             if (res.data !== '{"foo":2}' || res.headers['Content-Type'] !== 'application/json') {
                 return done(new Error('error'));
             }
@@ -221,7 +227,7 @@ describe('Query', function () {
 
 describe('Query', function () {
     it('test19 count', function (done) {
-        client('https://httpbin.org/get?path=count').count({ body: { foo: 2 } }).then((res) => {
+        client('https://httpbin.org/get?path=count').count({ foo: 2 }).then((res) => {
             if (res.url !== 'https://httpbin.org/get?path=count') {
                 return done(new Error('error'));
             }
