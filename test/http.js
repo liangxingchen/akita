@@ -78,9 +78,8 @@ describe('Query', function () {
     });
 
     it('test6.2 find {foot:1}', function (done) {
-        client('https://httpbin.org/get?path=object').find({ foo: 1 }).then((res) => {
-            console.log('test6.2-res:', res);
-            if (res.url !== 'https://httpbin.org/get?path=object&foo=1') {
+        client('https://httpbin.org/get?path=object').find({ params: { foo: 1 } }).then((res) => {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Ffoo=1') {
                 return done(new Error('error'));
             }
             done();
@@ -95,17 +94,20 @@ describe('Query', function () {
 describe('Query', function () {
 
     it('test7 where Object', function (done) {
-        client('https://httpbin.org/get?path=object').where({ foo: 1 }).then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&foo=1') {
+        client('https://httpbin.org/get?path=object').where({ params: { foo: 1 } }).then((res) => {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Ffoo=1') {
                 return done(new Error('error'));
             }
             done();
-        }, done);
+        }, error => {
+            console.log('test6.2-error:', error);
+            done();
+        });
     });
 
     it('test8 where String', function (done) {
-        client('https://httpbin.org/get?path=object').where('foo').then((res) => {
-            if (res.url !== 'https://httpbin.org/get?path=object&foo') {
+        client('https://httpbin.org/get?path=object').where('foo', 2).then((res) => {
+            if (res.url !== 'https://httpbin.org/get?path=object%3Ffoo=2') {
                 return done(new Error('error'));
             }
             done();
@@ -204,10 +206,8 @@ describe('Query', function () {
 
 describe('Query', function () {
     it('test18 create', function (done) {
-        console.log('####18###');
-        client('https://httpbin.org/get?path=create').create({ foo: 2 }).then((res) => {
-            console.log('test18-res:', res);
-            if (res.url !== 'https://httpbin.org/get?path=create&foo=2') {
+        client('https://httpbin.org/post?path=create').create({ body: { foo: 2 } }).then((res) => {
+            if (res.data !== '{"foo":2}' || res.headers['Content-Type'] !== 'application/json') {
                 return done(new Error('error'));
             }
             done();
@@ -220,7 +220,7 @@ describe('Query', function () {
 
 describe('Query', function () {
     it('test19 count', function (done) {
-        client('https://httpbin.org/get?path=count').count({ foo: 2 }).then((res) => {
+        client('https://httpbin.org/get?path=count').count({ body: { foo: 2 } }).then((res) => {
             if (res.url !== 'https://httpbin.org/get?path=count') {
                 return done(new Error('error'));
             }
