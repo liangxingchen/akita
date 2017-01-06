@@ -40,11 +40,13 @@ declare class AkitaQuery {
   findAll():AkitaQuery;
 }
 
-type RequestOption = {
+type RequestInit = {
   method?:string,
   params?:Object,
   body?:Object,
   headers?:Object,
+  mode?:string,
+  credentials?:string,
 };
 
 type Client = {
@@ -52,14 +54,14 @@ type Client = {
   create(options: Object):Client;
   resolve(key: string):Client;
   request(path: string, RequestOption);
-  get(path: string, options?: RequestOption);
-  post(path: string, options?: RequestOption);
-  put(path: string, options?: RequestOption);
-  delete(path: string, options?: RequestOption);
-  head(path: string, options?: RequestOption);
-  options(path: string, options?: RequestOption);
-  trace(path: string, options?: RequestOption);
-  connect(path: string, options?: RequestOption);
+  get(path: string, init?: RequestInit);
+  post(path: string, init?: RequestInit);
+  put(path: string, init?: RequestInit);
+  delete(path: string, init?: RequestInit);
+  head(path: string, init?: RequestInit);
+  options(path: string, init?: RequestInit);
+  trace(path: string, init?: RequestInit);
+  connect(path: string, init?: RequestInit);
 
   (path: string):AkitaQuery;
 }
