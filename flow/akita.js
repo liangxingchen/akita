@@ -49,19 +49,25 @@ type RequestInit = {
   credentials?:string,
 };
 
+type RequestResult={
+  then(onSuccess, onFail):Promise<Object>;
+  catch(onFail):Promise<Object>;
+  response():Promise<Object>;
+};
+
 type Client = {
   setOptions(options: Object);
   create(options: Object):Client;
   resolve(key: string):Client;
-  request(path: string, RequestOption);
-  get(path: string, init?: RequestInit);
-  post(path: string, init?: RequestInit);
-  put(path: string, init?: RequestInit);
-  delete(path: string, init?: RequestInit);
-  head(path: string, init?: RequestInit);
-  options(path: string, init?: RequestInit);
-  trace(path: string, init?: RequestInit);
-  connect(path: string, init?: RequestInit);
+  request(path: string, RequestOption):RequestResult;
+  get(path: string, init?: RequestInit):RequestResult;
+  post(path: string, init?: RequestInit):RequestResult;
+  put(path: string, init?: RequestInit):RequestResult;
+  delete(path: string, init?: RequestInit):RequestResult;
+  head(path: string, init?: RequestInit):RequestResult;
+  options(path: string, init?: RequestInit):RequestResult;
+  trace(path: string, init?: RequestInit):RequestResult;
+  connect(path: string, init?: RequestInit):RequestResult;
 
   (path: string):AkitaQuery;
 }
