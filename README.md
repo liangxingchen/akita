@@ -1,4 +1,3 @@
-<meta http-equiv="refresh" content="0.1">
 # akita
 
 Network request library for akita and alaska.
@@ -74,7 +73,7 @@ client.setOptions({ apiRoot:'https://your.domain/' });
 ##### client(path: string):AkitaQuery;
 
 >说明: RequestInit对象和RequestResult对象
-```
+```js
 type RequestInit = {
   method?:string,
   params?:Object,
@@ -90,7 +89,7 @@ type RequestResult={
 };
 ```
 >说明：AkitaQuery
-```
+```js
 class AkitaQuery {
   where(conditions: Object|string):AkitaQuery;
   where(conditions: string, value: any):AkitaQuery;
@@ -131,7 +130,7 @@ class AkitaQuery {
 例如：
 
 1.find使用方法
-```
+```js
 client('https://your.domain/api/test').find().then((res) => {
            console.log(res);
         }, error => {
@@ -156,7 +155,7 @@ client('https://your.domain/api/test').find({foo: 1}).then((res) => {
 ```
 2.where使用方法
 
-```
+```js
 client('https://your.domain/api/test').where({ foo: 1 }).then((res) => {
            console.log(res);
         }, error => {
@@ -170,9 +169,9 @@ client('https://your.domain/api/test').where('foo', 2).then((res) => {
         });
 ```
 
-2.eq/equals/lt/lte/gt/gte使用方法
+3.eq/equals/lt/lte/gt/gte使用方法
 
-```
+```js
 client('https://your.domain/api/test').where('age').eq(12).then((res) => {
            console.log(res);
         }, error => {
@@ -212,3 +211,135 @@ client('https://your.domain/api/test').where('age').gte(12).then((res) => {
         });
 ```
 
+4.limit使用方法
+
+```js
+//只获取12个数据
+client('https://your.domain/api/test').limit(12).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+```
+
+5.page使用方法
+
+```js
+//获取第5页的数据 
+client('https://your.domain/api/test').page(5).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+```
+
+6.sort使用方法
+
+```js
+//按照‘creatAt’降序排序 
+client('https://your.domain/api/test').sort('-creatAt').then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+```
+
+7.create使用方法
+
+```js
+//创建一条数据  注：method：“post”
+client('https://your.domain/api/test').create({ foo: 2 }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+或者：
+client('https://your.domain/api/test').create({ 
+          body: { foo: 2 }
+       }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+```
+
+8.count使用方法
+
+```js
+//获取数量  注：method：“get”
+client('https://your.domain/api/test').count({ foo: 2 }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+或者：
+client('https://your.domain/api/test').count({ 
+          params: { foo: 2 } 
+        }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+```
+
+9.update使用方法
+
+```js
+//更新数据
+client('https://your.domain/api/test').update({ foo: 2 }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+或者：
+client('https://your.domain/api/test').update({ 
+          body: { foo: 2 }
+       }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+
+client('https://your.domain/api/test').update(‘12345’，{ foo: 2 }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+```
+
+10.remove使用方法
+
+```js
+//删除数据
+client('https://your.domain/api/test').remove().then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+
+client('https://your.domain/api/test').remove(123).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+
+client('https://your.domain/api/test').remove(‘123’).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+
+client('https://your.domain/api/test').remove({ foo: 2 }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+或者：
+client('https://your.domain/api/test').remove({ 
+          body: { foo: 2 }
+       }).then((res) => {
+           console.log(res);
+        }, error => {
+            console.log(error);
+        });
+```
