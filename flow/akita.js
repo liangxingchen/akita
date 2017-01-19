@@ -4,40 +4,40 @@
  * @author Liang <liang@maichong.it>
  */
 
-declare class AkitaQuery {
-  where(conditions: Object|string):AkitaQuery;
-  where(conditions: string, value: any):AkitaQuery;
+declare class Akita$Query {
+  where(conditions: Object|string):Akita$Query;
+  where(conditions: string, value: any):Akita$Query;
 
-  compute(type: string, value: any) :AkitaQuery;
+  compute(type: string, value: any) :Akita$Query;
 
-  eq(value: any):AkitaQuery;
-  equals(value: any):AkitaQuery;
+  eq(value: any):Akita$Query;
+  equals(value: any):Akita$Query;
 
   // less than
-  lt(value: any):AkitaQuery;
-  lte(value: any):AkitaQuery;
+  lt(value: any):Akita$Query;
+  lte(value: any):Akita$Query;
 
   // greater than
-  gt(value: any):AkitaQuery;
-  gte(value: any):AkitaQuery;
+  gt(value: any):Akita$Query;
+  gte(value: any):Akita$Query;
 
 
-  limit(size: number):AkitaQuery;
-  page(size: number):AkitaQuery;
-  sort(sortBy: string):AkitaQuery;
+  limit(size: number):Akita$Query;
+  page(size: number):Akita$Query;
+  sort(sortBy: string):Akita$Query;
 
-  create(data: Object):AkitaQuery;
-  update(data: Object):AkitaQuery;
-  update(id: string|number, data: Object):AkitaQuery;
+  create(data: Object):Akita$Query;
+  update(data: Object):Akita$Query;
+  update(id: string|number, data: Object):Akita$Query;
 
-  remove(conditions?: Object|string|number):AkitaQuery;
+  remove(conditions?: Object|string|number):Akita$Query;
 
-  count(conditions?: Object):AkitaQuery;
+  count(conditions?: Object):Akita$Query;
 
-  find(conditions?: Object):AkitaQuery;
+  find(conditions?: Object):Akita$Query;
 
-  findOne(conditions?: Object|number|string):AkitaQuery;
-  findAll():AkitaQuery;
+  findOne(conditions?: Object|number|string):Akita$Query;
+  findAll():Akita$Query;
 }
 
 type RequestInit = {
@@ -50,8 +50,8 @@ type RequestInit = {
 };
 
 type RequestResult={
-  then(onSuccess, onFail):Promise<Object>;
-  catch(onFail):Promise<Object>;
+  then(resolve?: Function, reject?: Function):Promise<Object>;
+  catch(reject: Function):Promise<Object>;
   response():Promise<Object>;
 };
 
@@ -69,9 +69,13 @@ type Client = {
   trace(path: string, init?: RequestInit):RequestResult;
   connect(path: string, init?: RequestInit):RequestResult;
 
-  (path: string):AkitaQuery;
+  (path: string):Akita$Query;
 }
 
 declare module 'akita' {
+  declare var exports: Client;
+}
+
+declare module 'akita-node' {
   declare var exports: Client;
 }
