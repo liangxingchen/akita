@@ -56,7 +56,7 @@ type RequestResult={
 };
 
 type Client = {
-  setOptions(options: Object);
+  setOptions(options: Object):void;
   create(options: Object):Client;
   resolve(key: string):Client;
   request(path: string, RequestOption):RequestResult;
