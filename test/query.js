@@ -155,7 +155,7 @@ describe('Query', function () {
 describe('Query', function () {
   it('test limit', function (done) {
     client('https://httpbin.org/get?path=object').limit(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Flimit=12') {
+      if (res.url !== 'https://httpbin.org/get?path=object%3FperPage=12') {
         return done(new Error('error:' + res.url));
       }
       done();
