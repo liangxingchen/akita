@@ -5,10 +5,10 @@
  */
 
 declare class Akita$Query {
+  param(conditions: Object|string):Akita$Query;
+  param(conditions: Object|string, value: any):Akita$Query;
   where(conditions: Object|string):Akita$Query;
   where(conditions: string, value: any):Akita$Query;
-
-  compute(type: string, value: any) :Akita$Query;
 
   eq(value: any):Akita$Query;
   equals(value: any):Akita$Query;
@@ -27,17 +27,14 @@ declare class Akita$Query {
   sort(sortBy: string):Akita$Query;
 
   create(data: Object):Akita$Query;
-  update(data: Object):Akita$Query;
+  update(data?: Object):Akita$Query;
   update(id: string|number, data: Object):Akita$Query;
-
   remove(conditions?: Object|string|number):Akita$Query;
-
   count(conditions?: Object):Akita$Query;
-
   find(conditions?: Object):Akita$Query;
-
   findOne(conditions?: Object|number|string):Akita$Query;
-  findAll():Akita$Query;
+  findAll(conditions?: Object):Akita$Query;
+  inspect():Object;
 }
 
 type RequestInit = {
@@ -55,10 +52,10 @@ type RequestResult={
   response():Promise<Object>;
 };
 
-type Client = {
+type Akita$Client = {
   setOptions(options: Object):void;
-  create(options: Object):Client;
-  resolve(key: string):Client;
+  create(options: Object):Akita$Client;
+  resolve(key: string):Akita$Client;
   request(path: string, RequestOption):RequestResult;
   get(path: string, init?: RequestInit):RequestResult;
   post(path: string, init?: RequestInit):RequestResult;
@@ -73,9 +70,9 @@ type Client = {
 }
 
 declare module 'akita' {
-  declare var exports: Client;
+  declare var exports: Akita$Client;
 }
 
 declare module 'akita-node' {
-  declare var exports: Client;
+  declare var exports: Akita$Client;
 }

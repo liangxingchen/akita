@@ -1,335 +1,433 @@
-# akita
+# Akita
 
-Network request library for akita and alaska.
+Network request library for Akita protocol.
 
-akita 网络库，适用于 [Alaska](https://github.com/maichong/alaska) Restful 格式的服务器接口。
+## Protocol
 
-## 简单应用
+Akita protocol is based on HTTP, which is a superset of RESTful.
 
-```js
-const fetch = require('node-fetch');
-const client = require('akita');
+Compared to the basic RESTful, Akita support paging, page limit, filters, update/remove multi record.
 
-client.setOptions({ fetch, apiRoot: 'https://your.domain/api/' });
-
-client.post('user/login', {
-    body: {
-        username: 'admin',
-        password: '123456'
-    }
-}).then((res) => {
-	//success
-    console.log('res:', res);
-}, (error) => {
-	//failure
-    console.log("error:", error);
-});
-```
-
-或者：
-```js
-const fetch = require('node-fetch');
-const client = require('akita');
-
-client.setOptions({ fetch });
-
-client.post('https://your.domain/api/user/login', {
-    body: {
-        username: 'admin',
-        password: '123456'
-    }
-}).then((res) => {
-	//success
-    console.log('res:', res);
-}, (error) => {
-	//failure
-    console.log("error:", error);
-});
-```
-
-如果我们需要更新默认客户端的配置，只需要调用其 `setOptions` 方法：
+If server has an error, the response body should contain error message and error code optionally.
 
 ```js
-const client = require('akita');
-client.setOptions({ apiRoot:'https://your.domain/' });
-```
-
-## API
-
-### 方法
-
-##### create(options: Object):Client;
-##### resolve(key: string):Client;
-##### client.setOptions(options: Object);
-##### client.request(path: string, RequestOption):RequestResult;
-##### client.get(path: string, init?: RequestInit):RequestResult;
-##### client.post(path: string, init?: RequestInit):RequestResult;
-##### client.put(path: string, init?: RequestInit):RequestResult;
-##### client.delete(path: string, init?: RequestInit):RequestResult;
-##### client.head(path: string, init?: RequestInit):RequestResult;
-##### client.options(path: string, init?: RequestInit):RequestResult;
-##### client.trace(path: string, init?: RequestInit):RequestResult;
-##### client.connect(path: string, init?: RequestInit):RequestResult;
-##### client(path: string):AkitaQuery;
-
->说明: RequestInit对象和RequestResult对象
-```js
-type RequestInit = {
-  method?:string,
-  params?:Object,
-  body?:Object,
-  headers?:Object,
-  mode?:string,
-  credentials?:string,
-};
-type RequestResult={
-  then(onSuccess, onFail):Promise<Object>;
-  catch(onFail):Promise<Object>;
-  response():Promise<Object>;
-};
-```
->说明：AkitaQuery
-```js
-class AkitaQuery {
-  where(conditions: Object|string):AkitaQuery;
-  where(conditions: string, value: any):AkitaQuery;
-  compute(type: string, value: any) :AkitaQuery;
-  eq(value: any):AkitaQuery;
-  equals(value: any):AkitaQuery;
-  // less than
-  lt(value: any):AkitaQuery;
-  lte(value: any):AkitaQuery;
-  // greater than
-  gt(value: any):AkitaQuery;
-  gte(value: any):AkitaQuery;
-  limit(size: number):AkitaQuery;
-  page(size: number):AkitaQuery;
-  sort(sortBy: string):AkitaQuery;
-  create(data: Object):AkitaQuery;
-  update(data: Object):AkitaQuery;
-  update(id: string|number, data: Object):AkitaQuery;
-  remove(conditions?: Object|string|number):AkitaQuery;
-  count(conditions?: Object):AkitaQuery;
-  find(conditions?: Object):AkitaQuery;
-  findOne(conditions?: Object|number|string):AkitaQuery;
-  findAll():AkitaQuery;
+{
+  "error": "Can not connect to database",
+  "code": 1233 // optional
 }
 ```
 
-例如：
+#### 1. Find records with paging.
 
-1.find使用方法
+`GET /path/to/res`
 
-```js
-client('https://your.domain/api/test').find().then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+*Query params:*
 
-client('https://your.domain/api/test').find({ 
-        params: { 
-            foo: 1 
-        }
-    }).then((res) => {
-        console.log(res);
-    }, error => {
-        console.log(error);
-    });
-或者：
-client('https://your.domain/api/test').find({foo: 1}).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-```
-2.where使用方法
+param | type | default
+---- | ---- | ----
+filters | Object |
+page | number | 1
+limit | number |
+sort | string |
+
+*Result:*
 
 ```js
-client('https://your.domain/api/test').where({ foo: 1 }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-client('https://your.domain/api/test').where('foo', 2).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "total": 121, // total record
+  "page": 1, // current page, default 1
+  "limit": 10, // page limit
+  "totalPage": 13,
+  "previous": 0, // previous page index, zore for none
+  "next": 2, // next page index, zore for none
+  "results":[ /* Records list */
+    { id: 1 /* Record 1 */ },
+    { id: 2 /* Record 2 */ }
+  ]
+}
 ```
 
-3.eq/equals/lt/lte/gt/gte使用方法
+*Example:*
+
+* Find records sort by `createdAt` DESC
+
+  > GET /res?sort=-createdAt
+  > ```js
+  > await akita('res').find().sort('-createdAt')
+  > ```
+
+* Find records where `user` is 12
+
+  > GET /res?filters[user]=12&page=2
+  > ```js
+  > await akita('res').where('user',12).page(2)
+  > ```
+
+* Find records where `views` great than 100
+
+  > GET /res?filters[views][$gt]=100
+  > ```js
+  > await akita('res').where('views').gt(100)
+  > ```
+
+
+---------------------------------------
+
+
+#### 2. Find records without paging.
+
+`GET /path/to/res/all`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+filters | Object |
+limit | number |
+sort | string |
+
+*Result:*
 
 ```js
-client('https://your.domain/api/test').where('age').eq(12).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-注：eq等价于equals
-
-client('https://your.domain/api/test').where('age').equals(12).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-
-client('https://your.domain/api/test').where('age').lt(12).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-client('https://your.domain/api/test').where('age').lte(12).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-client('https://your.domain/api/test').where('age').gt(12).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-client('https://your.domain/api/test').where('age').gte(12).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+[ /* Records list */
+  { id: 1 /* Record 1 */ },
+  { id: 2 /* Record 2 */ }
+]
 ```
 
-4.limit使用方法
+*Example:*
+
+* Find all records sort by `createdAt` DESC
+
+  > GET /res/all?sort=-createdAt
+  > ```js
+  > await akita('res').findAll().sort('-createdAt')
+  > ```
+
+* Find 100 records where `user` is 12
+
+  > GET /res/all?filters[user]=12&limit=100
+  > ```js
+  > await akita('res').findAll({ user: 12 }).limit(100)
+  > ```
+
+---------------------------------------
+
+
+#### 3. Find one record by id
+
+`GET /path/to/res/{ID}`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+filters | Object |
+
+*Result:*
 
 ```js
-//只获取12个数据
-client('https://your.domain/api/test').limit(12).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "id": 123,
+  // ... others
+}
 ```
 
-5.page使用方法
+*Example:*
+
+* find record 123 and ensure `user` is 12
+
+  > GET /res/123?filters[user]=12
+  > ```js
+  > await akita('res').findOne(123).where({ user: 12})
+  > ```
+
+
+---------------------------------------
+
+#### 4. Count records
+
+`GET /path/to/res/count`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+filters | Object |
+
+*Result:*
 
 ```js
-//获取第5页的数据 
-client('https://your.domain/api/test').page(5).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "count": 123
+}
 ```
 
-6.sort使用方法
+
+---------------------------------------
+
+#### 5. Create record
+
+`POST /path/to/res`
+
+*Post body:*
 
 ```js
-//按照‘creatAt’降序排序 
-client('https://your.domain/api/test').sort('-creatAt').then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "title": "my book",
+  // ... others data for creation
+}
 ```
 
-7.create使用方法
+*Result:*
 
 ```js
-//创建一条数据  注：method：“post”
-client('https://your.domain/api/test').create({ foo: 2 }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-或者：
-client('https://your.domain/api/test').create({ 
-          body: { foo: 2 }
-       }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "id": 123,
+  "title": "my book",
+  // ... others data for creation
+}
 ```
 
-8.count使用方法
+#### 6. Remove record by id
+
+`DELETE /path/to/res/{ID}`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+filters | Object |
+
+
+---------------------------------------
+
+
+#### 7. Remove multi records by filters
+
+`DELETE /path/to/res`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+filters | Object |
+limit | number |
+sort | string |
+
+
+---------------------------------------
+
+#### 8. Update one record by id
+
+`UPDATA /path/to/res/{ID}`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+filters | Object |
+
+*Post body:*
 
 ```js
-//获取数量  注：method：“get”
-client('https://your.domain/api/test').count({ foo: 2 }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-或者：
-client('https://your.domain/api/test').count({ 
-          params: { foo: 2 } 
-        }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "title": "my book",
+  // ... others data for update
+}
 ```
 
-9.update使用方法
+*Result:*
 
 ```js
-//更新数据
-client('https://your.domain/api/test').update({ foo: 2 }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-或者：
-client('https://your.domain/api/test').update({ 
-          body: { foo: 2 }
-       }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-client('https://your.domain/api/test').update(‘12345’，{ foo: 2 }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "id": 123,
+  "title": "my book",
+  // ... others data for creation
+}
 ```
 
-10.remove使用方法
+
+---------------------------------------
+
+
+#### 9. Update multi records by filters
+
+`UPDATA /path/to/res`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+filters | Object |
+limit | number |
+sort | string |
+
+*Post body:*
 
 ```js
-//删除数据
-client('https://your.domain/api/test').remove().then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-client('https://your.domain/api/test').remove(123).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-client('https://your.domain/api/test').remove(‘123’).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-
-client('https://your.domain/api/test').remove({ foo: 2 }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
-或者：
-client('https://your.domain/api/test').remove({ 
-          body: { foo: 2 }
-       }).then((res) => {
-           console.log(res);
-        }, error => {
-            console.log(error);
-        });
+{
+  "title": "my book",
+  // ... others data for update
+}
 ```
+
+*Result:*
+
+```js
+{
+  "count": 2, // updated records count
+  "ids": [127, 342] // updated records id
+}
+```
+
+
+## Javascript client usage
+
+#### Client Options
+
+option | type | defualt | description
+--- | --- | --- | ---
+debug | boolean | false | enable debug mode
+apiRoot | string | '' | API root path
+fetch | Function | window.fetch | custom fetch function
+init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters
+
+#### Client API
+
+* client(path: string): Query;
+> create a query object
+
+* client.create(options: Object): Client;
+> create a new client instance
+
+* client.resolve(key: string): Client;
+> resolve a client instance by `key`, create a new instance if not found
+
+* client.setOptions(options: Object);
+> update client instance options
+
+* client.request(path: string, options:RequestOption): Promise;
+> send a http request
+
+* client.get(path: string, init?: Object): Promise;
+> send a http request with GET method
+
+* client.post(path: string, init?: Object): Promise;
+> send a http request with POST method
+
+* client.put(path: string, init?: Object): Promise;
+> send a http request with PUT method
+
+* client.delete(path: string, init?: Object): Promise;
+> send a http request with DELETE method
+
+* client.head(path: string, init?: Object): Promise;
+> send a http request with HEAD method
+
+* client.options(path: string, init?: Object): Promise;
+> send a http request with OPTIONS method
+
+* client.trace(path: string, init?: Object): Promise;
+> send a http request with TRACE method
+
+* client.connect(path: string, init?: Object): Promise;
+> send a http request with CONNECT method
+
+
+#### Query API
+
+* query.param(params: Object | string, value?:any): Query;
+> Specifies custom http query params
+
+* query.create(data?: Object): Query;
+> Create new record
+
+* query.find(conditions?: Object): Query;
+> Find records with paging. 
+
+* query.findOne(conditions: string | Object): Query;
+> Find one record by id or filters.
+
+* query.findAll(conditions?: Object): Query;
+> Find multi records without paging.
+
+* query.where(conditions:Object|string, value?:any): Query;
+> Specifies query filter conditions
+
+* query.eq(value:any): Query;
+> Specifies a filter condition
+
+* query.lt(value:any): Query;
+> Specifies a $lt filter condition
+
+* query.lte(value:any): Query;
+> Specifies a $lte filter condition
+
+* query.gt(value:any): Query;
+> Specifies a $gt filter condition
+
+* query.gte(value:any): Query;
+> Specifies a $gte filter condition
+
+* query.sort(value:any): Query;
+> Specifies query sort
+
+* query.page(value:any): Query;
+> Specifies query page
+
+* query.limit(value:any): Query;
+> Specifies query page limit or update/remove limit.
+
+* query.exec(): Promise;
+> Execute the query.
+
+#### Create new client instance
+
+```js
+
+import akita from 'akita';
+
+const client = akita.create({ /* options */});
+
+```
+
+#### Demo
+
+```js
+
+// import default client instance
+import akita from 'akita';
+
+// set options for defualt instance
+akita.setOptions({ /* options */});
+
+// create new instance
+const client = akita.create({ /* options */});
+// set options for new client
+client.setOptions({ apiRoot: 'http://your.domain/' /* other options */});
+
+// send a POST request
+await client.post('blog',{ body:{ title: 'my book' } });
+
+// create record by akita query
+await client('blog').create({ title: 'my book' });
+
+// find records
+await client('blog').find();
+
+```
+
+## Contribute
+
+[Maichong Software](http://maichong.it)
+
+[Liang Xingchen](https://github.com/liangxingchen)
+
+[Li Yudeng](https://github.com/maichonglyd)
+
+[Zhao Lei](https://github.com/zhaolei69)
+
+## License
+
+This project is licensed under the terms of the MIT license

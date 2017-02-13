@@ -7,336 +7,217 @@
 
 'use strict';
 
+const assert = require('assert');
 const fetch = require('node-fetch');
-const client = require('../lib/client');
+const client = require('../lib/client').resolve('query');
 
-client.setOptions({ fetch });
+client.setOptions({ apiRoot: 'http://localhost/', fetch });
 
-describe('Query', function () {
-
-  it('test findOne', function (done) {
-    client('https://httpbin.org/get?path=object').findOne(1).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%2F1') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.log('test-findOne-error:', error);
-      done();
-    });
-  });
-});
+function deepEqual(obj1, obj2) {
+  try {
+    assert.deepEqual(obj1, obj2);
+  } catch (error) {
+    console.log('error:\n' + JSON.stringify(obj1) + '\n' + JSON.stringify(obj2));
+    throw error;
+  }
+}
 
 describe('Query', function () {
-  it('test find', function (done) {
-    client('https://httpbin.org/get?path=object').find().then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object') {
-        return done(new Error('error:' + res.url));
-      }
-      done();
-    }, error => {
-      console.log('test-find-error:', error);
-      done();
-    });
+  it('findOne by id', function () {
+    deepEqual(
+      client('res').findOne(1).inspect(),
+      { method: 'GET', url: 'http://localhost/res/1' }
+    );
+  });
+  it('findOne by id & filters', function () {
+    deepEqual(
+      client('res').findOne(1).where('user', 1).inspect().params,
+      { filters: { user: 1 } }
+    );
   });
 
-  it('test find {foot:1}', function (done) {
-    client('https://httpbin.org/get?path=object').find({ params: { foo: 1 } }).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffoo=1') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.log('test-find-error:', error);
-      done();
-    });
-  });
-});
-
-describe('Query', function () {
-
-  it('test where Object', function (done) {
-    client('https://httpbin.org/get?path=object').where({ foo: 1 }).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[foo]=1') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.log('test-where-error:', error);
-      done();
-    });
+  it('find', function () {
+    deepEqual(
+      client('res').find().where('user', 1).inspect(),
+      { params: { filters: { user: 1 } }, method: "GET", url: 'http://localhost/res?filters%5Buser%5D=1' }
+    );
+    deepEqual(
+      client('res').find().where({ user: 1 }).inspect(),
+      { params: { filters: { user: 1 } }, method: "GET", url: 'http://localhost/res?filters%5Buser%5D=1' }
+    );
+    deepEqual(
+      client('res').find().where('user').eq(1).inspect(),
+      { params: { filters: { user: 1 } }, method: "GET", url: 'http://localhost/res?filters%5Buser%5D=1' }
+    );
   });
 
-  it('test where String', function (done) {
-    client('https://httpbin.org/get?path=object').where('foo', 2).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[foo]=2') {
-        return done(new Error('error'));
+  it('where', function () {
+    deepEqual(
+      client('res').find().where('user', 1).where('status', 100).inspect(),
+      {
+        params: { filters: { user: 1, status: 100 } },
+        method: "GET",
+        url: 'http://localhost/res?filters%5Buser%5D=1&filters%5Bstatus%5D=100'
       }
-      done();
-    }, error => {
-      console.log('test-where-String-error:', error);
-      done();
-    });
+    );
+    deepEqual(
+      client('res').find().where({ user: 1, status: 100 }).inspect(),
+      {
+        params: { filters: { user: 1, status: 100 } },
+        method: "GET",
+        url: 'http://localhost/res?filters%5Buser%5D=1&filters%5Bstatus%5D=100'
+      }
+    );
+    deepEqual(
+      client('res').find().where({ user: 1 }).where({ status: 100 }).inspect(),
+      {
+        params: { filters: { user: 1, status: 100 } },
+        method: "GET",
+        url: 'http://localhost/res?filters%5Buser%5D=1&filters%5Bstatus%5D=100'
+      }
+    );
   });
 
-  it('test where eq', function (done) {
-    client('https://httpbin.org/get?path=object').where('age').eq(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[age]=12') {
-        return done(new Error('error'));
+  it('where gt', function () {
+    deepEqual(
+      client('res').find().where({ user: 1 }).where('status').gt(100).inspect(),
+      {
+        params: { filters: { user: 1, status: { $gt: 100 } } },
+        method: "GET",
+        url: 'http://localhost/res?filters%5Buser%5D=1&filters%5Bstatus%5D%5B%24gt%5D=100'
       }
-      done();
-    }, error => {
-      console.log('test-where-eq-error:', error);
-      done();
-    });
+    );
   });
 
-  it('test where equals', function (done) {
-    client('https://httpbin.org/get?path=object').where('age').equals(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[age]=12') {
-        return done(new Error('error'));
+  it('where gt & lt', function () {
+    deepEqual(
+      client('res').find().where({ user: 1 }).where('status').gt(100).lt(600).inspect(),
+      {
+        params: { filters: { user: 1, status: { $gt: 100, $lt: 600 } } },
+        method: "GET",
+        url: 'http://localhost/res?filters%5Buser%5D=1&filters%5Bstatus%5D%5B%24gt%5D=100&filters%5Bstatus%5D%5B%24lt%5D=600'
       }
-      done();
-    }, error => {
-      console.log('test-where-equals-error:', error);
-      done();
-    });
+    );
   });
 
-  it('test where lt', function (done) {
-    client('https://httpbin.org/get?path=object').where('age').lt(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[age][lt]=12') {
-        return done(new Error('error'));
+  it('count', function () {
+    deepEqual(
+      client('res').count().where('user', 1).where('status', 100).inspect(),
+      {
+        params: { filters: { user: 1, status: 100 } },
+        method: "GET",
+        url: 'http://localhost/res/count?filters%5Buser%5D=1&filters%5Bstatus%5D=100'
       }
-      done();
-    }, error => {
-      console.log('test-where-lt-error:', error);
-      done();
-    });
+    );
+    deepEqual(
+      client('res').count({ user: 1, status: 100 }).inspect(),
+      {
+        params: { filters: { user: 1, status: 100 } },
+        method: "GET",
+        url: 'http://localhost/res/count?filters%5Buser%5D=1&filters%5Bstatus%5D=100'
+      }
+    );
   });
 
-  it('test where lte', function (done) {
-    client('https://httpbin.org/get?path=object').where('age').lte(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[age][lte]=12') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.log('test-where-lte-error:', error);
-      done();
-    });
+  it('limit', function () {
+    deepEqual(
+      client('res').limit(100).inspect(),
+      { params: { limit: 100 }, method: "GET", url: 'http://localhost/res?limit=100' }
+    );
   });
 
-  it('test where gt', function (done) {
-    client('https://httpbin.org/get?path=object').where('age').gt(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[age][gt]=12') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.log('test-where-gt-error:', error);
-      done();
-    });
+  it('sort', function () {
+    deepEqual(
+      client('res').sort('-createdAt').inspect(),
+      { params: { sort: '-createdAt' }, method: "GET", url: 'http://localhost/res?sort=-createdAt' }
+    );
   });
 
-  it('test where gte', function (done) {
-    client('https://httpbin.org/get?path=object').where('age').gte(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Ffilters[age][gte]=12') {
-        return done(new Error('error'));
+  it('page', function () {
+    deepEqual(
+      client('res').page(2).limit(10).sort('-createdAt').inspect(),
+      {
+        params: { sort: '-createdAt', page: 2, limit: 10 },
+        method: "GET",
+        url: 'http://localhost/res?limit=10&page=2&sort=-createdAt'
       }
-      done();
-    }, error => {
-      console.log('test-where-gte-error:', error);
-      done();
-    });
-  });
-});
-
-describe('Query', function () {
-  it('test limit', function (done) {
-    client('https://httpbin.org/get?path=object').limit(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3FperPage=12') {
-        return done(new Error('error:' + res.url));
-      }
-      done();
-    }, error => {
-      console.log('test-limit-error:', error);
-      done();
-    });
-  });
-});
-
-describe('Query', function () {
-  it('test page', function (done) {
-    client('https://httpbin.org/get?path=object').page(12).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Fpage=12') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.log('test-page-error:', error);
-      done();
-    });
-  });
-});
-
-describe('Query', function () {
-  it('test sort', function (done) {
-    client('https://httpbin.org/get?path=object').sort('-creatAt').then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=object%3Fsort=-creatAt') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.log('test-sort-error:', error);
-      done();
-    });
-  });
-});
-
-
-describe('Query', function () {
-  it('test create', function (done) {
-    client('https://httpbin.org/post?path=create').create({ foo: 2 }).then((res) => {
-      if (res.data !== '{"foo":2}' || res.headers['Content-Type'] !== 'application/json') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.error('test-create-error:', error);
-      done();
-    });
-  });
-  it('test create', function (done) {
-    client('https://httpbin.org/post?path=create').create({ body: { foo: 2 } }).then((res) => {
-      if (res.data !== '{"foo":2}' || res.headers['Content-Type'] !== 'application/json') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.error('test-create-error:', error);
-      done();
-    });
-  });
-});
-
-describe('Query', function () {
-  it('test count ', function (done) {
-    client('https://httpbin.org/get?path=count').count({ foo: 2 }).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=count%3Ffoo=2') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.error('test-count-error:', error);
-      done();
-    });
-  });
-  it('test count params', function (done) {
-    client('https://httpbin.org/get?path=count').count({ params: { foo: 2 } }).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?path=count%3Ffoo=2') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.error('test-count-params-error:', error);
-      done();
-    });
-  });
-});
-
-
-describe('Query', function () {
-  it('test update {foo: 2}', function (done) {
-    client('https://httpbin.org/put?path=object').update({ foo: 2 }).then((res) => {
-      if (res.url !== 'https://httpbin.org/put?path=object') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.error('test-update-error:', error);
-      done();
-    });
-  });
-  it('test update {foo: 2}', function (done) {
-    client('https://httpbin.org/put?path=object').update({ body: { foo: 2 } }).then((res) => {
-      if (res.url !== 'https://httpbin.org/put?path=object') {
-        return done(new Error('error'));
-      }
-      done();
-    }, error => {
-      console.error('test-update-error:', error);
-      done();
-    });
+    );
   });
 
-  it('test update id', function (done) {
-    client('https://httpbin.org/put?path=object').update('123', { foo: 2 }).then((res) => {
-      if (res.url !== 'https://httpbin.org/put?path=object%2F123') {
-        return done(new Error('error'));
+  it('create', function () {
+    deepEqual(
+      client('res').create({ title: 'my book' }).inspect(),
+      {
+        method: "POST",
+        url: 'http://localhost/res',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{\"title\":\"my book\"}'
       }
-      done();
-    }, error => {
-      console.error('test-update-error:', error);
-      done();
-    });
+    );
   });
-});
 
-describe('Query', function () {
-  it('test remove', function (done) {
-    client('https://httpbin.org/delete?path=object').remove().then((res) => {
-      if (res.url !== 'https://httpbin.org/delete?path=object') {
-        return done(new Error('error'));
+  it('update by id', function () {
+    deepEqual(
+      client('res').update(1, { title: 'my book' }).inspect(),
+      {
+        method: "PUT",
+        url: 'http://localhost/res/1',
+        headers: { 'Content-Type': 'application/json' },
+        body: '{\"title\":\"my book\"}'
       }
-      done();
-    }, error => {
-      console.error('test-remove-error:', error);
-      done();
-    });
+    );
   });
-  it('test remove object', function (done) {
-    client('https://httpbin.org/delete?path=object').remove({ foo: 2 }).then((res) => {
-      if (res.url !== 'https://httpbin.org/delete?path=object') {
-        return done(new Error('error'));
+
+  it('update by filters', function () {
+    deepEqual(
+      client('res').where({ status: 300 }).update({ status: 400 }).limit(100).inspect(),
+      {
+        method: "PUT",
+        url: 'http://localhost/res?filters%5Bstatus%5D=300&limit=100',
+        params: {
+          filters: { status: 300 },
+          limit: 100
+        },
+        headers: { 'Content-Type': 'application/json' },
+        body: '{\"status\":400}'
       }
-      done();
-    }, error => {
-      console.error('test-remove-object-error:', error);
-      done();
-    });
+    );
   });
-  it('test remove params object', function (done) {
-    client('https://httpbin.org/delete?path=object').remove({ body: { foo: 2 } }).then((res) => {
-      if (res.url !== 'https://httpbin.org/delete?path=object') {
-        return done(new Error('error'));
+
+  it('remove by id', function () {
+    deepEqual(
+      client('res').remove(123).inspect(),
+      {
+        method: "DELETE",
+        url: 'http://localhost/res/123'
       }
-      done();
-    }, error => {
-      console.error('test-remove-params-object-error:', error);
-      done();
-    });
+    );
   });
-  it('test remove string', function (done) {
-    client('https://httpbin.org/delete?path=object').remove('123').then((res) => {
-      if (res.url !== 'https://httpbin.org/delete?path=object%2F123') {
-        return done(new Error('error'));
+
+  it('remove by filters', function () {
+    deepEqual(
+      client('res').where({ price: { $gt: 300 } }).remove({ status: 400 }).limit(100).inspect(),
+      {
+        method: "DELETE",
+        url: 'http://localhost/res?filters%5Bprice%5D%5B%24gt%5D=300&filters%5Bstatus%5D=400&limit=100',
+        params: {
+          filters: { price: { $gt: 300 }, status: 400 },
+          limit: 100
+        }
       }
-      done();
-    }, error => {
-      console.error('test-remove-string-error:', error);
-      done();
-    });
+    );
   });
-  it('test remove number', function (done) {
-    client('https://httpbin.org/delete?path=object').remove(123).then((res) => {
-      if (res.url !== 'https://httpbin.org/delete?path=object%2F123') {
-        return done(new Error('error'));
+
+  it('remove by id & filters', function () {
+    deepEqual(
+      client('res').where({ price: { $gt: 300 } }).remove(2).inspect(),
+      {
+        method: "DELETE",
+        url: 'http://localhost/res/2?filters%5Bprice%5D%5B%24gt%5D=300',
+        params: {
+          filters: { price: { $gt: 300 } }
+        }
       }
-      done();
-    }, error => {
-      console.error('test-remove-number-error:', error);
-      done();
-    });
+    );
   });
 });
