@@ -1,12 +1,12 @@
 # Akita
 
-Network request library for Akita protocol.
+Javascript network client library for Akita protocol.
 
 ## Protocol
 
 Akita protocol is based on HTTP, which is a superset of RESTful.
 
-Compared to the basic RESTful, Akita support paging, page limit, filters, update/remove multi record.
+Compared to the basic RESTful, Akita support list paging, limit, filters, update/remove multi record.
 
 If server has an error, the response body should contain error message and error code optionally.
 
@@ -25,10 +25,11 @@ If server has an error, the response body should contain error message and error
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
-page | number | 1
-limit | number |
-sort | string |
+_page | number | 1
+_limit | number |
+_sort | string |
+_search | string |
+...filters | string/Object |
 
 *Result:*
 
@@ -40,6 +41,7 @@ sort | string |
   "totalPage": 13,
   "previous": 0, // previous page index, zore for none
   "next": 2, // next page index, zore for none
+  "search": "",
   "results":[ /* Records list */
     { id: 1 /* Record 1 */ },
     { id: 2 /* Record 2 */ }
@@ -51,21 +53,21 @@ sort | string |
 
 * Find records sort by `createdAt` DESC
 
-  > GET /res?sort=-createdAt
+  > GET /res?_sort=-createdAt
   > ```js
   > await akita('res').find().sort('-createdAt')
   > ```
 
 * Find records where `user` is 12
 
-  > GET /res?filters[user]=12&page=2
+  > GET /res?user=12&_page=2
   > ```js
   > await akita('res').where('user',12).page(2)
   > ```
 
 * Find records where `views` great than 100
 
-  > GET /res?filters[views][$gt]=100
+  > GET /res?views[$gt]=100
   > ```js
   > await akita('res').where('views').gt(100)
   > ```
@@ -82,9 +84,10 @@ sort | string |
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
-limit | number |
-sort | string |
+_limit | number |
+_sort | string |
+_search | string |
+...filters | string/Object |
 
 *Result:*
 
@@ -99,14 +102,14 @@ sort | string |
 
 * Find all records sort by `createdAt` DESC
 
-  > GET /res/all?sort=-createdAt
+  > GET /res/all?_sort=-createdAt
   > ```js
   > await akita('res').findAll().sort('-createdAt')
   > ```
 
 * Find 100 records where `user` is 12
 
-  > GET /res/all?filters[user]=12&limit=100
+  > GET /res/all?user=12&_limit=100
   > ```js
   > await akita('res').findAll({ user: 12 }).limit(100)
   > ```
@@ -122,7 +125,7 @@ sort | string |
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
+...filters | string/Object |
 
 *Result:*
 
@@ -137,9 +140,9 @@ filters | Object |
 
 * find record 123 and ensure `user` is 12
 
-  > GET /res/123?filters[user]=12
+  > GET /res/123?user=12
   > ```js
-  > await akita('res').findOne(123).where({ user: 12})
+  > await akita('res').findById(123).where({ user: 12})
   > ```
 
 
@@ -153,7 +156,8 @@ filters | Object |
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
+_search | string |
+...filters | string/Object |
 
 *Result:*
 
@@ -197,7 +201,7 @@ filters | Object |
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
+...filters | string/Object |
 
 
 ---------------------------------------
@@ -211,22 +215,23 @@ filters | Object |
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
-limit | number |
-sort | string |
+_limit | number |
+_sort | string |
+_search | string |
+...filters | string/Object |
 
 
 ---------------------------------------
 
 #### 8. Update one record by id
 
-`UPDATA /path/to/res/{ID}`
+`PATCH /path/to/res/{ID}`
 
 *Query params:*
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
+...filters | string/Object |
 
 *Post body:*
 
@@ -253,15 +258,16 @@ filters | Object |
 
 #### 9. Update multi records by filters
 
-`UPDATA /path/to/res`
+`PATCH /path/to/res`
 
 *Query params:*
 
 param | type | default
 ---- | ---- | ----
-filters | Object |
-limit | number |
-sort | string |
+_limit | number |
+_sort | string |
+_search | string |
+...filters | string/Object |
 
 *Post body:*
 
@@ -319,6 +325,9 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 * client.put(path: string, init?: Object): Promise;
 > send a http request with PUT method
 
+* client.patch(path: string, init?: Object): Promise;
+> send a http request with PATCH method
+
 * client.delete(path: string, init?: Object): Promise;
 > send a http request with DELETE method
 
@@ -337,20 +346,32 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 
 #### Query API
 
-* query.param(params: Object | string, value?:any): Query;
-> Specifies custom http query params
-
 * query.create(data?: Object): Query;
 > Create new record
+
+* query.param(key:string | Object, value?:any): Query;
+> Specifies custom param.
 
 * query.find(conditions?: Object): Query;
 > Find records with paging. 
 
-* query.findOne(conditions: string | Object): Query;
-> Find one record by id or filters.
+* query.findOne(conditions: Object): Query;
+> Find one record by filters.
+
+* query.findById(id: string): Query;
+> Find one record by id.
 
 * query.findAll(conditions?: Object): Query;
 > Find multi records without paging.
+
+* query.update(id?: Object, data: Object): Query;
+> Update multi records or one record by id.
+
+* query.remove(conditions?: string|Object): Query;
+> Remove multi records or one record by id.
+
+* query.search(keyword:string): Query;
+> Specifies a search param
 
 * query.where(conditions:Object|string, value?:any): Query;
 > Specifies query filter conditions
@@ -392,7 +413,7 @@ const client = akita.create({ /* options */});
 
 ```
 
-#### Demo
+#### Examples
 
 ```js
 
@@ -413,8 +434,33 @@ await client.post('blog',{ body:{ title: 'my book' } });
 // create record by akita query
 await client('blog').create({ title: 'my book' });
 
-// find records
+// find records with paging
 await client('blog').find();
+
+// find one record by id
+await client('blog').findById(12);
+
+// find one record by filters
+await client('blog').findOne({ category: 'js' }).sort('-createdAt');
+
+// update multi records
+await client('blog').update({ hot: true }).sort('-views').limit(10);
+
+// update one record by id
+await client('blog').update(12, { hot: true });
+
+// update one record by filters & limit
+await client('blog').update({ hot: true }).sort('-views').limit(1);
+
+// remove on record by id
+await client('blog').remove(12);
+
+// remove multi records by filters
+await client('blog').remove({ state: 1 });
+
+// or
+await client('blog').where('views').lt(100).remove();
+
 
 ```
 

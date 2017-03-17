@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.1.4",
+  "version": "0.2.0",
   "description": "akita api client",
   "main": "lib/client.js",
   "scripts": {
@@ -22,7 +22,7 @@
   },
   "homepage": "https://github.com/maichong/akita#readme",
   "dependencies": {
-    "qs": "^6.3.1"
+    "qs": "^6.4.0"
   },
   "devDependencies": {
     "mocha": "^3.2.0",

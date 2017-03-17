@@ -5,8 +5,11 @@
  */
 
 declare class Akita$Query {
-  param(conditions: Object|string):Akita$Query;
-  param(conditions: Object|string, value: any):Akita$Query;
+  param(key: Object):Akita$Query;
+  param(key: string, value: any):Akita$Query;
+
+  search(keyword: string):Akita$Query;
+
   where(conditions: Object|string):Akita$Query;
   where(conditions: string, value: any):Akita$Query;
 
@@ -32,7 +35,8 @@ declare class Akita$Query {
   remove(conditions?: Object|string|number):Akita$Query;
   count(conditions?: Object):Akita$Query;
   find(conditions?: Object):Akita$Query;
-  findOne(conditions?: Object|number|string):Akita$Query;
+  findById(conditions: number|string):Akita$Query;
+  findOne(conditions?: Object):Akita$Query;
   findAll(conditions?: Object):Akita$Query;
   inspect():Object;
 }
@@ -60,6 +64,7 @@ type Akita$Client = {
   get(path: string, init?: RequestInit):RequestResult;
   post(path: string, init?: RequestInit):RequestResult;
   put(path: string, init?: RequestInit):RequestResult;
+  patch(path: string, init?: RequestInit):RequestResult;
   delete(path: string, init?: RequestInit):RequestResult;
   head(path: string, init?: RequestInit):RequestResult;
   options(path: string, init?: RequestInit):RequestResult;
