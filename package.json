@@ -1,10 +1,10 @@
 {
   "name": "akita",
-  "version": "0.2.0",
+  "version": "0.2.1",
   "description": "akita api client",
   "main": "lib/client.js",
   "scripts": {
-    "test": "mocha -t 5000 ./test",
+    "test": "mocha -t 10000 ./test",
     "prepublish": "npm run test"
   },
   "repository": {
