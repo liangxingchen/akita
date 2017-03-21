@@ -39,6 +39,9 @@ declare class Akita$Query {
   findOne(conditions?: Object):Akita$Query;
   findAll(conditions?: Object):Akita$Query;
   inspect():Object;
+
+  then(resolve?: Function, reject?: Function):Promise<Object>;
+  catch(reject: Function):Promise<Object>;
 }
 
 type RequestInit = {
@@ -60,7 +63,7 @@ type Akita$Client = {
   setOptions(options: Object):void;
   create(options: Object):Akita$Client;
   resolve(key: string):Akita$Client;
-  request(path: string, RequestOption):RequestResult;
+  request(path: string, RequestInit):RequestResult;
   get(path: string, init?: RequestInit):RequestResult;
   post(path: string, init?: RequestInit):RequestResult;
   put(path: string, init?: RequestInit):RequestResult;
