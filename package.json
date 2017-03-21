@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.2.3",
+  "version": "0.3.0",
   "description": "akita api client",
   "main": "lib/client.js",
   "scripts": {
@@ -25,6 +25,7 @@
     "qs": "^6.4.0"
   },
   "devDependencies": {
+    "form-data": "^2.1.2",
     "mocha": "^3.2.0",
     "node-fetch": "^1.6.3"
   }

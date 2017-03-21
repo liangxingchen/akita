@@ -11,7 +11,7 @@ const assert = require('assert');
 const fetch = require('node-fetch');
 const client = require('../lib/client').resolve('query');
 
-client.setOptions({ apiRoot: 'http://localhost/', fetch });
+client.setOptions({ apiRoot: 'http://localhost', fetch });
 
 function deepEqual(obj1, obj2) {
   try {
@@ -25,7 +25,7 @@ function deepEqual(obj1, obj2) {
 describe('Query', function () {
   it('findOne by id', function () {
     deepEqual(
-      client('res').findById(1).inspect(),
+      client('/res').findById(1).inspect(),
       { method: 'GET', url: 'http://localhost/res/1' }
     );
   });
@@ -38,7 +38,7 @@ describe('Query', function () {
   it('findOne', function () {
     deepEqual(
       client('res').findOne({ foo: 'bar' }).inspect(),
-      { params: { foo: 'bar', _limit: 1 }, method: 'GET', url: 'http://localhost/res/all?foo=bar&_limit=1' }
+      { params: { foo: 'bar', _limit: 1 }, method: 'GET', url: 'http://localhost/res?foo=bar&_limit=1' }
     );
   });
 
@@ -57,18 +57,18 @@ describe('Query', function () {
     );
   });
 
-  it('findAll', function () {
+  it('paginate', function () {
     deepEqual(
-      client('res').findAll().where('user', 1).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/all?user=1' }
+      client('res').paginate().where('user', 1).inspect(),
+      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/paginate?user=1' }
     );
     deepEqual(
-      client('res').findAll().where({ user: 1 }).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/all?user=1' }
+      client('res').paginate().where({ user: 1 }).inspect(),
+      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/paginate?user=1' }
     );
     deepEqual(
-      client('res').findAll().where('user').eq(1).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/all?user=1' }
+      client('res').paginate().where('user').eq(1).inspect(),
+      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/paginate?user=1' }
     );
   });
 

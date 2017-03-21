@@ -17,9 +17,51 @@ If server has an error, the response body should contain error message and error
 }
 ```
 
-#### 1. Find records with paging.
+
+#### 1. Get records list without paging.
 
 `GET /path/to/res`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+_limit | number |
+_sort | string |
+_search | string |
+...filters | string/Object |
+
+*Result:*
+
+```js
+[ /* Records list */
+  { id: 1 /* Record 1 */ },
+  { id: 2 /* Record 2 */ }
+]
+```
+
+*Example:*
+
+* Find all records sort by `createdAt` DESC
+
+  > GET /res?_sort=-createdAt
+  > ```js
+  > await akita('res').find().sort('-createdAt')
+  > ```
+
+* Find 100 records where `user` is 12
+
+  > GET /res?user=12&_limit=100
+  > ```js
+  > await akita('res').find({ user: 12 }).limit(100)
+  > ```
+
+---------------------------------------
+
+
+#### 2. Get records list with paging.
+
+`GET /path/to/res/paginate`
 
 *Query params:*
 
@@ -53,66 +95,25 @@ _search | string |
 
 * Find records sort by `createdAt` DESC
 
-  > GET /res?_sort=-createdAt
+  > GET /res/paginate?_sort=-createdAt
   > ```js
-  > await akita('res').find().sort('-createdAt')
+  > await akita('res').paginate().sort('-createdAt')
   > ```
 
 * Find records where `user` is 12
 
-  > GET /res?user=12&_page=2
+  > GET /res/paginate?user=12&_page=2
   > ```js
-  > await akita('res').where('user',12).page(2)
+  > await akita('res').paginate().where('user',12).page(2)
   > ```
 
 * Find records where `views` great than 100
 
-  > GET /res?views[$gt]=100
+  > GET /res/paginate?views[$gt]=100
   > ```js
-  > await akita('res').where('views').gt(100)
+  > await akita('res').paginate().where('views').gt(100)
   > ```
 
-
----------------------------------------
-
-
-#### 2. Find records without paging.
-
-`GET /path/to/res/all`
-
-*Query params:*
-
-param | type | default
----- | ---- | ----
-_limit | number |
-_sort | string |
-_search | string |
-...filters | string/Object |
-
-*Result:*
-
-```js
-[ /* Records list */
-  { id: 1 /* Record 1 */ },
-  { id: 2 /* Record 2 */ }
-]
-```
-
-*Example:*
-
-* Find all records sort by `createdAt` DESC
-
-  > GET /res/all?_sort=-createdAt
-  > ```js
-  > await akita('res').findAll().sort('-createdAt')
-  > ```
-
-* Find 100 records where `user` is 12
-
-  > GET /res/all?user=12&_limit=100
-  > ```js
-  > await akita('res').findAll({ user: 12 }).limit(100)
-  > ```
 
 ---------------------------------------
 
@@ -148,7 +149,7 @@ param | type | default
 
 ---------------------------------------
 
-#### 4. Count records
+#### 4. Get records count
 
 `GET /path/to/res/count`
 
@@ -297,6 +298,7 @@ option | type | defualt | description
 debug | boolean | false | enable debug mode
 apiRoot | string | '' | API root path
 fetch | Function | window.fetch | custom fetch function
+FormData | Function | window.FormData | custom FormData class
 init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters
 
 #### Client API
@@ -353,6 +355,9 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 > Specifies custom param.
 
 * query.find(conditions?: Object): Query;
+> Find multi records without paging.
+
+* query.paginate(conditions?: Object): Query;
 > Find records with paging. 
 
 * query.findOne(conditions: Object): Query;
@@ -360,9 +365,6 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 
 * query.findById(id: string): Query;
 > Find one record by id.
-
-* query.findAll(conditions?: Object): Query;
-> Find multi records without paging.
 
 * query.update(id?: Object, data: Object): Query;
 > Update multi records or one record by id.
@@ -435,7 +437,7 @@ await client.post('blog',{ body:{ title: 'my book' } });
 await client('blog').create({ title: 'my book' });
 
 // find records with paging
-await client('blog').find();
+await client('blog').paginate();
 
 // find one record by id
 await client('blog').findById(12);
