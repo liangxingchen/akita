@@ -66,6 +66,7 @@ type Akita$Client = {
   request(path: string, RequestInit):RequestResult;
   get(path: string, init?: RequestInit):RequestResult;
   post(path: string, init?: RequestInit):RequestResult;
+  upload(path: string, init?: RequestInit):RequestResult;
   put(path: string, init?: RequestInit):RequestResult;
   patch(path: string, init?: RequestInit):RequestResult;
   delete(path: string, init?: RequestInit):RequestResult;
