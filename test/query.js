@@ -31,44 +31,44 @@ describe('Query', function () {
   });
   it('findOne by id & filters', function () {
     deepEqual(
-      client('res').findById(1).where('user', 1).inspect().params,
-      { user: 1 }
+      client('res').findById(1).where('user', 1).inspect(),
+      { method: 'GET', url: 'http://localhost/res/1?user=1' }
     );
   });
   it('findOne', function () {
     deepEqual(
       client('res').findOne({ foo: 'bar' }).inspect(),
-      { params: { foo: 'bar', _limit: 1 }, method: 'GET', url: 'http://localhost/res?foo=bar&_limit=1' }
+      { method: 'GET', url: 'http://localhost/res?foo=bar&_limit=1' }
     );
   });
 
   it('find', function () {
     deepEqual(
       client('res').find().where('user', 1).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res?user=1' }
+      { method: 'GET', url: 'http://localhost/res?user=1' }
     );
     deepEqual(
       client('res').find().where({ user: 1 }).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res?user=1' }
+      { method: 'GET', url: 'http://localhost/res?user=1' }
     );
     deepEqual(
       client('res').find().where('user').eq(1).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res?user=1' }
+      { method: 'GET', url: 'http://localhost/res?user=1' }
     );
   });
 
   it('paginate', function () {
     deepEqual(
       client('res').paginate().where('user', 1).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/paginate?user=1' }
+      { method: 'GET', url: 'http://localhost/res/paginate?user=1' }
     );
     deepEqual(
       client('res').paginate().where({ user: 1 }).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/paginate?user=1' }
+      { method: 'GET', url: 'http://localhost/res/paginate?user=1' }
     );
     deepEqual(
       client('res').paginate().where('user').eq(1).inspect(),
-      { params: { user: 1 }, method: 'GET', url: 'http://localhost/res/paginate?user=1' }
+      { method: 'GET', url: 'http://localhost/res/paginate?user=1' }
     );
   });
 
@@ -76,7 +76,6 @@ describe('Query', function () {
     deepEqual(
       client('res').find().where('user', 1).where('status', 100).inspect(),
       {
-        params: { user: 1, status: 100 },
         method: 'GET',
         url: 'http://localhost/res?user=1&status=100'
       }
@@ -84,7 +83,6 @@ describe('Query', function () {
     deepEqual(
       client('res').find().where({ user: 1, status: 100 }).inspect(),
       {
-        params: { user: 1, status: 100 },
         method: 'GET',
         url: 'http://localhost/res?user=1&status=100'
       }
@@ -92,7 +90,6 @@ describe('Query', function () {
     deepEqual(
       client('res').find().where({ user: 1 }).where({ status: 100 }).inspect(),
       {
-        params: { user: 1, status: 100 },
         method: 'GET',
         url: 'http://localhost/res?user=1&status=100'
       }
@@ -103,7 +100,6 @@ describe('Query', function () {
     deepEqual(
       client('res').find().where({ user: 1 }).where('status').gt(100).inspect(),
       {
-        params: { user: 1, status: { $gt: 100 } },
         method: 'GET',
         url: 'http://localhost/res?user=1&status%5B%24gt%5D=100'
       }
@@ -114,7 +110,6 @@ describe('Query', function () {
     deepEqual(
       client('res').find().where({ user: 1 }).where('status').gt(100).lt(600).inspect(),
       {
-        params: { user: 1, status: { $gt: 100, $lt: 600 } },
         method: 'GET',
         url: 'http://localhost/res?user=1&status%5B%24gt%5D=100&status%5B%24lt%5D=600'
       }
@@ -125,7 +120,6 @@ describe('Query', function () {
     deepEqual(
       client('res').count().where('user', 1).where('status', 100).inspect(),
       {
-        params: { user: 1, status: 100 },
         method: 'GET',
         url: 'http://localhost/res/count?user=1&status=100'
       }
@@ -133,7 +127,6 @@ describe('Query', function () {
     deepEqual(
       client('res').count({ user: 1, status: 100 }).inspect(),
       {
-        params: { user: 1, status: 100 },
         method: 'GET',
         url: 'http://localhost/res/count?user=1&status=100'
       }
@@ -143,14 +136,14 @@ describe('Query', function () {
   it('limit', function () {
     deepEqual(
       client('res').limit(100).inspect(),
-      { params: { _limit: 100 }, method: 'GET', url: 'http://localhost/res?_limit=100' }
+      { method: 'GET', url: 'http://localhost/res?_limit=100' }
     );
   });
 
   it('sort', function () {
     deepEqual(
       client('res').sort('-createdAt').inspect(),
-      { params: { _sort: '-createdAt' }, method: 'GET', url: 'http://localhost/res?_sort=-createdAt' }
+      { method: 'GET', url: 'http://localhost/res?_sort=-createdAt' }
     );
   });
 
@@ -158,7 +151,6 @@ describe('Query', function () {
     deepEqual(
       client('res').page(2).limit(10).sort('-createdAt').inspect(),
       {
-        params: { _sort: '-createdAt', _page: 2, _limit: 10 },
         method: 'GET',
         url: 'http://localhost/res?_limit=10&_page=2&_sort=-createdAt'
       }
@@ -195,10 +187,6 @@ describe('Query', function () {
       {
         method: 'PATCH',
         url: 'http://localhost/res?status=300&_limit=100',
-        params: {
-          status: 300,
-          _limit: 100
-        },
         headers: { 'Content-Type': 'application/json' },
         body: '{\"status\":400}'
       }
@@ -220,12 +208,7 @@ describe('Query', function () {
       client('res').where({ price: { $gt: 300 } }).remove({ status: 400 }).limit(100).inspect(),
       {
         method: 'DELETE',
-        url: 'http://localhost/res?price%5B%24gt%5D=300&status=400&_limit=100',
-        params: {
-          price: { $gt: 300 },
-          status: 400,
-          _limit: 100
-        }
+        url: 'http://localhost/res?price%5B%24gt%5D=300&status=400&_limit=100'
       }
     );
   });
@@ -235,10 +218,7 @@ describe('Query', function () {
       client('res').where({ price: { $gt: 300 } }).remove(2).inspect(),
       {
         method: 'DELETE',
-        url: 'http://localhost/res/2?price%5B%24gt%5D=300',
-        params: {
-          price: { $gt: 300 }
-        }
+        url: 'http://localhost/res/2?price%5B%24gt%5D=300'
       }
     );
   });
