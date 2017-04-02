@@ -57,13 +57,16 @@ type RequestResult={
   then(resolve?: Function, reject?: Function):Promise<Object>;
   catch(reject: Function):Promise<Object>;
   response():Promise<Object>;
+  buffer():Promise<Buffer>;
+  text():Promise<String>;
+  json():Promise<Object>;
 };
 
 type Akita$Client = {
   setOptions(options: Object):void;
   create(options: Object):Akita$Client;
   resolve(key: string):Akita$Client;
-  request(path: string, RequestInit):RequestResult;
+  request(path: string, init?: RequestInit, query?: Akita$Query, inspect?: boolean):RequestResult;
   get(path: string, init?: RequestInit):RequestResult;
   post(path: string, init?: RequestInit):RequestResult;
   upload(path: string, init?: RequestInit):RequestResult;
