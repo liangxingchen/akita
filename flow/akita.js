@@ -47,7 +47,7 @@ declare class Akita$Query {
 type RequestInit = {
   method?:string,
   params?:Object,
-  body?:Object,
+  body?:any,
   headers?:Object,
   mode?:string,
   credentials?:string,
