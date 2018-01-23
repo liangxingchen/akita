@@ -7,74 +7,96 @@
 'use strict';
 
 const fs = require('fs');
-const assert = require('assert');
+const test = require('tape');
 const fetch = require('node-fetch');
 const FormData = require('form-data');
 const client = require('../lib/client');
+const client2 = client.resolve('http');
 
-client.setOptions({ fetch, FormData });
+global.FormData = FormData;
+global.fetch = fetch;
 
-function deepEqual(obj1, obj2) {
-  try {
-    assert.deepEqual(obj1, obj2);
-  } catch (error) {
-    console.log('error:\n' + JSON.stringify(obj1) + '\n' + JSON.stringify(obj2));
-    throw error;
-  }
-}
+client.setOptions({ fetch, FormData, init: { headers: { Agent: 'Akita' } } });
+client2.setOptions({ apiRoot: 'https://httpbin.org/', debug: true });
 
-describe('HTTP', function () {
+test('HTTP', (troot) => {
 
-  it('test get', function (done) {
+  test('test get', (t) => {
     client.get('https://httpbin.org/get').then((res) => {
       if (!res) {
-        return done(new Error('error'));
+        return t.fail('Error res');
       }
-      done();
-    }, done)
+      t.end();
+    }, t.end)
   });
 
-  it('test params', function (done) {
+  test('test params', (t) => {
     client.get('https://httpbin.org/get', { params: { foo: { bar: 'baz' } } }).then((res) => {
-      if (res.url !== 'https://httpbin.org/get?foo[bar]=baz') {
-        return done(new Error('error'));
-      }
-      done();
-    }, done)
+      t.equal(res.url, 'https://httpbin.org/get?foo[bar]=baz');
+      t.end();
+    }, t.end)
   });
 
-  it('test headers', function (done) {
+  test('test headers', (t) => {
     client.get('https://httpbin.org/get', { headers: { foo: 'bar' } }).then((res) => {
-      if (res.headers.Foo !== 'bar') {
-        return done(new Error('error'));
-      }
-      done();
-    }, done)
+      t.equal(res.headers.Foo, 'bar');
+      t.equal(res.headers.Agent, 'Akita');
+      t.end();
+    }, t.end)
   });
 
-  it('test post', function (done) {
+  test('test post', (t) => {
     client.post('https://httpbin.org/post', {
       body: { foo: 'bar' }
     }).then((res) => {
       if (res.data !== '{"foo":"bar"}' || res.headers['Content-Type'] !== 'application/json') {
-        return done(new Error('error'));
+        return t.fail('Error');
       }
-      done();
-    }, done)
+      t.end();
+    }, t.end)
   });
 
-  it('test upload', function (done) {
+  test('test post form data', (t) => {
+    client.post('https://httpbin.org/post', {
+      body: { foo: 'bar' },
+      headers: {
+        'Content-Type': 'application/x-www-form-urlencoded'
+      }
+    }).then((res) => {
+      t.equal(res.headers['Content-Type'], 'application/x-www-form-urlencoded');
+      t.deepEqual(res.form, { foo: 'bar' });
+      t.end();
+    }, t.end)
+  });
+
+  test('test upload', (t) => {
     client.upload('https://httpbin.org/post', {
       body: {
         foo: 'bar',
         // file: fs.createReadStream(process.cwd() + '/LICENSE')
       }
     }).then((res) => {
-      deepEqual(
+      t.deepEqual(
         { foo: 'bar' },
         res.form
       );
-      done();
-    }, done);
+      t.end();
+    }, t.end);
   });
+
+  test('test text', (t) => {
+    client.get('https://httpbin.org/get').text().then((res) => {
+      t.equal('string', typeof res);
+      t.end();
+    }, t.end);
+  });
+
+  test('test buffer', (t) => {
+    client2.get('/get').buffer().then((res) => {
+      t.ok(Buffer.isBuffer(res));
+      t.end();
+    }, t.end);
+  });
+
+  troot.end();
 });

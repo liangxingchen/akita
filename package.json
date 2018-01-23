@@ -1,10 +1,12 @@
 {
   "name": "akita",
-  "version": "0.3.7",
+  "version": "0.4.0",
   "description": "akita api client",
-  "main": "lib/client.js",
+  "main": "lib/node.js",
+  "browser": "lib/client.js",
   "scripts": {
-    "test": "mocha -t 10000 ./test",
+    "test": "tape ./test/*.js",
+    "cover": "istanbul cover node_modules/.bin/tape ./test/*.js",
     "prepublish": "npm run test"
   },
   "repository": {
@@ -22,11 +24,12 @@
   },
   "homepage": "https://github.com/maichong/akita#readme",
   "dependencies": {
-    "qs": "^6.5.0"
+    "form-data": "^2.3.1",
+    "node-fetch": "^1.7.3",
+    "qs": "^6.5.1"
   },
   "devDependencies": {
-    "form-data": "^2.2.0",
-    "mocha": "^3.4.2",
-    "node-fetch": "^1.7.1"
+    "istanbul": "^0.4.5",
+    "tape": "^4.8.0"
   }
 }
