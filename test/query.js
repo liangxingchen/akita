@@ -5,19 +5,19 @@
  * @author Lei <zhao@maichong.it>
  */
 
-'use strict';
+import test from 'tape';
+import akita from '../src/node';
 
-const test = require('tape');
-const client = require('../lib/node').resolve('query');
-const github = require('../lib/node').create();
+const client = akita.resolve('query');
+const github = akita.create();
 
 client.setOptions({ apiRoot: 'http://localhost' });
 github.setOptions({ apiRoot: 'https://api.github.com', debug: true });
 
 const Model = client('res');
 
-test('Query', function (troot) {
-  test('findOne by id', (t) => {
+test('Query', (troot) => {
+  troot.test('findOne by id', (t) => {
     t.deepEqual(
       client('/res').findById(1).inspect(),
       { method: 'GET', url: 'http://localhost/res/1' }
@@ -25,7 +25,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('findOne by id & filters', (t) => {
+  troot.test('findOne by id & filters', (t) => {
     t.deepEqual(
       Model.findById(1).where('user', 1).inspect(),
       { method: 'GET', url: 'http://localhost/res/1?user=1' }
@@ -33,7 +33,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('findOne', (t) => {
+  troot.test('findOne', (t) => {
     t.deepEqual(
       Model.findOne({ foo: 'bar' }).inspect(),
       { method: 'GET', url: 'http://localhost/res?foo=bar&_limit=1' }
@@ -45,7 +45,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('find', (t) => {
+  troot.test('find', (t) => {
     t.deepEqual(
       Model.find().where('user', 1).inspect(),
       { method: 'GET', url: 'http://localhost/res?user=1' }
@@ -65,7 +65,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('paginate', (t) => {
+  troot.test('paginate', (t) => {
     t.deepEqual(
       Model.paginate().where('user', 1).inspect(),
       { method: 'GET', url: 'http://localhost/res/paginate?user=1' }
@@ -85,7 +85,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('param', (t) => {
+  troot.test('param', (t) => {
     t.deepEqual(
       Model.find().param('user', 1).inspect(),
       { method: 'GET', url: 'http://localhost/res?_user=1' }
@@ -109,7 +109,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('search', (t) => {
+  troot.test('search', (t) => {
     t.deepEqual(
       Model.find().search('keyword').inspect(),
       { method: 'GET', url: 'http://localhost/res?_search=keyword' }
@@ -125,7 +125,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('where', (t) => {
+  troot.test('where', (t) => {
     t.deepEqual(
       Model.find().where('user', 1).where('status', 100).inspect(),
       {
@@ -150,7 +150,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('where gt', (t) => {
+  troot.test('where gt', (t) => {
     t.deepEqual(
       Model.find().where('status').gt(100).inspect(),
       {
@@ -159,7 +159,8 @@ test('Query', function (troot) {
       }
     );
     t.deepEqual(
-      Model.find().where({ user: 1 }).where('status').gt(100).inspect(),
+      Model.find().where({ user: 1 }).where('status').gt(100)
+        .inspect(),
       {
         method: 'GET',
         url: 'http://localhost/res?user=1&status%5B%24gt%5D=100'
@@ -168,9 +169,11 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('where gt & lt', (t) => {
+  troot.test('where gt & lt', (t) => {
     t.deepEqual(
-      Model.find().where({ user: 1 }).where('status').gt(100).lt(600).inspect(),
+      Model.find().where({ user: 1 }).where('status').gt(100)
+        .lt(600)
+        .inspect(),
       {
         method: 'GET',
         url: 'http://localhost/res?user=1&status%5B%24gt%5D=100&status%5B%24lt%5D=600'
@@ -179,9 +182,11 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('where gte & lte', (t) => {
+  troot.test('where gte & lte', (t) => {
     t.deepEqual(
-      Model.find().where({ user: 1 }).where('status').gte(100).lte(600).inspect(),
+      Model.find().where({ user: 1 }).where('status').gte(100)
+        .lte(600)
+        .inspect(),
       {
         method: 'GET',
         url: 'http://localhost/res?user=1&status%5B%24gte%5D=100&status%5B%24lte%5D=600'
@@ -190,7 +195,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('count', (t) => {
+  troot.test('count', (t) => {
     t.deepEqual(
       Model.count().where('user', 1).where('status', 100).inspect(),
       {
@@ -208,7 +213,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('limit', (t) => {
+  troot.test('limit', (t) => {
     t.deepEqual(
       Model.find().limit(100).inspect(),
       { method: 'GET', url: 'http://localhost/res?_limit=100' }
@@ -216,7 +221,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('sort', (t) => {
+  troot.test('sort', (t) => {
     t.deepEqual(
       Model.find().sort('-createdAt').inspect(),
       { method: 'GET', url: 'http://localhost/res?_sort=-createdAt' }
@@ -224,9 +229,10 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('page', (t) => {
+  troot.test('page', (t) => {
     t.deepEqual(
-      Model.find().page(2).limit(10).sort('-createdAt').inspect(),
+      Model.find().page(2).limit(10).sort('-createdAt')
+        .inspect(),
       {
         method: 'GET',
         url: 'http://localhost/res?_limit=10&_page=2&_sort=-createdAt'
@@ -242,46 +248,46 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('create', (t) => {
+  troot.test('create', (t) => {
     t.deepEqual(
       Model.create({ title: 'my book' }).inspect(),
       {
         method: 'POST',
         url: 'http://localhost/res',
         headers: { 'Content-Type': 'application/json' },
-        body: '{\"title\":\"my book\"}'
+        body: '{"title":"my book"}'
       }
     );
     t.end();
   });
 
-  test('update by id', (t) => {
+  troot.test('update by id', (t) => {
     t.deepEqual(
       Model.update(1, { title: 'my book' }).inspect(),
       {
         method: 'PATCH',
         url: 'http://localhost/res/1',
         headers: { 'Content-Type': 'application/json' },
-        body: '{\"title\":\"my book\"}'
+        body: '{"title":"my book"}'
       }
     );
     t.end();
   });
 
-  test('update by filters', (t) => {
+  troot.test('update by filters', (t) => {
     t.deepEqual(
       Model.update({ status: 400 }).where({ status: 300 }).limit(100).inspect(),
       {
         method: 'PATCH',
         url: 'http://localhost/res?status=300&_limit=100',
         headers: { 'Content-Type': 'application/json' },
-        body: '{\"status\":400}'
+        body: '{"status":400}'
       }
     );
     t.end();
   });
 
-  test('remove by id', (t) => {
+  troot.test('remove by id', (t) => {
     t.deepEqual(
       Model.remove(123).inspect(),
       {
@@ -292,7 +298,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('remove by filters', (t) => {
+  troot.test('remove by filters', (t) => {
     t.deepEqual(
       Model.remove({ status: 400 }).where({ price: { $gt: 300 } }).limit(100).inspect(),
       {
@@ -303,7 +309,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('remove by id & filters', (t) => {
+  troot.test('remove by id & filters', (t) => {
     t.deepEqual(
       Model.remove(2).where({ price: { $gt: 300 } }).inspect(),
       {
@@ -314,7 +320,7 @@ test('Query', function (troot) {
     t.end();
   });
 
-  test('exec', (t) => {
+  troot.test('exec', (t) => {
     github('repos/maichong').findById('akita').then((res) => {
       t.equal(res.name, 'akita');
       t.end();

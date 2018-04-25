@@ -5,8 +5,11 @@
   "main": "lib/node.js",
   "browser": "lib/client.js",
   "scripts": {
-    "test": "tape ./test/*.js",
-    "cover": "istanbul cover node_modules/.bin/tape ./test/*.js",
+    "flow": "flow --show-all-errors ./",
+    "eslint": "eslint ./",
+    "build": "babel -d lib src/",
+    "test": "cross-env DEBUG=akita* tape -r babel-register ./test/*.js",
+    "cover": "istanbul cover node_modules/.bin/tape -r babel-register ./test/*.js",
     "prepublish": "npm run test"
   },
   "repository": {
@@ -24,12 +27,33 @@
   },
   "homepage": "https://github.com/maichong/akita#readme",
   "dependencies": {
-    "form-data": "^2.3.1",
-    "node-fetch": "^1.7.3",
+    "debug": "^3.1.0",
+    "form-data": "^2.3.2",
+    "is-buffer": "^2.0.2",
+    "node-fetch": "^2.1.2",
     "qs": "^6.5.1"
   },
   "devDependencies": {
+    "babel-cli": "^6.26.0",
+    "babel-core": "^6.26.0",
+    "babel-eslint": "^8.2.3",
+    "babel-plugin-syntax-class-properties": "^6.13.0",
+    "babel-plugin-syntax-flow": "^6.18.0",
+    "babel-plugin-transform-class-properties": "^6.24.1",
+    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.0",
+    "babel-plugin-transform-flow-strip-types": "^6.22.0",
+    "babel-plugin-transform-object-rest-spread": "^6.26.0",
+    "babel-preset-env": "^1.6.1",
+    "babel-register": "^6.26.0",
+    "cross-env": "^5.1.4",
+    "eslint": "^4.19.1",
+    "eslint-config-airbnb-base": "^12.1.0",
+    "eslint-plugin-flowtype": "^2.46.3",
+    "eslint-plugin-flowtype-errors": "^3.5.1",
+    "eslint-plugin-import": "^2.11.0",
+    "flow-bin": "^0.70.0",
+    "flow-declarations": "^0.4.1",
     "istanbul": "^0.4.5",
-    "tape": "^4.8.0"
+    "tape": "^4.9.0"
   }
 }

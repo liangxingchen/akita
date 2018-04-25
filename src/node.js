@@ -1,21 +1,17 @@
-/**
- * @copyright Maichong Software Ltd. 2018 http://maichong.it
- * @date 2018-01-23
- * @author Liang <liang@maichong.it>
- */
+/* eslint no-use-before-define:0 */
 
-'use strict';
+// @flow
 
-var akita = require('./client');
-var fetch = require('node-fetch');
-var FormData = require('form-data');
+import fetch from 'node-fetch';
+import FormData from 'form-data';
+import akita, { Model } from './client';
 
-akita.setOptions({ fetch: fetch, FormData: FormData });
+akita.setOptions({ fetch, FormData });
 
-var create = akita.create;
-var resolve = akita.resolve;
+const create = akita.create;
+const resolve = akita.resolve;
 
-function newCreate(options) {
+function newCreate(options?: Object) {
   options = options || {};
   /* istanbul ignore else */
   if (!options.fetch) {
@@ -31,19 +27,19 @@ function newCreate(options) {
   return client;
 }
 
-function newResolve() {
-  let client = resolve.apply(this, arguments);
+function newResolve(key: string) {
+  let client = resolve(key);
   /* istanbul ignore else */
   if (!client._count) {
     // 还未发送请求，新实例
     /* istanbul ignore else */
     if (!client._options.fetch) {
-      client.setOptions({ fetch: fetch });
+      client.setOptions({ fetch });
     }
     /* istanbul ignore else */
     if (!client._options.FormData) {
       // 还未发送请求，新实例
-      client.setOptions({ FormData: FormData });
+      client.setOptions({ FormData });
     }
   }
   client.create = newCreate;
@@ -54,4 +50,5 @@ function newResolve() {
 akita.create = newCreate;
 akita.resolve = newResolve;
 
-module.exports = akita;
+export default akita;
+export { Model };
