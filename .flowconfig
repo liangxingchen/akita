@@ -8,7 +8,6 @@
 [libs]
 ../../flow-declarations/akita
 ../../flow-declarations/is-buffer
-../../flow-declarations/methods
 ../../flow-declarations/node-fetch
 node_modules/flow-declarations/debug
 node_modules/flow-declarations/qs

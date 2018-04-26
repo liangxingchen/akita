@@ -175,7 +175,7 @@ export default class Query {
       switch (this._op) {
         case 'findOne':
           // findOne = find + limit 1
-          p = this.model.client.request(path, init, this).then((results) => {
+          p = this.model.request(path, init, this).then((results) => {
             if (results.length) {
               return results[0];
             }
@@ -183,10 +183,29 @@ export default class Query {
           });
           break;
         case 'count':
-          p = this.model.client.request(path, init, this).then((result) => result.count);
+          p = this.model.request(path, init, this).then((result) => result.count);
           break;
         default:
-          p = this.model.client.request(path, init, this);
+          p = this.model.request(path, init, this);
+      }
+      let M = this.model;
+      switch (this._op) {
+        case 'findById':
+        case 'findOne':
+          p = p.then((data) => new M(data));
+          break;
+        case 'find':
+          p = p.then((list) => list.map((data) => new M(data)));
+          break;
+        case 'paginate':
+          p = p.then((res) => {
+            if (res && res.results) {
+              res.results = res.results.map((data) => new M(data));
+            }
+          });
+          break;
+        default:
+          break;
       }
       this._promise = p;
     }
@@ -216,17 +235,19 @@ export default class Query {
           if (this._id === null) {
             throw new Error('id is not specified for findById');
           }
-          str += '("' + this._id + '")';
+          str += '(' + JSON.stringify(this._id) + ')';
           break;
         case 'remove':
-          if (this._id === null) {
-            throw new Error('id is not specified for remove');
+          if (this._id !== null) {
+            str += '(' + JSON.stringify(this._id) + ')';
+          } else {
+            // remove multi
+            str += '()';
           }
-          str += '("' + this._id + '")';
           break;
         case 'update':
           if (this._id) {
-            str += '("' + this._id + '", ' + JSON.stringify(this._data) + ')';
+            str += '(' + JSON.stringify(this._id) + ', ' + JSON.stringify(this._data) + ')';
           } else {
             str += '(' + JSON.stringify(this._data) + ')';
           }
@@ -239,7 +260,9 @@ export default class Query {
       }
       if (this._params) {
         let params: Object = this._params;
-        str += Object.keys(this._params).map((key) => '.param("' + key + '", "' + params[key] + '")').join('');
+        str += Object.keys(this._params)
+          .map((key) => '.arg("' + key + '", ' + JSON.stringify(params[key]) + ')')
+          .join('');
       }
       if (this._filters) {
         str += '.where(' + JSON.stringify(this._filters) + ')';
@@ -263,7 +286,7 @@ export default class Query {
   _createInit() {
     let init = {};
     init.method = 'GET';
-    init.path = this.model.path;
+    let path = '';
 
     let params: { [k: string]: any } = {};
 
@@ -276,52 +299,39 @@ export default class Query {
     }
 
     if (this._filters) {
-      params = Object.assign(params || {}, this._filters);
+      Object.assign(params, this._filters);
     }
 
     if (this._search) {
-      if (!params) {
-        params = {};
-      }
       params._search = this._search;
     }
 
     if (this._limit) {
-      if (!params) {
-        params = {};
-      }
       params._limit = this._limit;
     }
 
     if (this._page) {
-      if (!params) {
-        params = {};
-      }
       params._page = this._page;
     }
 
     if (this._sort) {
-      if (!params) {
-        params = {};
-      }
       params._sort = this._sort;
     }
 
     if (this._id && ['findById', 'remove', 'update'].indexOf(this._op) > -1) {
-      init.path += '/' + encodeURIComponent(this._id);
+      path += '/' + encodeURIComponent(this._id);
     }
 
     if (this._data && ['create', 'update'].indexOf(this._op) > -1) {
       init.body = this._data;
     }
 
-    init.params = params;
     switch (this._op) {
       case 'count':
-        init.path += '/count';
+        path += '/count';
         break;
       case 'paginate':
-        init.path += '/paginate';
+        path += '/paginate';
         break;
       case 'create':
         init.method = 'POST';

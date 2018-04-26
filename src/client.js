@@ -4,7 +4,7 @@
 
 import Debugger from 'debug';
 import qs from 'qs';
-import methods from 'methods';
+import methods from './methods';
 import Model from './model';
 import Response from './response';
 import type Query from './query';
@@ -50,15 +50,28 @@ function create(options?: Object) {
 
   client.request = function request(path: string, init?: akita$RequestInit, query?: Query | null, inspect?: boolean) {
     init = Object.assign({}, init);
-    if (init.params) {
-      let paramsString = qs.stringify(init.params);
-      if (paramsString) {
-        path += '?' + paramsString;
+    let params = Object.assign({}, init.params);
+    delete init.params;
+
+    let omits = [];
+    path = path.replace(/:\w+/g, (match) => {
+      let key = match.substr(1); // trim :
+      if (params.hasOwnProperty(key)) {
+        omits.push(key);
+        return params[key];
       }
-      delete init.params;
+      return match;
+    });
+    omits.forEach((key) => {
+      delete params[key];
+    });
+    let paramsString = qs.stringify(params);
+    if (paramsString) {
+      path += '?' + paramsString;
     }
 
     if (init.body && typeof init.body === 'object') {
+      let body: Object = init.body;
       let FormData = getFormDataClass();
 
       if (init.method === 'UPLOAD') {
@@ -68,24 +81,22 @@ function create(options?: Object) {
           /* istanbul ignore next */
           throw new Error('Akita Error: Can not resolve FormData class when use upload method');
         }
-        if (!(init.body instanceof FormData)) {
+        if (!(body instanceof FormData)) {
           // 自动构造 FormData
-          let body = new FormData();
-          for (let name in init.body) {
-            body.append(name, init.body[name]);
-          }
-          init.body = body;
+          let form = new FormData();
+          Object.keys(body).forEach((name) => form.append(name, body[name]));
+          init.body = form;
         }
-      } else if (!FormData || !(init.body instanceof FormData)) {
+      } else if (!FormData || !(body instanceof FormData)) {
         // 如果是普通POST请求，转换成JSON或urlencoded
         if (!init.headers) {
           init.headers = {};
         }
         if (!init.headers['Content-Type'] || init.headers['Content-Type'] === 'application/json') {
           init.headers['Content-Type'] = 'application/json';
-          init.body = JSON.stringify(init.body);
+          init.body = JSON.stringify(body);
         } else if (init.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-          init.body = qs.stringify(init.body);
+          init.body = qs.stringify(body);
         } else {
           /* istanbul ignore next */
           throw new Error('Akita Error: Unsupported Content-Type ' + init.headers['Content-Type']);
@@ -136,10 +147,10 @@ function create(options?: Object) {
   };
 
   methods.forEach((method) => {
-    client[method] = function (path, init) {
+    client[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
       init = init || {};
       init.method = method.toUpperCase();
-      return client.request(path, init);
+      return client.request(path, init, null, inspect);
     };
   });
 

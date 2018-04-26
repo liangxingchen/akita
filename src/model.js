@@ -2,7 +2,7 @@
 // @flow
 
 import Debugger from 'debug';
-import methods from 'methods';
+import methods from './methods';
 import Query from './query';
 
 const debug = Debugger('akita:model');
@@ -161,6 +161,50 @@ export default class Model {
     return query;
   }
 
+  static request(path: string, init?: akita$RequestInit, query?: Query | null, inspect?: boolean) {
+    let p = this.path || '';
+    if (!p.endsWith('/') && path) {
+      p += '/';
+    }
+    if (path.startsWith('/')) {
+      path = path.substr(1);
+    }
+    path = p + path;
+    return this.client.request(path, init, query, inspect);
+  }
+
+  request(path: string, init?: akita$RequestInit, inspect?: boolean) {
+    const M = this.constructor;
+    const pk = M.pk || 'id';
+    // $Flow indexer
+    let id = this[pk];
+    if (!id) {
+      let method = (init && init.method) || 'GET';
+      throw new Error(`Can not get pk field (${pk}) for ${method}: '${path}'`);
+    }
+    if (path.startsWith('/')) {
+      path = id + path;
+    } else {
+      path = id + '/' + path;
+    }
+    let fullPath = M.path + '/' + path;
+    let matchs = fullPath.match(/:\w+/g);
+    console.log('matchs', matchs);
+    if (matchs) {
+      init = Object.assign({}, init);
+      let params = Object.assign({}, init.params);
+      matchs.forEach((match) => {
+        let key = match.substr(1);
+        if (!params.hasOwnProperty(key) && this.hasOwnProperty(key)) {
+          // $Flow indexer
+          params[key] = this[key];
+        }
+      });
+      init.params = params;
+    }
+    return M.request(path, init, null, inspect);
+  }
+
   save() {
 
   }
@@ -170,36 +214,20 @@ export default class Model {
   }
 }
 
-methods.forEach((method: string) => {
+['upload'].concat(methods).forEach((method: string) => {
   Model[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
-    debug(this.name + '.' + method, path, init);
-    let p = this.path || '';
-    if (!p.endsWith('/')) {
-      p += '/';
-    }
-    if (path.startsWith('/')) {
-      path = path.substr(1);
-    }
-    path = p + path;
+    debug(this.name + '.' + method, path, init || '');
     init = init || {};
     init.method = method.toUpperCase();
-    return this.client.request(path, init, null, inspect);
+    return this.request(path, init, null, inspect);
   };
 
-  // $Flow prototype 可迭代
+  // $Flow prototype indexer
   Model.prototype[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
     const M = this.constructor;
-    const pk = M.pk || 'id';
-    debug(M.name + '.prototype.' + method, path, init);
-    let id = this[pk];
-    if (!id) {
-      throw new Error(`Can not get pk field (${pk}) for ${method}: '${path}'`);
-    }
-    if (path.startsWith('/')) {
-      path = id + path;
-    } else {
-      path = id + '/' + path;
-    }
-    return M[method](path, init, inspect);
+    debug(M.name + '.prototype.' + method, path, init || '');
+    init = init || {};
+    init.method = method.toUpperCase();
+    return this.request(path, init, inspect);
   };
 });
