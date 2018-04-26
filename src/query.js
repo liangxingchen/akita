@@ -167,55 +167,7 @@ export default class Query {
    */
   exec() {
     if (!this._promise) {
-      if (debug.enabled) {
-        let str = 'Client("' + this.model.path + '").' + this._op;
-        switch (this._op) {
-          case 'findById':
-            if (this._id === null) {
-              throw new Error('id is not specified for findById');
-            }
-            str += '("' + this._id + '")';
-            break;
-          case 'remove':
-            if (this._id === null) {
-              throw new Error('id is not specified for remove');
-            }
-            str += '("' + this._id + '")';
-            break;
-          case 'update':
-            if (this._id) {
-              str += '("' + this._id + '", ' + JSON.stringify(this._data) + ')';
-            } else {
-              str += '(' + JSON.stringify(this._data) + ')';
-            }
-            break;
-          case 'create':
-            str += '(' + JSON.stringify(this._data) + ')';
-            break;
-          default:
-            str += '()';
-        }
-        if (this._params) {
-          let params: Object = this._params;
-          str += Object.keys(this._params).map((key) => '.param("' + key + '", "' + params[key] + '")').join('');
-        }
-        if (this._filters) {
-          str += '.where(' + JSON.stringify(this._filters) + ')';
-        }
-        if (this._search) {
-          str += '.search("' + this._search + '")';
-        }
-        if (this._limit > 1) {
-          str += '.limit(' + this._limit + ')';
-        }
-        if (this._page > 1) {
-          str += '.page(' + this._page + ')';
-        }
-        if (this._sort) {
-          str += '.sort(' + this._sort + ')';
-        }
-        debug(str);
-      }
+      this._debug();
       let init = this._createInit();
       let path = init.path;
       delete init.path;
@@ -242,10 +194,70 @@ export default class Query {
   }
 
   inspect() {
+    this._debug();
     let init = this._createInit();
     let path = init.path;
     delete init.path;
     return this.model.client.request(path, init, this, true);
+  }
+
+  _debug() {
+    if (debug.enabled) {
+      let str = '';
+      const M = this.model;
+      if (M.name === 'AnonymousModel') {
+        str = 'Client("' + M.path + '").';
+      } else {
+        str = M.name + '.';
+      }
+      str += this._op;
+      switch (this._op) {
+        case 'findById':
+          if (this._id === null) {
+            throw new Error('id is not specified for findById');
+          }
+          str += '("' + this._id + '")';
+          break;
+        case 'remove':
+          if (this._id === null) {
+            throw new Error('id is not specified for remove');
+          }
+          str += '("' + this._id + '")';
+          break;
+        case 'update':
+          if (this._id) {
+            str += '("' + this._id + '", ' + JSON.stringify(this._data) + ')';
+          } else {
+            str += '(' + JSON.stringify(this._data) + ')';
+          }
+          break;
+        case 'create':
+          str += '(' + JSON.stringify(this._data) + ')';
+          break;
+        default:
+          str += '()';
+      }
+      if (this._params) {
+        let params: Object = this._params;
+        str += Object.keys(this._params).map((key) => '.param("' + key + '", "' + params[key] + '")').join('');
+      }
+      if (this._filters) {
+        str += '.where(' + JSON.stringify(this._filters) + ')';
+      }
+      if (this._search) {
+        str += '.search("' + this._search + '")';
+      }
+      if (this._limit > 1) {
+        str += '.limit(' + this._limit + ')';
+      }
+      if (this._page > 1) {
+        str += '.page(' + this._page + ')';
+      }
+      if (this._sort) {
+        str += '.sort(' + this._sort + ')';
+      }
+      debug(str);
+    }
   }
 
   _createInit() {
@@ -321,10 +333,10 @@ export default class Query {
         init.method = 'DELETE';
         break;
       default:
-        // find
-        // findOne
-        // findById
-        // ...
+      // find
+      // findOne
+      // findById
+      // ...
     }
     return init;
   }

@@ -4,13 +4,12 @@
 
 import Debugger from 'debug';
 import qs from 'qs';
+import methods from 'methods';
 import Model from './model';
 import Response from './response';
+import type Query from './query';
 
 const debug = Debugger('akita:client');
-
-// 有效HTTP方法列表
-const METHODS = ['GET', 'POST', 'UPLOAD', 'PUT', 'PATCH', 'DELETE', 'OPTIONS', 'HEAD', 'TRACE', 'CONNECT'];
 
 const INSTANCES = {};
 
@@ -49,7 +48,7 @@ function create(options?: Object) {
     return FormData;
   }
 
-  client.request = function request(path, init, query, inspect) {
+  client.request = function request(path: string, init?: akita$RequestInit, query?: Query | null, inspect?: boolean) {
     init = Object.assign({}, init);
     if (init.params) {
       let paramsString = qs.stringify(init.params);
@@ -111,6 +110,10 @@ function create(options?: Object) {
       path = apiRoot + path;
     }
 
+    if (debug.enabled) {
+      debug(init.method, path, JSON.stringify(init));
+    }
+
     if (inspect) {
       return Object.assign({}, init, {
         url: path
@@ -127,16 +130,15 @@ function create(options?: Object) {
       }
     }
 
-    debug(init.method, path, init);
     client._count += 1;
 
     return new Response(fetch(path, init));
   };
 
-  METHODS.forEach((method) => {
-    client[method.toLowerCase()] = function (path, init) {
+  methods.forEach((method) => {
+    client[method] = function (path, init) {
       init = init || {};
-      init.method = method;
+      init.method = method.toUpperCase();
       return client.request(path, init);
     };
   });

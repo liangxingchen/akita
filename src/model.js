@@ -1,7 +1,11 @@
 
 // @flow
 
+import Debugger from 'debug';
+import methods from 'methods';
 import Query from './query';
+
+const debug = Debugger('akita:model');
 
 export default class Model {
   static path: string;
@@ -156,4 +160,46 @@ export default class Model {
     query._id = id;
     return query;
   }
+
+  save() {
+
+  }
+
+  remove() {
+
+  }
 }
+
+methods.forEach((method: string) => {
+  Model[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
+    debug(this.name + '.' + method, path, init);
+    let p = this.path || '';
+    if (!p.endsWith('/')) {
+      p += '/';
+    }
+    if (path.startsWith('/')) {
+      path = path.substr(1);
+    }
+    path = p + path;
+    init = init || {};
+    init.method = method.toUpperCase();
+    return this.client.request(path, init, null, inspect);
+  };
+
+  // $Flow prototype 可迭代
+  Model.prototype[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
+    const M = this.constructor;
+    const pk = M.pk || 'id';
+    debug(M.name + '.prototype.' + method, path, init);
+    let id = this[pk];
+    if (!id) {
+      throw new Error(`Can not get pk field (${pk}) for ${method}: '${path}'`);
+    }
+    if (path.startsWith('/')) {
+      path = id + path;
+    } else {
+      path = id + '/' + path;
+    }
+    return M[method](path, init, inspect);
+  };
+});
