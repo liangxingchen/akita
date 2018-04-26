@@ -3,6 +3,7 @@
 // @flow
 
 import Debugger from 'debug';
+import depd from 'depd';
 import qs from 'qs';
 import methods from './methods';
 import Model from './model';
@@ -10,6 +11,7 @@ import Response from './response';
 import type Query from './query';
 
 const debug = Debugger('akita:client');
+const deprecate = depd('akita:client');
 
 const INSTANCES = {};
 
@@ -50,24 +52,27 @@ function create(options?: Object) {
 
   client.request = function request(path: string, init?: akita$RequestInit, query?: Query | null, inspect?: boolean) {
     init = Object.assign({}, init);
-    let params = Object.assign({}, init.params);
-    delete init.params;
+    if (init.params) {
+      deprecate('akita.request(path, init): init.params deprecated, please use init.query instand.');
+    }
+    let queryParams = Object.assign({}, init.query || init.params);
+    delete init.query;
 
     let omits = [];
     path = path.replace(/:\w+/g, (match) => {
       let key = match.substr(1); // trim :
-      if (params.hasOwnProperty(key)) {
+      if (queryParams.hasOwnProperty(key)) {
         omits.push(key);
-        return params[key];
+        return queryParams[key];
       }
       return match;
     });
     omits.forEach((key) => {
-      delete params[key];
+      delete queryParams[key];
     });
-    let paramsString = qs.stringify(params);
-    if (paramsString) {
-      path += '?' + paramsString;
+    let queryString = qs.stringify(queryParams);
+    if (queryString) {
+      path += '?' + queryString;
     }
 
     if (init.body && typeof init.body === 'object') {
@@ -143,7 +148,7 @@ function create(options?: Object) {
 
     client._count += 1;
 
-    return new Response(fetch(path, init));
+    return new Response(fetch(path, init), query);
   };
 
   methods.forEach((method) => {

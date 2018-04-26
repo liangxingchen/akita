@@ -2,9 +2,11 @@
 // @flow
 
 import Debugger from 'debug';
+import depd from 'depd';
 import type Model from './model';
 
 const debug = Debugger('akita:query');
+const deprecate = depd('akita:query');
 
 export default class Query {
   model: Class<Model>;
@@ -14,7 +16,7 @@ export default class Query {
   _limit: number;
   _sort: string;
   _id: null | any;
-  _params: null | {
+  _args: null | {
     [key: string]: any
   };
   _search: string;
@@ -36,7 +38,7 @@ export default class Query {
     this._limit = 0;
     this._sort = '';
     this._id = null;
-    this._params = null;
+    this._args = null;
     this._search = '';
 
     this._op = op;
@@ -45,21 +47,33 @@ export default class Query {
   }
 
   /**
-   * Add custom http query params
-   * @param {string|Object} params
+   * Add custom http query args
+   * @param {string|Object} args
    * @param {any} [value]
    * @returns {Query}
    */
-  param(params: string | Object, value?: any) {
-    if (!this._params) {
-      this._params = {};
+  arg(args: string | Object, value?: any) {
+    if (!this._args) {
+      this._args = {};
     }
-    if (typeof params === 'object') {
-      Object.assign(this._params, params);
+    if (typeof args === 'object') {
+      Object.assign(this._args, args);
     } else {
-      this._params[params] = value;
+      this._args[args] = value;
     }
     return this;
+  }
+
+  /**
+   * Add custom http query arg
+   * @deprecated
+   * @param {string|Object} args
+   * @param {any} [value]
+   * @returns {Query}
+   */
+  param(args: string | Object, value?: any) {
+    deprecate('.param() deprecated, please use .arg() instand.');
+    return this.arg(args, value);
   }
 
   /**
@@ -81,7 +95,7 @@ export default class Query {
     if (!this._filters) {
       this._filters = {};
     }
-    if (typeof conditions === 'object' && value === undefined) { // where({params:{foo:bar}})
+    if (typeof conditions === 'object' && value === undefined) {
       this._filters = Object.assign(this._filters, conditions);
     } else if (typeof conditions === 'string') {
       if (value === undefined) { // where('foo')
@@ -172,6 +186,7 @@ export default class Query {
       let path = init.path;
       delete init.path;
       let p;
+      // 处理请求
       switch (this._op) {
         case 'findOne':
           // findOne = find + limit 1
@@ -188,6 +203,7 @@ export default class Query {
         default:
           p = this.model.request(path, init, this);
       }
+      // 处理返回值
       let M = this.model;
       switch (this._op) {
         case 'findById':
@@ -217,7 +233,7 @@ export default class Query {
     let init = this._createInit();
     let path = init.path;
     delete init.path;
-    return this.model.client.request(path, init, this, true);
+    return this.model.request(path, init, this, true);
   }
 
   _debug() {
@@ -258,10 +274,10 @@ export default class Query {
         default:
           str += '()';
       }
-      if (this._params) {
-        let params: Object = this._params;
-        str += Object.keys(this._params)
-          .map((key) => '.arg("' + key + '", ' + JSON.stringify(params[key]) + ')')
+      if (this._args) {
+        let args: Object = this._args;
+        str += Object.keys(this._args)
+          .map((key) => '.arg("' + key + '", ' + JSON.stringify(args[key]) + ')')
           .join('');
       }
       if (this._filters) {
@@ -288,34 +304,33 @@ export default class Query {
     init.method = 'GET';
     let path = '';
 
-    let params: { [k: string]: any } = {};
+    let query: { [k: string]: any } = {};
 
-    if (this._params) {
-      // params = {};
-      let obj = this._params;
+    if (this._args) {
+      let obj = this._args;
       Object.keys(obj).forEach((key) => {
-        params['_' + key] = obj[key];
+        query['_' + key] = obj[key];
       });
     }
 
     if (this._filters) {
-      Object.assign(params, this._filters);
+      Object.assign(query, this._filters);
     }
 
     if (this._search) {
-      params._search = this._search;
+      query._search = this._search;
     }
 
     if (this._limit) {
-      params._limit = this._limit;
+      query._limit = this._limit;
     }
 
     if (this._page) {
-      params._page = this._page;
+      query._page = this._page;
     }
 
     if (this._sort) {
-      params._sort = this._sort;
+      query._sort = this._sort;
     }
 
     if (this._id && ['findById', 'remove', 'update'].indexOf(this._op) > -1) {
@@ -348,6 +363,8 @@ export default class Query {
       // findById
       // ...
     }
+    init.path = path;
+    init.query = query;
     return init;
   }
 

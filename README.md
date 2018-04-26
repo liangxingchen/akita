@@ -351,8 +351,8 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 * query.create(data?: Object): Query;
 > Create new record
 
-* query.param(key:string | Object, value?:any): Query;
-> Specifies custom param.
+* query.arg(key:string | Object, value?:any): Query;
+> Specifies custom arg.
 
 * query.find(conditions?: Object): Query;
 > Find multi records without paging.

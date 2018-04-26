@@ -85,25 +85,25 @@ test('Query', (troot) => {
     t.end();
   });
 
-  troot.test('param', (t) => {
+  troot.test('arg', (t) => {
     t.deepEqual(
-      Model.find().param('user', 1).inspect(),
+      Model.find().arg('user', 1).inspect(),
       { method: 'GET', url: 'http://localhost/res?_user=1' }
     );
     t.deepEqual(
-      Model.find().param({ user: 1 }).inspect(),
+      Model.find().arg({ user: 1 }).inspect(),
       { method: 'GET', url: 'http://localhost/res?_user=1' }
     );
     t.deepEqual(
-      Model.find().param({ user: 1 }).param('group', 2).inspect(),
+      Model.find().arg({ user: 1 }).arg('group', 2).inspect(),
       { method: 'GET', url: 'http://localhost/res?_user=1&_group=2' }
     );
     t.deepEqual(
-      Model.remove().param({ user: 1 }).inspect(),
+      Model.remove().arg({ user: 1 }).inspect(),
       { method: 'DELETE', url: 'http://localhost/res?_user=1' }
     );
     t.deepEqual(
-      Model.findById(12).param({ user: 1 }).inspect(),
+      Model.findById(12).arg({ user: 1 }).inspect(),
       { method: 'GET', url: 'http://localhost/res/12?_user=1' }
     );
     t.end();

@@ -189,18 +189,17 @@ export default class Model {
     }
     let fullPath = M.path + '/' + path;
     let matchs = fullPath.match(/:\w+/g);
-    console.log('matchs', matchs);
     if (matchs) {
       init = Object.assign({}, init);
-      let params = Object.assign({}, init.params);
+      let query = Object.assign({}, init.query);
       matchs.forEach((match) => {
         let key = match.substr(1);
-        if (!params.hasOwnProperty(key) && this.hasOwnProperty(key)) {
+        if (!query.hasOwnProperty(key) && this.hasOwnProperty(key)) {
           // $Flow indexer
-          params[key] = this[key];
+          query[key] = this[key];
         }
       });
-      init.params = params;
+      init.query = query;
     }
     return M.request(path, init, null, inspect);
   }

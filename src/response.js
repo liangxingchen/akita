@@ -7,10 +7,10 @@ import type Query from './query';
 const debug = Debugger('akita:response');
 
 export default class Response {
-  _query: ?Query;
+  _query: ?Query | null;
   _responsePromise: Promise<any>;
 
-  constructor(promise: Promise<any>, query?: Query) {
+  constructor(promise: Promise<any>, query?: Query | null) {
     this._query = query;
     this._responsePromise = promise.then((res) => {
       if (debug.enabled) debug('response status:', res.status, res.statusText);

@@ -10,6 +10,7 @@
 ../../flow-declarations/is-buffer
 ../../flow-declarations/node-fetch
 node_modules/flow-declarations/debug
+node_modules/flow-declarations/depd
 node_modules/flow-declarations/qs
 node_modules/flow-declarations/form-data
 node_modules/flow-declarations/node-fetch

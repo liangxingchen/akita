@@ -23,8 +23,8 @@ test('HTTP', (troot) => {
     }, t.end);
   });
 
-  troot.test('test params', (t) => {
-    client.get('https://httpbin.org/get', { params: { foo: { bar: 'baz' } } }).then((res) => {
+  troot.test('test query', (t) => {
+    client.get('https://httpbin.org/get', { query: { foo: { bar: 'baz' } } }).then((res) => {
       t.equal(res.url, 'https://httpbin.org/get?foo[bar]=baz');
       t.end();
     }, t.end);
