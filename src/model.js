@@ -173,28 +173,40 @@ export default class Model {
     }
     path = p + path;
 
-    if (path && init && init.query) {
-      let queryParams = Object.assign({}, init.query);
+    if (path && init && (init.query || init.body)) {
+      let queryParams = init.query && Object.assign({}, init.query);
+      let bodyParams = init.body && (typeof init.body === 'object') && Object.assign({}, init.body);
       let params = {};
-      let omits = [];
+      let queryEmits = [];
+      let bodyEmits = [];
       path = path.replace(/:\w+/g, (match) => {
         let key = match.substr(1); // trim :
-        if (queryParams.hasOwnProperty(key)) {
-          omits.push(key);
+        if (queryParams && queryParams.hasOwnProperty(key)) {
+          queryEmits.push(key);
           params[key] = queryParams[key];
           return queryParams[key];
+        } else if (bodyParams && bodyParams.hasOwnProperty(key)) {
+          bodyEmits.push(key);
+          params[key] = bodyParams[key];
+          return bodyParams[key];
         }
         return match;
       });
-      if (omits.length) {
-        if (query) {
-          query._params = params;
-        }
-        omits.forEach((key) => {
+      if (query && (queryEmits.length || bodyEmits.length)) {
+        query._params = params;
+      }
+      if (queryParams && queryEmits.length) {
+        queryEmits.forEach((key) => {
           delete queryParams[key];
         });
+        init = Object.assign({}, init, { query: queryParams });
       }
-      init = Object.assign({}, init, { query: queryParams });
+      if (bodyParams && bodyParams.length) {
+        bodyEmits.forEach((key) => {
+          delete bodyParams[key];
+        });
+        init = Object.assign({}, init, { body: bodyParams });
+      }
     }
 
     return this.client.request(path, init, query, inspect);
