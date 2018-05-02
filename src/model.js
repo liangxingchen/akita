@@ -11,6 +11,7 @@ export default class Model {
   static path: string;
   static client: Object;
   static pk: void | string;
+  ___params: ?Object;
 
   constructor(data: Object) {
     Object.assign(this, data);
@@ -163,6 +164,7 @@ export default class Model {
 
   static request(path: string, init?: akita$RequestInit, query?: Query | null, inspect?: boolean) {
     let p = this.path || '';
+
     if (!p.endsWith('/') && path) {
       p += '/';
     }
@@ -170,6 +172,31 @@ export default class Model {
       path = path.substr(1);
     }
     path = p + path;
+
+    if (path && init && init.query) {
+      let queryParams = Object.assign({}, init.query);
+      let params = {};
+      let omits = [];
+      path = path.replace(/:\w+/g, (match) => {
+        let key = match.substr(1); // trim :
+        if (queryParams.hasOwnProperty(key)) {
+          omits.push(key);
+          params[key] = queryParams[key];
+          return queryParams[key];
+        }
+        return match;
+      });
+      if (omits.length) {
+        if (query) {
+          query._params = params;
+        }
+        omits.forEach((key) => {
+          delete queryParams[key];
+        });
+      }
+      init = Object.assign({}, init, { query: queryParams });
+    }
+
     return this.client.request(path, init, query, inspect);
   }
 
@@ -194,9 +221,13 @@ export default class Model {
       let query = Object.assign({}, init.query);
       matchs.forEach((match) => {
         let key = match.substr(1);
-        if (!query.hasOwnProperty(key) && this.hasOwnProperty(key)) {
-          // $Flow indexer
-          query[key] = this[key];
+        if (!query.hasOwnProperty(key)) {
+          if (this.hasOwnProperty(key)) {
+            // $Flow indexer
+            query[key] = this[key];
+          } else if (this.___params && this.___params.hasOwnProperty(key)) {
+            query[key] = this.___params[key];
+          }
         }
       });
       init.query = query;

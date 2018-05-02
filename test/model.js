@@ -3,33 +3,44 @@ import test from 'tape';
 import akita, { Model } from '../src/node';
 
 const client = akita.create({
-  apiRoot: '/api'
+  apiRoot: 'https://api.github.com'
 });
 
-class Blog extends Model {
+class Branch extends Model {
   static client = client;
-  static path = 'blog';
+  static path = '/repos/:owner/:repo/branches';
+  static pk = 'name';
 
-  // POST /api/blog/123/active
-  active() {
-    return this.post('active', {
-      body: {
-        active: true
-      }
-    }, true);
+  getProtection() {
+    return this.get('protection', null, true);
   }
 }
 
 test('Model', (troot) => {
-  troot.test('Blog.find()', async (t) => {
-    let blogs = await Blog.find().inspect();
-    console.log('blogs', blogs);
+  troot.test('Branch.find()', async (t) => {
+    t.deepEqual(
+      Branch.find({ owner: 'maichong', repo: 'akita' }).inspect(),
+      { method: 'GET', url: 'https://api.github.com/repos/maichong/akita/branches' }
+    );
     t.end();
   });
-  troot.test('blog.active()', async (t) => {
-    let blog = new Blog({ id: 123, title: 'Hello' });
-    let res = blog.active();
-    console.log('res', res);
+
+  troot.test('Branch.findById()', async (t) => {
+    let branch = await Branch.findById('master')
+      .where({ owner: 'maichong', repo: 'akita' });
+    t.equal(branch.name, 'master');
+    t.end();
+  });
+
+  troot.test('record action', async (t) => {
+    let branch = new Branch({ owner: 'maichong', repo: 'akita', name: 'master' });
+    t.deepEqual(
+      branch.getProtection(),
+      {
+        method: 'GET',
+        url: 'https://api.github.com/repos/maichong/akita/branches/master/protection'
+      }
+    );
     t.end();
   });
   troot.end();

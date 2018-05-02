@@ -19,6 +19,7 @@ export default class Query {
   _args: null | {
     [key: string]: any
   };
+  _params: ?Object; // 查询时，起到作用的路径参数列表
   _search: string;
 
   _op: string;
@@ -205,18 +206,32 @@ export default class Query {
       }
       // 处理返回值
       let M = this.model;
+
+      const createRecord = (data: Object) => {
+        let record = new M(data);
+        if (this._params) {
+          Object.defineProperty(record, '___params', {
+            value: Object.assign({}, this._params),
+            writable: true,
+            enumerable: false,
+            configurable: true
+          });
+        }
+        return record;
+      };
+
       switch (this._op) {
         case 'findById':
         case 'findOne':
-          p = p.then((data) => new M(data));
+          p = p.then(createRecord);
           break;
         case 'find':
-          p = p.then((list) => list.map((data) => new M(data)));
+          p = p.then((list) => list.map(createRecord));
           break;
         case 'paginate':
           p = p.then((res) => {
             if (res && res.results) {
-              res.results = res.results.map((data) => new M(data));
+              res.results = res.results.map(createRecord);
             }
           });
           break;

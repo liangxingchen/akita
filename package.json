@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.4.0",
+  "version": "0.5.0",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
@@ -8,7 +8,7 @@
     "flow": "flow --show-all-errors ./",
     "eslint": "eslint ./",
     "build": "babel -d lib src/",
-    "test": "cross-env DEBUG=akita* tape -r babel-register ./test/*.js",
+    "test": "cross-env tape -r babel-register ./test/*.js",
     "cover": "istanbul cover node_modules/.bin/tape -r babel-register ./test/*.js",
     "prepublish": "npm run test"
   },

@@ -57,19 +57,8 @@ function create(options?: Object) {
     }
     let queryParams = Object.assign({}, init.query || init.params);
     delete init.query;
+    delete init.params;
 
-    let omits = [];
-    path = path.replace(/:\w+/g, (match) => {
-      let key = match.substr(1); // trim :
-      if (queryParams.hasOwnProperty(key)) {
-        omits.push(key);
-        return queryParams[key];
-      }
-      return match;
-    });
-    omits.forEach((key) => {
-      delete queryParams[key];
-    });
     let queryString = qs.stringify(queryParams);
     if (queryString) {
       path += '?' + queryString;
