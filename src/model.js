@@ -209,7 +209,7 @@ export default class Model {
       let method = (init && init.method) || 'GET';
       throw new Error(`Can not get pk field (${pk}) for ${method}: '${path}'`);
     }
-    if (path.startsWith('/')) {
+    if (!path || path.startsWith('/')) {
       path = id + path;
     } else {
       path = id + '/' + path;
@@ -235,12 +235,28 @@ export default class Model {
     return M.request(path, init, null, inspect);
   }
 
-  save() {
-
+  save(init?: akita$RequestInit): Promise<void> {
+    return this.request('', Object.assign({}, {
+      method: 'PATCH',
+      body: this.toJSON()
+    }, init)).then(() => undefined);
   }
 
-  remove() {
+  remove(init?: akita$RequestInit): Promise<void> {
+    return this.request('', Object.assign({}, {
+      method: 'DELETE'
+    }, init)).then(() => undefined);
+  }
 
+  toJSON(): Object {
+    let json = {};
+    for (let key in this) {
+      if (this.hasOwnProperty(key)) {
+        // $Flow indexer
+        json[key] = this[key];
+      }
+    }
+    return json;
   }
 }
 

@@ -10,7 +10,7 @@ import client from '../src/node';
 const client2 = client.resolve('http');
 
 client.setOptions({ init: { headers: { Agent: 'Akita' } } });
-client2.setOptions({ apiRoot: 'https://httpbin.org/', debug: true });
+client2.setOptions({ apiRoot: 'https://httpbin.org/' });
 
 test('HTTP', (troot) => {
   troot.test('test get', (t) => {

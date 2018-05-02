@@ -119,10 +119,12 @@ function create(options?: Object) {
       debug(init.method, path, JSON.stringify(init));
     }
 
+    client.latest = Object.assign({}, init, {
+      url: path
+    });
+
     if (inspect) {
-      return Object.assign({}, init, {
-        url: path
-      });
+      return client.latest;
     }
 
     let fetch = client._options.fetch;
@@ -137,7 +139,7 @@ function create(options?: Object) {
 
     client._count += 1;
 
-    return new Response(fetch(path, init), query);
+    return new Response(fetch, path, init, query);
   };
 
   methods.forEach((method) => {

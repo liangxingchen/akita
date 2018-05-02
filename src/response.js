@@ -9,16 +9,29 @@ const debug = Debugger('akita:response');
 export default class Response {
   _query: ?Query | null;
   _responsePromise: Promise<any>;
+  _path: string;
+  _init: akita$RequestInit;
 
-  constructor(promise: Promise<any>, query?: Query | null) {
+  constructor(fetch: Function, path: string, init: akita$RequestInit, query?: Query | null) {
     this._query = query;
-    this._responsePromise = promise.then((res) => {
-      if (debug.enabled) debug('response status:', res.status, res.statusText);
-      return res;
-    }, (error) => {
-      if (debug.enabled) debug('fetch error:', error.message);
-      return Promise.reject(error);
-    });
+    this._path = path;
+    this._init = init;
+
+    let promise = fetch(path, init);
+    if (debug.enabled) {
+      promise = promise.then((res) => {
+        debug('response status:', res.status, res.statusText);
+        return res;
+      }, (error) => {
+        debug('fetch error:', error.message);
+        return Promise.reject(error);
+      });
+    }
+    this._responsePromise = promise;
+  }
+
+  inspect() {
+    return Object.assign({}, this._init, { url: this._path });
   }
 
   response(): Promise<Object> {

@@ -223,6 +223,7 @@ export default class Query {
       switch (this._op) {
         case 'findById':
         case 'findOne':
+        case 'create':
           p = p.then(createRecord);
           break;
         case 'find':
