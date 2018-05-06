@@ -19,7 +19,7 @@ export default class Query {
   _args: null | {
     [key: string]: any
   };
-  _params: ?Object; // 查询时，起到作用的路径参数列表
+  _params: void | Object; // 查询时，起到作用的路径参数列表
   _search: string;
 
   _op: string;
@@ -192,6 +192,9 @@ export default class Query {
         case 'findOne':
           // findOne = find + limit 1
           p = this.model.request(path, init, this).then((results) => {
+            if (!results || !Array.isArray(results)) {
+              throw new Error(`Api error: GET ${path} should return an array.`);
+            }
             if (results.length) {
               return results[0];
             }
@@ -199,7 +202,12 @@ export default class Query {
           });
           break;
         case 'count':
-          p = this.model.request(path, init, this).then((result) => result.count);
+          p = this.model.request(path, init, this).then((result) => {
+            if (!result || typeof result !== 'object' || !result.hasOwnProperty('count')) {
+              throw new Error(`Api error: GET ${path} should return an object with count property.`);
+            }
+            return result.count;
+          });
           break;
         default:
           p = this.model.request(path, init, this);
@@ -207,18 +215,7 @@ export default class Query {
       // 处理返回值
       let M = this.model;
 
-      const createRecord = (data: Object) => {
-        let record = new M(data);
-        if (this._params) {
-          Object.defineProperty(record, '___params', {
-            value: Object.assign({}, this._params),
-            writable: true,
-            enumerable: false,
-            configurable: true
-          });
-        }
-        return record;
-      };
+      const createRecord = (data: Object) => new M(data, this._params);
 
       switch (this._op) {
         case 'findById':

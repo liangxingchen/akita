@@ -11,10 +11,20 @@ export default class Model {
   static path: string;
   static client: Object;
   static pk: void | string;
-  ___params: ?Object;
+  __params: ?Object;
 
-  constructor(data: Object) {
-    Object.assign(this, data);
+  constructor(data?: Object, params?: Object) {
+    if (data) {
+      Object.assign(this, data);
+    }
+    if (params) {
+      Object.defineProperty(this, '__params', {
+        value: Object.assign({}, params),
+        writable: true,
+        enumerable: false,
+        configurable: true
+      });
+    }
   }
 
   /**
@@ -237,8 +247,8 @@ export default class Model {
           if (this.hasOwnProperty(key)) {
             // $Flow indexer
             query[key] = this[key];
-          } else if (this.___params && this.___params.hasOwnProperty(key)) {
-            query[key] = this.___params[key];
+          } else if (this.__params && this.__params.hasOwnProperty(key)) {
+            query[key] = this.__params[key];
           }
         }
       });

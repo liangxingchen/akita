@@ -6,9 +6,9 @@
 .*/flow-declarations/.*
 
 [libs]
-../../flow-declarations/akita
-../../flow-declarations/is-buffer
-../../flow-declarations/node-fetch
+node_modules/flow-declarations/akita
+node_modules/flow-declarations/is-buffer
+node_modules/flow-declarations/node-fetch
 node_modules/flow-declarations/debug
 node_modules/flow-declarations/depd
 node_modules/flow-declarations/qs
