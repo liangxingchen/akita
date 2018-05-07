@@ -93,7 +93,10 @@ export default class Response {
    * @returns {Promise<string>}
    */
   text(): Promise<string> {
-    return this.response().then((res) => res.text());
+    return this.response().then((res) => res.text().then((text) => {
+      debug('response text:', text);
+      return text;
+    }));
   }
 
   /**
@@ -105,11 +108,17 @@ export default class Response {
       if (res.status === 204) {
         return Promise.resolve();
       }
-      return res.json().then((json) => {
-        debug('response json:', json);
+      return res.text().then((text) => {
+        debug('response text:', text);
         if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
           debug('return null when ' + this._query._op + ' 404');
           return null;
+        }
+        let json;
+        try {
+          json = JSON.parse(text);
+        } catch (error) {
+          return Promise.reject(new Error(`invalid json response body at ${this._path} ${error.message}`));
         }
         if (json && json.error && ['0', 'null', 'none'].indexOf(json.error) < 0) {
           let error = new Error(json.error);
