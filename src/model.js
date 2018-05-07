@@ -244,11 +244,14 @@ export default class Model {
       matchs.forEach((match) => {
         let key = match.substr(1);
         if (!query.hasOwnProperty(key)) {
-          if (this.hasOwnProperty(key)) {
+          if (this.__params && this.__params.hasOwnProperty(key)) {
+            query[key] = this.__params[key];
+          } else if (this.hasOwnProperty(key)) {
             // $Flow indexer
             query[key] = this[key];
-          } else if (this.__params && this.__params.hasOwnProperty(key)) {
-            query[key] = this.__params[key];
+          } else if (this.hasOwnProperty(key)) {
+            // $Flow indexer
+            query[key] = this[key];
           }
         }
       });
