@@ -103,7 +103,7 @@ export default class Response {
   json(): Promise<any> {
     return this.response().then((res) => {
       if (res.status === 204) {
-        return null;
+        return Promise.resolve();
       }
       return res.json().then((json) => {
         debug('response json:', json);

@@ -231,6 +231,7 @@ export default class Query {
             if (res && res.results) {
               res.results = res.results.map(createRecord);
             }
+            return res;
           });
           break;
         default:
