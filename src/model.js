@@ -166,8 +166,8 @@ export default class Model {
    * @param {string|number} id
    * @returns {Query}
    */
-  static findById(id: string | number): Query {
-    let query = new Query(this, 'findById');
+  static findByPk(id: string | number): Query {
+    let query = new Query(this, 'findByPk');
     query._id = id;
     return query;
   }

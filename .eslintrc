@@ -7,13 +7,11 @@
   "globals": {},
   "parser": "babel-eslint",
   "plugins": [
-    "flowtype",
-    "flowtype-errors"
+    "flowtype"
   ],
   "rules": {
     "flowtype/define-flow-type": 1,
     "flowtype/use-flow-type": 1,
-    "flowtype-errors/show-errors": 2,
     "arrow-parens": [
       2,
       "always"

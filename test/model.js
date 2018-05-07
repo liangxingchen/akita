@@ -34,8 +34,8 @@ test('Model', (troot) => {
     t.end();
   });
 
-  troot.test('Branch.findById()', async (t) => {
-    let branch = await Branch.findById('master')
+  troot.test('Branch.findByPk()', async (t) => {
+    let branch = await Branch.findByPk('master')
       .where({ owner: 'maichong', repo: 'akita' });
     t.equal(branch.name, 'master');
     t.end();

@@ -218,7 +218,7 @@ export default class Query {
       const createRecord = (data: Object) => new M(data, this._params);
 
       switch (this._op) {
-        case 'findById':
+        case 'findByPk':
         case 'findOne':
         case 'create':
           p = p.then(createRecord);
@@ -260,9 +260,9 @@ export default class Query {
       }
       str += this._op;
       switch (this._op) {
-        case 'findById':
+        case 'findByPk':
           if (this._id === null) {
-            throw new Error('id is not specified for findById');
+            throw new Error('id is not specified for findByPk');
           }
           str += '(' + JSON.stringify(this._id) + ')';
           break;
@@ -346,7 +346,7 @@ export default class Query {
       query._sort = this._sort;
     }
 
-    if (this._id && ['findById', 'remove', 'update'].indexOf(this._op) > -1) {
+    if (this._id && ['findByPk', 'remove', 'update'].indexOf(this._op) > -1) {
       path += '/' + encodeURIComponent(this._id);
     }
 
@@ -373,7 +373,7 @@ export default class Query {
       default:
       // find
       // findOne
-      // findById
+      // findByPk
       // ...
     }
     init.path = path;

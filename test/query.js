@@ -19,7 +19,7 @@ const Model = client('res');
 test('Query', (troot) => {
   troot.test('findOne by id', (t) => {
     t.deepEqual(
-      client('/res').findById(1).inspect(),
+      client('/res').findByPk(1).inspect(),
       { method: 'GET', url: 'http://localhost/res/1' }
     );
     t.end();
@@ -27,7 +27,7 @@ test('Query', (troot) => {
 
   troot.test('findOne by id & filters', (t) => {
     t.deepEqual(
-      Model.findById(1).where('user', 1).inspect(),
+      Model.findByPk(1).where('user', 1).inspect(),
       { method: 'GET', url: 'http://localhost/res/1?user=1' }
     );
     t.end();
@@ -103,7 +103,7 @@ test('Query', (troot) => {
       { method: 'DELETE', url: 'http://localhost/res?_user=1' }
     );
     t.deepEqual(
-      Model.findById(12).arg({ user: 1 }).inspect(),
+      Model.findByPk(12).arg({ user: 1 }).inspect(),
       { method: 'GET', url: 'http://localhost/res/12?_user=1' }
     );
     t.end();
@@ -119,7 +119,7 @@ test('Query', (troot) => {
       { method: 'DELETE', url: 'http://localhost/res?_search=keyword' }
     );
     t.deepEqual(
-      Model.findById(12).search('keyword').inspect(),
+      Model.findByPk(12).search('keyword').inspect(),
       { method: 'GET', url: 'http://localhost/res/12?_search=keyword' }
     );
     t.end();
@@ -321,7 +321,7 @@ test('Query', (troot) => {
   });
 
   troot.test('exec', (t) => {
-    github('repos/maichong').findById('akita').then((res) => {
+    github('repos/maichong').findByPk('akita').then((res) => {
       t.equal(res.name, 'akita');
       t.end();
     }, t.end);

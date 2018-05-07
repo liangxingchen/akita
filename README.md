@@ -143,7 +143,7 @@ param | type | default
 
   > GET /res/123?user=12
   > ```js
-  > await akita('res').findById(123).where({ user: 12})
+  > await akita('res').findByPk(123).where({ user: 12})
   > ```
 
 
@@ -363,7 +363,7 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 * query.findOne(conditions: Object): Query;
 > Find one record by filters.
 
-* query.findById(id: string): Query;
+* query.findByPk(id: string): Query;
 > Find one record by id.
 
 * query.update(id?: Object, data: Object): Query;
@@ -420,7 +420,7 @@ const client = akita.create({ /* options */});
 ```js
 
 // import default client instance
-import akita from 'akita';
+import akita, { Model } from 'akita';
 
 // set options for defualt instance
 akita.setOptions({ /* options */});
@@ -430,38 +430,53 @@ const client = akita.create({ /* options */});
 // set options for new client
 client.setOptions({ apiRoot: 'http://your.domain/' /* other options */});
 
-// send a POST request
+// send plain HTTP POST request
+// POST http://your.domain/blog
 await client.post('blog',{ body:{ title: 'my book' } });
 
-// create record by akita query
-await client('blog').create({ title: 'my book' });
+// define akita model:
+
+const User = client('user');
+
+// define akita model by class extends
+
+class Blog extends Model{
+  static client = client;
+  static path = 'blog';
+  static pk = 'id';
+}
+
+// create / update record
+let blog = await Blog.create({ title: 'my book' });
+blog.title = 'changed';
+await blog.save();
 
 // find records with paging
-await client('blog').paginate();
+await Blog.paginate();
 
 // find one record by id
-await client('blog').findById(12);
+await Blog.findByPk(12);
 
 // find one record by filters
-await client('blog').findOne({ category: 'js' }).sort('-createdAt');
+await Blog.findOne({ category: 'js' }).sort('-createdAt');
 
 // update multi records
-await client('blog').update({ hot: true }).sort('-views').limit(10);
+await Blog.update({ hot: true }).sort('-views').limit(10);
 
 // update one record by id
-await client('blog').update(12, { hot: true });
+await Blog.update(12, { hot: true });
 
 // update one record by filters & limit
-await client('blog').update({ hot: true }).sort('-views').limit(1);
+await Blog.update({ hot: true }).sort('-views').limit(1);
 
 // remove on record by id
-await client('blog').remove(12);
+await Blog.remove(12);
 
 // remove multi records by filters
-await client('blog').remove({ state: 1 });
+await Blog.remove({ state: 1 });
 
 // or
-await client('blog').where('views').lt(100).remove();
+await Blog.remove().where('views').lt(100);
 
 
 ```

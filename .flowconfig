@@ -14,7 +14,6 @@ node_modules/flow-declarations/depd
 node_modules/flow-declarations/qs
 node_modules/flow-declarations/form-data
 node_modules/flow-declarations/node-fetch
-flow
 
 [options]
 suppress_comment= \\(.\\|\n\\)*\\$Flow

@@ -1,11 +1,11 @@
 {
   "name": "akita",
-  "version": "0.5.4",
+  "version": "0.5.5",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
   "scripts": {
-    "flow": "flow --show-all-errors ./",
+    "flow": "flow check --show-all-errors --include-warnings",
     "eslint": "eslint ./",
     "build": "babel -d lib src/",
     "test": "cross-env DEBUG=akita* tape -r babel-register ./test/*.js",
@@ -51,10 +51,9 @@
     "eslint": "^4.19.1",
     "eslint-config-airbnb-base": "^12.1.0",
     "eslint-plugin-flowtype": "^2.46.3",
-    "eslint-plugin-flowtype-errors": "^3.5.1",
     "eslint-plugin-import": "^2.11.0",
     "flow-bin": "^0.71.0",
-    "flow-declarations": "^0.4.2",
+    "flow-declarations": "^0.4.5",
     "istanbul": "^0.4.5",
     "tape": "^4.9.0"
   }

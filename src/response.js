@@ -107,7 +107,7 @@ export default class Response {
       }
       return res.json().then((json) => {
         debug('response json:', json);
-        if (res.status === 404 && this._query && ['findById', 'remove'].indexOf(this._query._op) > -1) {
+        if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
           debug('return null when ' + this._query._op + ' 404');
           return null;
         }
