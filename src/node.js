@@ -2,7 +2,7 @@
 
 // @flow
 
-import fetch from 'node-fetch';
+import fetch from 'node-fetch-unix';
 import FormData from 'form-data';
 import akita, { Model } from './client';
 

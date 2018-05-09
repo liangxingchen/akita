@@ -193,7 +193,7 @@ export default class Query {
           // findOne = find + limit 1
           p = this.model.request(path, init, this).then((results) => {
             if (!results || !Array.isArray(results)) {
-              throw new Error(`Api error: GET ${path} should return an array.`);
+              throw new Error(`Api error: GET ${path} should return an object array.`);
             }
             if (results.length) {
               return results[0];
@@ -221,10 +221,13 @@ export default class Query {
         case 'findByPk':
         case 'findOne':
         case 'create':
-          p = p.then(createRecord);
+          p = p.then((object) => (object ? createRecord(object) : object));
           break;
         case 'find':
-          p = p.then((list) => list.map(createRecord));
+          p = p.then((list) => {
+            if (!Array.isArray(list)) throw new Error(`Api error: GET ${path} should return an object array.`);
+            return list.map(createRecord);
+          });
           break;
         case 'paginate':
           p = p.then((res) => {
