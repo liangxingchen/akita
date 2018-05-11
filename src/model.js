@@ -194,11 +194,11 @@ export default class Model {
         if (queryParams && queryParams.hasOwnProperty(key)) {
           queryEmits.push(key);
           params[key] = queryParams[key];
-          return queryParams[key];
+          return encodeURIComponent(queryParams[key]);
         } else if (bodyParams && bodyParams.hasOwnProperty(key)) {
           bodyEmits.push(key);
           params[key] = bodyParams[key];
-          return bodyParams[key];
+          return encodeURIComponent(bodyParams[key]);
         }
         return match;
       });
@@ -231,6 +231,7 @@ export default class Model {
       let method = (init && init.method) || 'GET';
       throw new Error(`Can not get pk field (${pk}) for ${method}: '${path}'`);
     }
+    id = encodeURIComponent(id);
     if (!path || path.startsWith('/')) {
       path = id + path;
     } else {
