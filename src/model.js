@@ -286,7 +286,7 @@ export default class Model {
   }
 }
 
-['upload'].concat(methods).forEach((method: string) => {
+methods.forEach((method: string) => {
   Model[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
     debug(this.name + '.' + method, path, init || '');
     init = init || {};

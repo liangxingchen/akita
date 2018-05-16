@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.5.11",
+  "version": "0.5.12",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
@@ -52,7 +52,7 @@
     "eslint-plugin-flowtype": "^2.46.3",
     "eslint-plugin-import": "^2.11.0",
     "flow-bin": "^0.72.0",
-    "flow-declarations": "^0.4.9",
+    "flow-declarations": "^0.4.12",
     "istanbul": "^0.4.5",
     "tape": "^4.9.0"
   }
