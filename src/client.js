@@ -64,6 +64,10 @@ function create(options?: Object) {
       path += '?' + queryString;
     }
 
+    if (init.headers) {
+      init.headers = Object.assign({}, init.headers);
+    }
+
     if (init.body && typeof init.body === 'object') {
       let body: Object = init.body;
       let FormData = getFormDataClass();
