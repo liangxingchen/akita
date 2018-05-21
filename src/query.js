@@ -350,7 +350,7 @@ export default class Query {
       query._sort = this._sort;
     }
 
-    if (this._id && ['findByPk', 'remove', 'update'].indexOf(this._op) > -1) {
+    if (this._id !== null && ['findByPk', 'remove', 'update'].indexOf(this._op) > -1) {
       path += '/' + encodeURIComponent(this._id);
     }
 

@@ -85,7 +85,7 @@ export default class Model {
     let query = new Query(this, 'remove');
     if (conditions !== null && typeof conditions === 'object') {
       query.where(conditions);
-    } else {
+    } else if (conditions !== undefined) {
       query._id = conditions;
     }
     return query;
