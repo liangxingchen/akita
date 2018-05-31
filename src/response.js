@@ -122,8 +122,12 @@ export default class Response {
         }
         if (json && json.error && ['0', 'null', 'none'].indexOf(json.error) < 0) {
           let error = new Error(json.error);
-          // $Flow error.code
-          error.code = json.code || json.errorCode || 0;
+          Object.keys(json).forEach((key) => {
+            if (['error', 'message', 'stack'].indexOf(key) === -1) {
+              // $Flow 增加扩展属性
+              error[key] = json[key];
+            }
+          });
           return Promise.reject(error);
         }
         return json;
