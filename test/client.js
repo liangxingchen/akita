@@ -50,6 +50,21 @@ test('HTTP', (troot) => {
     }, t.end);
   });
 
+  troot.test('test post buffer', (t) => {
+    client.post('https://httpbin.org/post', {
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: Buffer.from(JSON.stringify({ foo: 'bar' }))
+    }).then((res) => {
+      if (res.data !== '{"foo":"bar"}' || res.headers['Content-Type'] !== 'application/json') {
+        t.fail('Error');
+        return;
+      }
+      t.end();
+    }, t.end);
+  });
+
   troot.test('test post form data', (t) => {
     client.post('https://httpbin.org/post', {
       body: { foo: 'bar' },

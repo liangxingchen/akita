@@ -1,12 +1,13 @@
 {
   "name": "akita",
-  "version": "0.5.15",
+  "version": "0.5.16",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
   "scripts": {
     "flow": "flow check --show-all-errors --include-warnings",
     "eslint": "eslint ./",
+    "fix": "eslint --fix ./",
     "build": "babel -d lib src/",
     "test": "cross-env DEBUG=akita* tape -r babel-register ./test/*.js",
     "cover": "istanbul cover node_modules/.bin/tape -r babel-register ./test/*.js",
@@ -30,14 +31,14 @@
     "debug": "^3.1.0",
     "depd": "^1.1.2",
     "form-data": "^2.3.2",
-    "is-buffer": "^2.0.2",
+    "is-buffer": "^2.0.3",
     "node-fetch-unix": "^2.1.2-rc.3",
     "qs": "^6.5.2"
   },
   "devDependencies": {
     "babel-cli": "^6.26.0",
     "babel-core": "^6.26.3",
-    "babel-eslint": "^8.2.3",
+    "babel-eslint": "^8.2.6",
     "babel-plugin-syntax-class-properties": "^6.13.0",
     "babel-plugin-syntax-flow": "^6.18.0",
     "babel-plugin-transform-class-properties": "^6.24.1",
@@ -46,14 +47,12 @@
     "babel-plugin-transform-object-rest-spread": "^6.26.0",
     "babel-preset-env": "^1.7.0",
     "babel-register": "^6.26.0",
-    "cross-env": "^5.1.5",
-    "eslint": "^4.19.1",
-    "eslint-config-airbnb-base": "^12.1.0",
-    "eslint-plugin-flowtype": "^2.46.3",
-    "eslint-plugin-import": "^2.11.0",
-    "flow-bin": "^0.72.0",
-    "flow-declarations": "^0.4.12",
+    "cross-env": "^5.2.0",
+    "eslint": "^5.3.0",
+    "eslint-config-maichong-base": "^1.1.1",
+    "flow-bin": "^0.78.0",
+    "flow-declarations": "^0.4.24",
     "istanbul": "^0.4.5",
-    "tape": "^4.9.0"
+    "tape": "^4.9.1"
   }
 }

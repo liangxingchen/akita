@@ -111,7 +111,7 @@ export default class Response {
       return res.text().then((text) => {
         debug('response text:', text);
         if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
-          debug('return null when ' + this._query._op + ' 404');
+          debug(`return null when ${this._query._op} 404`);
           return null;
         }
         let json;

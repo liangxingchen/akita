@@ -19,6 +19,7 @@ export default class Query {
   _args: null | {
     [key: string]: any
   };
+
   _params: void | Object; // 查询时，起到作用的路径参数列表
   _search: string;
 
@@ -127,7 +128,7 @@ export default class Query {
     }
     if (!this._lastField) {
       /* istanbul ignore next */
-      throw new Error('Akita Error: you should invoke .where(string) before .' + type + '()');
+      throw new Error(`Akita Error: you should invoke .where(string) before .${type}()`);
     }
 
     if (type === 'eq') {
@@ -136,7 +137,7 @@ export default class Query {
       if (typeof this._filters[this._lastField] !== 'object') {
         this._filters[this._lastField] = {};
       }
-      this._filters[this._lastField]['$' + type] = value;
+      this._filters[this._lastField][`$${type}`] = value;
     }
     return this;
   }
@@ -258,9 +259,9 @@ export default class Query {
       let str = '';
       const M = this.model;
       if (M.name === 'AnonymousModel') {
-        str = 'Client("' + M.path + '").';
+        str = `Client("${M.path}").`;
       } else {
-        str = M.name + '.';
+        str = `${M.name}.`;
       }
       str += this._op;
       switch (this._op) {
@@ -268,11 +269,11 @@ export default class Query {
           if (this._id === null) {
             throw new Error('id is not specified for findByPk');
           }
-          str += '(' + JSON.stringify(this._id) + ')';
+          str += `(${JSON.stringify(this._id)})`;
           break;
         case 'remove':
           if (this._id !== null) {
-            str += '(' + JSON.stringify(this._id) + ')';
+            str += `(${JSON.stringify(this._id)})`;
           } else {
             // remove multi
             str += '()';
@@ -280,13 +281,13 @@ export default class Query {
           break;
         case 'update':
           if (this._id) {
-            str += '(' + JSON.stringify(this._id) + ', ' + JSON.stringify(this._data) + ')';
+            str += `(${JSON.stringify(this._id)}, ${JSON.stringify(this._data)})`;
           } else {
-            str += '(' + JSON.stringify(this._data) + ')';
+            str += `(${JSON.stringify(this._data)})`;
           }
           break;
         case 'create':
-          str += '(' + JSON.stringify(this._data) + ')';
+          str += `(${JSON.stringify(this._data)})`;
           break;
         default:
           str += '()';
@@ -294,23 +295,23 @@ export default class Query {
       if (this._args) {
         let args: Object = this._args;
         str += Object.keys(this._args)
-          .map((key) => '.arg("' + key + '", ' + JSON.stringify(args[key]) + ')')
+          .map((key) => `.arg("${key}", ${JSON.stringify(args[key])})`)
           .join('');
       }
       if (this._filters) {
-        str += '.where(' + JSON.stringify(this._filters) + ')';
+        str += `.where(${JSON.stringify(this._filters)})`;
       }
       if (this._search) {
-        str += '.search("' + this._search + '")';
+        str += `.search("${this._search}")`;
       }
       if (this._limit > 1) {
-        str += '.limit(' + this._limit + ')';
+        str += `.limit(${this._limit})`;
       }
       if (this._page > 1) {
-        str += '.page(' + this._page + ')';
+        str += `.page(${this._page})`;
       }
       if (this._sort) {
-        str += '.sort(' + this._sort + ')';
+        str += `.sort(${this._sort})`;
       }
       debug(str);
     }
@@ -326,7 +327,7 @@ export default class Query {
     if (this._args) {
       let obj = this._args;
       Object.keys(obj).forEach((key) => {
-        query['_' + key] = obj[key];
+        query[`_${key}`] = obj[key];
       });
     }
 
@@ -351,7 +352,7 @@ export default class Query {
     }
 
     if (this._id !== null && ['findByPk', 'remove', 'update'].indexOf(this._op) > -1) {
-      path += '/' + encodeURIComponent(this._id);
+      path += `/${encodeURIComponent(this._id)}`;
     }
 
     if (this._data && ['create', 'update'].indexOf(this._op) > -1) {

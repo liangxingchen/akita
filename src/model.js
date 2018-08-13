@@ -195,7 +195,8 @@ export default class Model {
           queryEmits.push(key);
           params[key] = queryParams[key];
           return encodeURIComponent(queryParams[key]);
-        } else if (bodyParams && bodyParams.hasOwnProperty(key)) {
+        }
+        if (bodyParams && bodyParams.hasOwnProperty(key)) {
           bodyEmits.push(key);
           params[key] = bodyParams[key];
           return encodeURIComponent(bodyParams[key]);
@@ -235,9 +236,9 @@ export default class Model {
     if (!path || path.startsWith('/')) {
       path = id + path;
     } else {
-      path = id + '/' + path;
+      path = `${id}/${path}`;
     }
-    let fullPath = M.path + '/' + path;
+    let fullPath = `${M.path}/${path}`;
     let matchs = fullPath.match(/:\w+/g);
     if (matchs) {
       init = Object.assign({}, init);
@@ -276,6 +277,7 @@ export default class Model {
 
   toJSON(): Object {
     let json = {};
+    // eslint-disable-next-line no-restricted-syntax
     for (let key in this) {
       if (this.hasOwnProperty(key)) {
         // $Flow indexer
@@ -288,7 +290,7 @@ export default class Model {
 
 methods.forEach((method: string) => {
   Model[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
-    debug(this.name + '.' + method, path, init || '');
+    debug(`${this.name}.${method}`, path, init || '');
     init = init || {};
     init.method = method.toUpperCase();
     return this.request(path, init, null, inspect);
@@ -297,7 +299,7 @@ methods.forEach((method: string) => {
   // $Flow prototype indexer
   Model.prototype[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
     const M = this.constructor;
-    debug(M.name + '.prototype.' + method, path, init || '');
+    debug(`${M.name}.prototype.${method}`, path, init || '');
     init = init || {};
     init.method = method.toUpperCase();
     return this.request(path, init, inspect);

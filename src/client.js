@@ -5,6 +5,7 @@
 import Debugger from 'debug';
 import depd from 'depd';
 import qs from 'qs';
+import isBuffer from 'is-buffer';
 import methods from './methods';
 import Model from './model';
 import Response from './response';
@@ -61,7 +62,7 @@ function create(options?: Object) {
 
     let queryString = qs.stringify(queryParams);
     if (queryString) {
-      path += '?' + queryString;
+      path += `?${queryString}`;
     }
 
     if (init.headers) {
@@ -85,7 +86,7 @@ function create(options?: Object) {
           Object.keys(body).forEach((name) => form.append(name, body[name]));
           init.body = form;
         }
-      } else if (!FormData || !(body instanceof FormData)) {
+      } else if (!isBuffer(body) && !(FormData && body instanceof FormData) && !(body instanceof ArrayBuffer)) {
         // 如果是普通POST请求，转换成JSON或urlencoded
         if (!init.headers) {
           init.headers = {};
@@ -97,7 +98,7 @@ function create(options?: Object) {
           init.body = qs.stringify(body);
         } else {
           /* istanbul ignore next */
-          throw new Error('Akita Error: Unsupported Content-Type ' + init.headers['Content-Type']);
+          throw new Error(`Akita Error: Unsupported Content-Type ${init.headers['Content-Type']}`);
         }
       }
     }
@@ -114,7 +115,7 @@ function create(options?: Object) {
       if (apiRoot[apiRoot.length - 1] === '/' && path[0] === '/') {
         path = path.substring(1);
       } else if (apiRoot[apiRoot.length - 1] !== '/' && path[0] !== '/') {
-        path = '/' + path;
+        path = `/${path}`;
       }
       path = apiRoot + path;
     }
