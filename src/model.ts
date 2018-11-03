@@ -1,19 +1,29 @@
-
-// @flow
-
-import Debugger from 'debug';
+import Debugger = require('debug');
 import methods from './methods';
 import Query from './query';
+import * as Akita from '..';
 
 const debug = Debugger('akita:model');
 
 export default class Model {
   static path: string;
-  static client: Object;
-  static pk: void | string;
-  __params: ?Object;
+  static client: Akita.Client;
+  static pk: string;
+  static get: (path: string, init?: RequestInit) => Akita.Response<any>;
+  static post: (path: string, init?: RequestInit) => Akita.Response<any>;
+  static upload: (path: string, init?: RequestInit) => Akita.Response<any>;
+  static put: (path: string, init?: RequestInit) => Akita.Response<any>;
+  static patch: (path: string, init?: RequestInit) => Akita.Response<any>;
+  static delete: (path: string, init?: RequestInit) => Akita.Response<any>;
+  __params?: any;
+  get: (path: string, init?: RequestInit) => Akita.Response<any>;
+  post: (path: string, init?: RequestInit) => Akita.Response<any>;
+  upload: (path: string, init?: RequestInit) => Akita.Response<any>;
+  put: (path: string, init?: RequestInit) => Akita.Response<any>;
+  patch: (path: string, init?: RequestInit) => Akita.Response<any>;
+  delete: (path: string, init?: RequestInit) => Akita.Response<any>;
 
-  constructor(data?: Object, params?: Object) {
+  constructor(data?: any, params?: any) {
     if (data) {
       Object.assign(this, data);
     }
@@ -32,7 +42,7 @@ export default class Model {
    * @param {Object} [data]
    * @returns {Query}
    */
-  static create(data: Object): Query {
+  static create(data: any): Akita.Query<any> {
     let query = new Query(this, 'create');
     query._data = data || {};
     return query;
@@ -52,7 +62,7 @@ export default class Model {
    * @param {Object} [data]
    * @returns {Query}
    */
-  static update(id: string | number, data?: Object): Query {
+  static update(id: string | number, data?: any): Akita.Query<any> {
     let query = new Query(this, 'update');
     if (data) {
       query._data = data;
@@ -81,7 +91,7 @@ export default class Model {
    * @param {string|number|Object} [conditions]
    * @returns {Query}
    */
-  static remove(conditions?: string | number | Object): Query {
+  static remove(conditions?: string | number | any): Akita.Query<void> {
     let query = new Query(this, 'remove');
     if (conditions !== null && typeof conditions === 'object') {
       query.where(conditions);
@@ -99,7 +109,7 @@ export default class Model {
    * @param {Object} [conditions]
    * @returns {Query}
    */
-  static count(conditions?: Object): Query {
+  static count(conditions?: any): Akita.Query<number> {
     let query = new Query(this, 'count');
     if (conditions) {
       query.where(conditions);
@@ -115,7 +125,7 @@ export default class Model {
    * @param {Object} [conditions]
    * @returns {Query}
    */
-  static find(conditions?: Object): Query {
+  static find(conditions?: any): Akita.Query<any[]> {
     let query = new Query(this, 'find');
     if (conditions) {
       query.where(conditions);
@@ -131,7 +141,7 @@ export default class Model {
    * @param {Object} [conditions]
    * @returns {Query}
    */
-  static paginate(conditions: Object): Query {
+  static paginate(conditions: any): Akita.Query<Akita.PaginateResult<any>> {
     let query = new Query(this, 'paginate');
     if (conditions) {
       query.where(conditions);
@@ -147,7 +157,7 @@ export default class Model {
    * @param {Object} [conditions]
    * @returns {Query}
    */
-  static findOne(conditions?: Object): Query {
+  static findOne(conditions?: any): Akita.Query<any | null> {
     let query = new Query(this, 'findOne');
     query.limit(1);
     if (conditions) {
@@ -166,13 +176,13 @@ export default class Model {
    * @param {string|number} id
    * @returns {Query}
    */
-  static findByPk(id: string | number): Query {
+  static findByPk(id: string | number): Akita.Query<any> {
     let query = new Query(this, 'findByPk');
     query._id = id;
     return query;
   }
 
-  static request(path: string, init?: akita$RequestInit, query?: Query | null, inspect?: boolean) {
+  static request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any> | null) {
     let p = this.path || '';
 
     if (!p.endsWith('/') && path) {
@@ -220,13 +230,12 @@ export default class Model {
       }
     }
 
-    return this.client.request(path, init, query, inspect);
+    return this.client.request(path, init, query);
   }
 
-  request(path: string, init?: akita$RequestInit, inspect?: boolean) {
-    const M = this.constructor;
+  request(path: string, init?: Akita.RequestInit): Akita.Response<any> {
+    const M = <typeof Akita.Model>this.constructor;
     const pk = M.pk || 'id';
-    // $Flow indexer
     let id = this[pk];
     if (!id) {
       let method = (init && init.method) || 'GET';
@@ -249,38 +258,35 @@ export default class Model {
           if (this.__params && this.__params.hasOwnProperty(key)) {
             query[key] = this.__params[key];
           } else if (this.hasOwnProperty(key)) {
-            // $Flow indexer
             query[key] = this[key];
           } else if (this.hasOwnProperty(key)) {
-            // $Flow indexer
             query[key] = this[key];
           }
         }
       });
       init.query = query;
     }
-    return M.request(path, init, null, inspect);
+    return M.request(path, init, null);
   }
 
-  save(init?: akita$RequestInit): Promise<void> {
+  save(init?: Akita.RequestInit): Akita.Response<void> {
     return this.request('', Object.assign({}, {
       method: 'PATCH',
       body: this.toJSON()
-    }, init)).then(() => undefined);
+    }, init));
   }
 
-  remove(init?: akita$RequestInit): Promise<void> {
+  remove(init?: Akita.RequestInit): Akita.Response<void> {
     return this.request('', Object.assign({}, {
       method: 'DELETE'
-    }, init)).then(() => undefined);
+    }, init));
   }
 
-  toJSON(): Object {
-    let json = {};
+  toJSON(): any {
+    let json: any = {};
     // eslint-disable-next-line no-restricted-syntax
     for (let key in this) {
       if (this.hasOwnProperty(key)) {
-        // $Flow indexer
         json[key] = this[key];
       }
     }
@@ -289,19 +295,18 @@ export default class Model {
 }
 
 methods.forEach((method: string) => {
-  Model[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
+  Model[method] = function (path: string, init?: RequestInit) {
     debug(`${this.name}.${method}`, path, init || '');
     init = init || {};
     init.method = method.toUpperCase();
-    return this.request(path, init, null, inspect);
+    return this.request(path, init, null);
   };
 
-  // $Flow prototype indexer
-  Model.prototype[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
+  Model.prototype[method] = function (path: string, init?: RequestInit) {
     const M = this.constructor;
     debug(`${M.name}.prototype.${method}`, path, init || '');
     init = init || {};
     init.method = method.toUpperCase();
-    return this.request(path, init, inspect);
+    return this.request(path, init);
   };
 });

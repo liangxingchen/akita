@@ -1,11 +1,4 @@
-/**
- * query
- * @copyright Maichong Software Ltd. 2017 http://maichong.it
- * @date 2017-01-19
- * @author Lei <zhao@maichong.it>
- */
-
-import test from 'tape';
+import test = require('tape');
 import akita from '../src/node';
 
 const client = akita.resolve('query');

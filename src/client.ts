@@ -1,18 +1,14 @@
 /* eslint no-use-before-define:0 */
 
-// @flow
-
-import Debugger from 'debug';
-import depd from 'depd';
-import qs from 'qs';
-import isBuffer from 'is-buffer';
+import Debugger = require('debug');
+import qs = require('qs');
+import isBuffer = require('is-buffer');
 import methods from './methods';
 import Model from './model';
 import Response from './response';
-import type Query from './query';
+import * as Akita from '..';
 
 const debug = Debugger('akita:client');
-const deprecate = depd('akita:client');
 
 const INSTANCES = {};
 
@@ -23,8 +19,10 @@ function resolve(key: string) {
   return INSTANCES[key];
 }
 
-function create(options?: Object) {
-  const client = function client(path: string) {
+function create(options?: Akita.ClientOptions) {
+  // @ts-ignore
+  const client: Akita.Client = function client(path: string): typeof Akita.Model {
+    // @ts-ignore
     return class AnonymousModel extends Model {
       static path = path;
       static client = client;
@@ -41,24 +39,24 @@ function create(options?: Object) {
     client._options = Object.assign({}, client._options, opts);
   };
 
-  function getFormDataClass() {
+  function getFormDataClass(): typeof FormData {
     let FormData = client._options.FormData;
+    // @ts-ignore window.FormData
     if (!FormData && typeof window === 'object' && window.FormData) {
+      // @ts-ignore window.FormData
       FormData = window.FormData;
+      // @ts-ignore window.FormData
     } else if (!FormData && typeof global === 'object' && global.FormData) {
+      // @ts-ignore global.FormData
       FormData = global.FormData;
     }
     return FormData;
   }
 
-  client.request = function request(path: string, init?: akita$RequestInit, query?: Query | null, inspect?: boolean) {
+  client.request = function request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any>): Akita.Response<any> {
     init = Object.assign({}, init);
-    if (init.params) {
-      deprecate('akita.request(path, init): init.params deprecated, please use init.query instand.');
-    }
-    let queryParams = Object.assign({}, init.query || init.params);
+    let queryParams = Object.assign({}, init.query);
     delete init.query;
-    delete init.params;
 
     let queryString = qs.stringify(queryParams);
     if (queryString) {
@@ -110,6 +108,13 @@ function create(options?: Object) {
       }
     }
 
+    if (!init.headers) {
+      init.headers = {};
+    }
+    if (!init.headers['User-Agent']) {
+      init.headers['User-Agent'] = 'Akita/0.5.16 (+https://github.com/maichong/akita)'
+    }
+
     let apiRoot = client._options.apiRoot;
     if (apiRoot) {
       if (apiRoot[apiRoot.length - 1] === '/' && path[0] === '/') {
@@ -124,20 +129,13 @@ function create(options?: Object) {
       debug(init.method, path, JSON.stringify(init));
     }
 
-    client.latest = Object.assign({}, init, {
-      url: path
-    });
-
-    if (inspect) {
-      return client.latest;
-    }
-
     let fetch = client._options.fetch;
 
     if (!fetch) {
       if (typeof window !== 'undefined') {
         fetch = window.fetch;
       } else if (typeof global !== 'undefined') {
+        // @ts-ignore
         fetch = global.fetch;
       }
     }
@@ -148,10 +146,10 @@ function create(options?: Object) {
   };
 
   methods.forEach((method) => {
-    client[method] = function (path: string, init?: akita$RequestInit, inspect?: boolean) {
+    client[method] = function (path: string, init?: RequestInit) {
       init = init || {};
       init.method = method.toUpperCase();
-      return client.request(path, init, null, inspect);
+      return client.request(path, init);
     };
   });
 

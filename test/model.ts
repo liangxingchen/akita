@@ -1,36 +1,30 @@
-import 'babel-polyfill';
-import test from 'tape';
+import test = require('tape');
 import akita, { Model } from '../src/node';
 
 const client = akita.create({
-  apiRoot: 'https://api.github.com'
+  apiRoot: 'http://localhost:28000'
 });
 
-const httpbin = akita.create({
-  apiRoot: 'https://httpbin.org/'
-});
-
-class Branch extends Model {
+class Goods extends Model {
   static client = client;
-  static path = '/repos/:owner/:repo/branches';
+  static path = '/goods';
   static pk = 'name';
-
-  getProtection() {
-    return this.get('protection', null, true);
-  }
 }
 
-class AnyThing extends Model {
-  static client = httpbin;
-  static path = '/anything';
+class Order extends Model {
+  static client = client;
+  static path = '/users/:user/order';
 }
 
 test('Model', (troot) => {
-  troot.test('Branch.find()', async (t) => {
-    t.deepEqual(
-      Branch.find({ owner: 'maichong', repo: 'akita' }).inspect(),
-      { method: 'GET', url: 'https://api.github.com/repos/maichong/akita/branches' }
-    );
+  troot.test('Goods.find()', async (t) => {
+    let list = await Goods.find({ owner: 'maichong', repo: 'akita' });
+    t.ok(Array.isArray(list));
+    t.ok(list.length);
+    list.forEach((goods) => {
+      t.ok(Number.isInteger(goods.id));
+      t.ok(goods.title);
+    })
     t.end();
   });
 

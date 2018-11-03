@@ -1,17 +1,16 @@
 /* eslint no-use-before-define:0 */
 
-// @flow
-
-import fetch from 'node-fetch-unix';
-import FormData from 'form-data';
+import fetch = require('node-fetch-unix');
+import FormData = require('form-data');
 import akita, { Model } from './client';
+import { ClientOptions } from '..';
 
 akita.setOptions({ fetch, FormData });
 
 const create = akita.create;
 const resolve = akita.resolve;
 
-function newCreate(options?: Object) {
+function newCreate(options?: ClientOptions) {
   options = options || {};
   /* istanbul ignore else */
   if (!options.fetch) {

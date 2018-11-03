@@ -4,13 +4,11 @@
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
+  "types": "index.d.ts",
   "scripts": {
-    "flow": "flow check --show-all-errors --include-warnings",
-    "eslint": "eslint ./",
-    "fix": "eslint --fix ./",
-    "build": "babel -d lib src/",
-    "test": "cross-env DEBUG=akita* tape -r babel-register ./test/*.js",
-    "cover": "istanbul cover node_modules/.bin/tape -r babel-register ./test/*.js",
+    "build": "tsc",
+    "test": "cross-env NODE_ENV=test tape test/ts.js",
+    "cover": "cross-env NODE_ENV=test nyc node_modules/.bin/tape test/ts.js; nyc report --reporter=html",
     "prepublish": "npm run test && npm run build"
   },
   "repository": {
@@ -27,32 +25,44 @@
     "url": "https://github.com/maichong/akita/issues"
   },
   "homepage": "https://github.com/maichong/akita#readme",
+  "nyc": {
+    "extension": [
+      ".ts",
+      ".tsx"
+    ],
+    "exclude": [
+      "coverage",
+      "test",
+      "lib",
+      "**/*.d.ts"
+    ],
+    "reporter": [
+      "html"
+    ],
+    "all": true
+  },
   "dependencies": {
-    "debug": "^3.1.0",
-    "depd": "^1.1.2",
-    "form-data": "^2.3.2",
+    "debug": "^4.1.0",
+    "form-data": "^2.3.3",
     "is-buffer": "^2.0.3",
     "node-fetch-unix": "^2.1.2-rc.3",
     "qs": "^6.5.2"
   },
   "devDependencies": {
-    "babel-cli": "^6.26.0",
-    "babel-core": "^6.26.3",
-    "babel-eslint": "^8.2.6",
-    "babel-plugin-syntax-class-properties": "^6.13.0",
-    "babel-plugin-syntax-flow": "^6.18.0",
-    "babel-plugin-transform-class-properties": "^6.24.1",
-    "babel-plugin-transform-es2015-modules-commonjs": "^6.26.2",
-    "babel-plugin-transform-flow-strip-types": "^6.22.0",
-    "babel-plugin-transform-object-rest-spread": "^6.26.0",
-    "babel-preset-env": "^1.7.0",
-    "babel-register": "^6.26.0",
+    "@types/koa": "^2.0.46",
+    "@types/koa-bodyparser": "^5.0.1",
+    "@types/koa-router": "^7.0.32",
+    "@types/node": "^10.12.2",
+    "@types/tape": "^4.2.32",
+    "async-busboy": "^0.7.0",
     "cross-env": "^5.2.0",
-    "eslint": "^5.3.0",
-    "eslint-config-maichong-base": "^1.1.1",
-    "flow-bin": "^0.78.0",
-    "flow-declarations": "^0.4.24",
-    "istanbul": "^0.4.5",
-    "tape": "^4.9.1"
+    "koa": "^2.6.1",
+    "koa-bodyparser": "^4.2.1",
+    "koa-qs": "^2.0.0",
+    "koa-router": "^7.4.0",
+    "tape": "^4.9.1",
+    "ts-node": "^7.0.1",
+    "typescript": "^3.1.6",
+    "ync": "0.0.9"
   }
 }

@@ -1,15 +1,10 @@
-
-// @flow
-
-import Debugger from 'debug';
-import depd from 'depd';
-import type Model from './model';
+import Debugger = require('debug');
+import Akita = require('..');
 
 const debug = Debugger('akita:query');
-const deprecate = depd('akita:query');
 
 export default class Query {
-  model: Class<Model>;
+  model: typeof Akita.Model;
   _filters: null | Object;
   _data: null | Object;
   _page: number;
@@ -32,7 +27,7 @@ export default class Query {
    * @param {string} op
    * @constructor
    */
-  constructor(model: Class<Model>, op: string) {
+  constructor(model: typeof Akita.Model, op: string) {
     this.model = model;
     this._filters = null;
     this._data = null;
@@ -64,18 +59,6 @@ export default class Query {
       this._args[args] = value;
     }
     return this;
-  }
-
-  /**
-   * Add custom http query arg
-   * @deprecated
-   * @param {string|Object} args
-   * @param {any} [value]
-   * @returns {Query}
-   */
-  param(args: string | Object, value?: any) {
-    deprecate('.param() deprecated, please use .arg() instand.');
-    return this.arg(args, value);
   }
 
   /**
@@ -246,14 +229,6 @@ export default class Query {
     return this._promise;
   }
 
-  inspect() {
-    this._debug();
-    let init = this._createInit();
-    let path = init.path;
-    delete init.path;
-    return this.model.request(path, init, this, true);
-  }
-
   _debug() {
     if (debug.enabled) {
       let str = '';
@@ -317,8 +292,8 @@ export default class Query {
     }
   }
 
-  _createInit() {
-    let init = {};
+  _createInit(): Akita.RequestInit {
+    let init: Akita.RequestInit = {};
     init.method = 'GET';
     let path = '';
 
@@ -386,11 +361,11 @@ export default class Query {
     return init;
   }
 
-  then(onSuccess?: Function, onFail?: Function) {
+  then(onSuccess?: (value: any) => any, onFail?: (reason: any) => PromiseLike<never>) {
     return this.exec().then(onSuccess, onFail);
   }
 
-  catch(onFail: Function) {
+  catch(onFail: (reason: any) => PromiseLike<never>) {
     return this.exec().catch(onFail);
   }
 }

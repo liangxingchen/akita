@@ -1,18 +1,16 @@
-// @flow
-
-import isBuffer from 'is-buffer';
-import Debugger from 'debug';
-import type Query from './query';
+import isBuffer = require('is-buffer');
+import Debugger = require('debug');
+import { Query, RequestInit } from '..';
 
 const debug = Debugger('akita:response');
 
-export default class Response {
-  _query: ?Query | null;
-  _responsePromise: Promise<any>;
+export default class AkitaResponse<T> {
+  _query?: Query<T>;
+  _responsePromise: Promise<Response>;
   _path: string;
-  _init: akita$RequestInit;
+  _init: RequestInit;
 
-  constructor(fetch: Function, path: string, init: akita$RequestInit, query?: Query | null) {
+  constructor(fetch: Function, path: string, init: RequestInit, query?: Query<T> | null) {
     this._query = query;
     this._path = path;
     this._init = init;
@@ -30,15 +28,11 @@ export default class Response {
     this._responsePromise = promise;
   }
 
-  inspect() {
-    return Object.assign({}, this._init, { url: this._path });
-  }
-
-  response(): Promise<Object> {
+  response(): Promise<any> {
     return this._responsePromise;
   }
 
-  stream(): Promise<stream$Readable> {
+  stream(): Promise<NodeJS.ReadableStream> {
     return this.response().then((res) => res.body);
   }
 
@@ -124,7 +118,6 @@ export default class Response {
           let error = new Error(json.error);
           Object.keys(json).forEach((key) => {
             if (['error', 'message', 'stack'].indexOf(key) === -1) {
-              // $Flow 增加扩展属性
               error[key] = json[key];
             }
           });
@@ -142,11 +135,11 @@ export default class Response {
    * 获取JSON数据
    * @returns {Promise<any>}
    */
-  then(onSuccess: Function, onFail: Function): Promise<any> {
+  then(onSuccess?: (value: T) => any, onFail?: (reason: any) => PromiseLike<never>): Promise<any> {
     return this.json().then(onSuccess, onFail);
   }
 
-  catch(onFail: Function): Promise<void> {
+  catch(onFail: (reason: any) => PromiseLike<never>): Promise<void> {
     return this.json().catch(onFail);
   }
 }
