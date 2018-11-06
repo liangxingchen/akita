@@ -56,11 +56,16 @@ const data = {
 
 // list
 router.get('/goods', (ctx) => {
-  ctx.body = data.users;
+  ctx.body = data.goods;
 });
 
 // paginate
 router.get('/goods/paginate', (ctx) => {
+  let filters = {};
+  for (let key in ctx.query) {
+    if (key[0] === '_') continue;
+    filters[key] = ctx.query[key];
+  }
   let result: PaginateResult<any> = {
     total: data.goods.length,
     page: parseInt(ctx.query._page) || 1,
@@ -68,15 +73,49 @@ router.get('/goods/paginate', (ctx) => {
     totalPage: 1,
     previous: 0,
     next: 0,
-    search: '',
-    results: data.goods
+    search: ctx.query._search || '',
+    results: data.goods,
+    filters
   };
   ctx.body = result;
 });
 
+// detail
+router.get('/goods/:id', (ctx) => {
+  for (let goods of data.goods) {
+    if (String(goods.id) === ctx.params.id) {
+      ctx.body = goods;
+      return;
+    }
+  }
+});
+
 // remove
 router.delete('/users/:user/orders/:id', (ctx) => {
+  let id = parseInt(ctx.params.id);
+  let order = data.orders[id - 1];
+  if (!order || order.user !== parseInt(ctx.params.user)) {
+    return;
+  }
+  ctx.body = {
+    removed: 1
+  };
+});
 
+// orders list
+router.get('/users/:user/orders', (ctx) => {
+  let user = parseInt(ctx.params.user);
+  ctx.body = data.orders.filter((o) => o.user === user);
+});
+
+// action
+router.post('/users/:user/orders/:id/pay', (ctx) => {
+  ctx.body = {
+    user: parseInt(ctx.params.user),
+    order: parseInt(ctx.params.id),
+    // @ts-ignore
+    payment: ctx.request.body.payment
+  };
 });
 
 app.use(router.routes());

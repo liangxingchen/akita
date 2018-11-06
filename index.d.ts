@@ -7,30 +7,40 @@ export class Model {
   static create<T>(this: { new(): T }, data: Object): Query<T>;
   static update<T>(this: { new(): T }, data?: Object): Query<T>;
   static update<T>(this: { new(): T }, id: string | number, data: any): Query<T>;
-  static remove<T>(this: { new(): T }, conditions?: any | string | number): Query<void>;
+  static remove<T>(this: { new(): T }, conditions?: any | string | number): Query<number>;
   static count<T>(this: { new(): T }, conditions?: any): Query<number>;
   static paginate<T>(this: { new(): T }, conditions?: any): Query<PaginateResult<T>>;
   static find<T>(this: { new(): T }, conditions?: any): Query<T[]>;
   static findByPk<T>(this: { new(): T }, conditions: number | string): Query<T | null>;
   static findOne<T>(this: { new(): T }, conditions?: any): Query<T | null>;
-  static request<T>(this: { new(): T }, path: string, init?: RequestInit, query?: Query<any> | null): Response<any>;
-  static get(path: string, init?: RequestInit): Response<any>;
-  static post(path: string, init?: RequestInit): Response<any>;
-  static upload(path: string, init?: RequestInit): Response<any>;
-  static put(path: string, init?: RequestInit): Response<any>;
-  static patch(path: string, init?: RequestInit): Response<any>;
-  static delete(path: string, init?: RequestInit): Response<any>;
+  static watch<T>(this: { new(): T }, conditions?: any): Query<ChangeStream<T>>;
+  static request<T>(this: { new(): T }, path: string, init?: RequestInit, query?: Query<any> | null, reducer?: Reducer<any>): Result<any>;
+  static get(path: string, init?: RequestInit): Result<any>;
+  static post(path: string, init?: RequestInit): Result<any>;
+  static upload(path: string, init?: RequestInit): Result<any>;
+  static put(path: string, init?: RequestInit): Result<any>;
+  static patch(path: string, init?: RequestInit): Result<any>;
+  static delete(path: string, init?: RequestInit): Result<any>;
 
   constructor(data?: any, params?: any);
-  request(path: string, init?: RequestInit): Response<any>;
-  save(): Response<void>;
-  remove(init?: RequestInit): Response<void>;
+  request(path: string, init?: RequestInit, reducer?: Reducer<any>): Result<any>;
+  save(init?: RequestInit): Result<void>;
+  remove(init?: RequestInit): Result<number>;
 }
 
 interface Model extends HttpMixed {
 }
 
-export interface Query<R> extends PromiseLike<R> {
+export type ChangeType = 'ADDED' | 'MODIFIED' | 'DELETED';
+
+export interface ChangeStream<T> {
+  read(): Promise<{ type: ChangeType, object: T }>;
+  on(event: 'data', fn: (data: T, type: ChangeType) => void): void;
+  on(event: 'error', fn: (error: Error) => void): void;
+  close(): void;
+}
+
+export interface Query<R> extends Promise<R> {
   _op: string;
   _params: any;
 
@@ -43,6 +53,12 @@ export interface Query<R> extends PromiseLike<R> {
   where(conditions: string, value: any): this;
 
   eq(value: any): this;
+  ne(value: any): this;
+
+  regex(value: string): this;
+
+  in(value: any[]): this;
+  nin(value: any[]): this;
 
   // less than
   lt(value: any): this;
@@ -55,15 +71,17 @@ export interface Query<R> extends PromiseLike<R> {
   limit(size: number): this;
   page(size: number): this;
   sort(sortBy: string): this;
+
+  exec(): Result<R>;
 }
 
 export interface HttpMixed {
-  get(path: string, init?: RequestInit): Response<any>;
-  post(path: string, init?: RequestInit): Response<any>;
-  upload(path: string, init?: RequestInit): Response<any>;
-  put(path: string, init?: RequestInit): Response<any>;
-  patch(path: string, init?: RequestInit): Response<any>;
-  delete(path: string, init?: RequestInit): Response<any>;
+  get(path: string, init?: RequestInit): Result<any>;
+  post(path: string, init?: RequestInit): Result<any>;
+  upload(path: string, init?: RequestInit): Result<any>;
+  put(path: string, init?: RequestInit): Result<any>;
+  patch(path: string, init?: RequestInit): Result<any>;
+  delete(path: string, init?: RequestInit): Result<any>;
 }
 
 export interface PaginateResult<T> {
@@ -74,6 +92,7 @@ export interface PaginateResult<T> {
   previous: number;
   next: number;
   search: string;
+  filters: any;
   results: T[];
 }
 
@@ -87,8 +106,12 @@ export interface RequestInit {
   credentials?: string;
 }
 
-export interface Response<R> extends PromiseLike<R> {
-  response(): Promise<Object>;
+export interface Reducer<T> {
+  (json: any): T
+}
+
+export interface Result<R> extends Promise<R> {
+  response(): Promise<Response>;
   stream(): Promise<NodeJS.ReadableStream>;
   ok(): Promise<boolean>;
   status(): Promise<number>;
@@ -112,7 +135,7 @@ export interface Client extends HttpMixed {
   setOptions(options: any): void;
   create(options: any): Client;
   resolve(key: string): Client;
-  request(path: string, init?: RequestInit, query?: Query<any>): Response<any>;
+  request(path: string, init?: RequestInit, query?: Query<any>, reducer?: Reducer<any>): Result<any>;
   _options: ClientOptions;
   _count: number;
   (path: string): typeof Model;

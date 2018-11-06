@@ -7,8 +7,8 @@
   "types": "index.d.ts",
   "scripts": {
     "build": "tsc",
-    "test": "cross-env NODE_ENV=test tape test/ts.js",
-    "cover": "cross-env NODE_ENV=test nyc node_modules/.bin/tape test/ts.js; nyc report --reporter=html",
+    "test": "cross-env DEBUG=akita* tape test/ts.js",
+    "cover": "cross-env DEBUG=akita* nyc node_modules/.bin/tape test/ts.js; nyc report --reporter=html",
     "prepublish": "npm run test && npm run build"
   },
   "repository": {

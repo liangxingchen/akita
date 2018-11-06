@@ -2,6 +2,8 @@
 
 Javascript network client library for Akita protocol.
 
+
+
 ## Protocol
 
 Akita protocol is based on HTTP, which is a superset of RESTful.
@@ -16,6 +18,7 @@ If server has an error, the response body should contain error message and error
   "code": 1233 // optional
 }
 ```
+
 
 
 #### 1. Get records list without paging.
@@ -59,6 +62,7 @@ _search | string |
 ---------------------------------------
 
 
+
 #### 2. Get records list with paging.
 
 `GET /path/to/res/paginate`
@@ -84,6 +88,7 @@ _search | string |
   "previous": 0, // previous page index, zore for none
   "next": 2, // next page index, zore for none
   "search": "",
+  "filters": {},
   "results":[ /* Records list */
     { id: 1 /* Record 1 */ },
     { id: 2 /* Record 2 */ }
@@ -114,8 +119,8 @@ _search | string |
   > await akita('res').paginate().where('views').gt(100)
   > ```
 
-
 ---------------------------------------
+
 
 
 #### 3. Find one record by id
@@ -146,8 +151,9 @@ param | type | default
   > await akita('res').findByPk(123).where({ user: 12})
   > ```
 
-
 ---------------------------------------
+
+
 
 #### 4. Get records count
 
@@ -168,8 +174,9 @@ _search | string |
 }
 ```
 
-
 ---------------------------------------
+
+
 
 #### 5. Create record
 
@@ -194,6 +201,10 @@ _search | string |
 }
 ```
 
+---------------------------------------
+
+
+
 #### 6. Remove record by id
 
 `DELETE /path/to/res/{ID}`
@@ -204,8 +215,15 @@ param | type | default
 ---- | ---- | ----
 ...filters | string/Object |
 
+*Result:*
 
+```js
+{
+  "removed": 1 // removed records count
+}
+```
 ---------------------------------------
+
 
 
 #### 7. Remove multi records by filters
@@ -221,8 +239,17 @@ _sort | string |
 _search | string |
 ...filters | string/Object |
 
+*Result:*
+
+```js
+{
+  "removed": 5 // removed records count
+}
+```
 
 ---------------------------------------
+
+
 
 #### 8. Update one record by id
 
@@ -249,12 +276,12 @@ param | type | default
 {
   "id": 123,
   "title": "my book",
-  // ... others data for creation
+  // ... others
 }
 ```
 
-
 ---------------------------------------
+
 
 
 #### 9. Update multi records by filters
@@ -283,23 +310,27 @@ _search | string |
 
 ```js
 {
-  "count": 2, // updated records count
+  "updated": 2, // updated records count
   "ids": [127, 342] // updated records id
 }
 ```
 
 
+
 ## Javascript client usage
+
+
 
 #### Client Options
 
 option | type | defualt | description
 --- | --- | --- | ---
-debug | boolean | false | enable debug mode
 apiRoot | string | '' | API root path
 fetch | Function | window.fetch | custom fetch function
 FormData | Function | window.FormData | custom FormData class
 init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/en-US/docs/Web/API/WindowOrWorkerGlobalScope/fetch#Parameters
+
+
 
 #### Client API
 
@@ -315,7 +346,7 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 * client.setOptions(options: Object);
 > update client instance options
 
-* client.request(path: string, options:RequestOption): Promise;
+* client.request(path: string, init: Object): Promise;
 > send a http request
 
 * client.get(path: string, init?: Object): Promise;
@@ -346,12 +377,13 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 > send a http request with CONNECT method
 
 
+
 #### Query API
 
 * query.create(data?: Object): Query;
 > Create new record
 
-* query.arg(key:string | Object, value?:any): Query;
+* query.arg(key: string | Object, value?: any): Query;
 > Specifies custom arg.
 
 * query.find(conditions?: Object): Query;
@@ -372,53 +404,66 @@ init | Object | | `fetch(url,init)` init options https://developer.mozilla.org/e
 * query.remove(conditions?: string|Object): Query;
 > Remove multi records or one record by id.
 
-* query.search(keyword:string): Query;
+* query.search(keyword: string): Query;
 > Specifies a search param
 
-* query.where(conditions:Object|string, value?:any): Query;
+* query.where(conditions: Object|string, value?: any): Query;
 > Specifies query filter conditions
 
-* query.eq(value:any): Query;
+* query.eq(value: any): Query;
 > Specifies a filter condition
 
-* query.lt(value:any): Query;
+* query.ne(value: any): Query;
+> Specifies a $ne filter condition
+
+* query.regex(value: any): Query;
+> Specifies a $regex filter condition
+
+* query.in(value: any[]): Query;
+> Specifies a $in filter condition
+
+* query.nin(value: any[]): Query;
+> Specifies a $nin filter condition
+
+* query.lt(value: any): Query;
 > Specifies a $lt filter condition
 
-* query.lte(value:any): Query;
+* query.lte(value: any): Query;
 > Specifies a $lte filter condition
 
-* query.gt(value:any): Query;
+* query.gt(value: any): Query;
 > Specifies a $gt filter condition
 
-* query.gte(value:any): Query;
+* query.gte(value: any): Query;
 > Specifies a $gte filter condition
 
-* query.sort(value:any): Query;
+* query.sort(value: any): Query;
 > Specifies query sort
 
-* query.page(value:any): Query;
+* query.page(value: any): Query;
 > Specifies query page
 
-* query.limit(value:any): Query;
+* query.limit(value: any): Query;
 > Specifies query page limit or update/remove limit.
 
 * query.exec(): Promise;
 > Execute the query.
 
+
+
 #### Create new client instance
 
 ```js
-
 import akita from 'akita';
 
 const client = akita.create({ /* options */});
-
 ```
+
+
 
 #### Examples
 
 ```js
-
 // import default client instance
 import akita, { Model } from 'akita';
 
@@ -466,8 +511,8 @@ await Blog.update({ hot: true }).sort('-views').limit(10);
 // update one record by id
 await Blog.update(12, { hot: true });
 
-// update one record by filters & limit
-await Blog.update({ hot: true }).sort('-views').limit(1);
+// update multi records by filters & limit
+await Blog.update({ hot: true }).sort('-views').limit(5);
 
 // remove on record by id
 await Blog.remove(12);
@@ -481,15 +526,19 @@ await Blog.remove().where('views').lt(100);
 
 ```
 
+
+
 ## Contribute
 
-[Maichong Software](http://maichong.it)
+[Maichong Software](http://maichong.io)
 
 [Liang Xingchen](https://github.com/liangxingchen)
 
 [Li Yudeng](https://github.com/maichonglyd)
 
 [Zhao Lei](https://github.com/zhaolei69)
+
+
 
 ## License
 

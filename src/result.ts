@@ -1,17 +1,23 @@
 import isBuffer = require('is-buffer');
 import Debugger = require('debug');
-import { Query, RequestInit } from '..';
+import ChangeStream from './stream';
+import * as Akita from '..';
 
-const debug = Debugger('akita:response');
+const debug = Debugger('akita:result');
 
-export default class AkitaResponse<T> {
-  _query?: Query<T>;
+export default class Result<T> {
+  readonly [Symbol.toStringTag]: "Promise";
+  _query?: Akita.Query<T>;
   _responsePromise: Promise<Response>;
   _path: string;
-  _init: RequestInit;
+  _init: Akita.RequestInit;
+  _reducer?: Akita.Reducer<T>;
+  _stream: Akita.ChangeStream<any>;
 
-  constructor(fetch: Function, path: string, init: RequestInit, query?: Query<T> | null) {
+  constructor(fetch: Function, path: string, init: Akita.RequestInit, query?: Akita.Query<T> | null, reducer?: Akita.Reducer<T>) {
+    this[Symbol.toStringTag] = 'Promise';
     this._query = query;
+    this._reducer = reducer;
     this._path = path;
     this._init = init;
 
@@ -136,6 +142,16 @@ export default class AkitaResponse<T> {
    * @returns {Promise<any>}
    */
   then(onSuccess?: (value: T) => any, onFail?: (reason: any) => PromiseLike<never>): Promise<any> {
+    if (this._query && this._query._op === 'watch') {
+      if (!this._stream) {
+        this._stream = new ChangeStream(this._reducer);
+      }
+      // @ts-ignore
+      return Promise.resolve(this._stream).then(onSuccess, onFail);
+    }
+    if (this._reducer) {
+      return this.json().then((json: any) => onSuccess(this._reducer(json)), onFail);
+    }
     return this.json().then(onSuccess, onFail);
   }
 

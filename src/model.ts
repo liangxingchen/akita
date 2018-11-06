@@ -9,19 +9,19 @@ export default class Model {
   static path: string;
   static client: Akita.Client;
   static pk: string;
-  static get: (path: string, init?: RequestInit) => Akita.Response<any>;
-  static post: (path: string, init?: RequestInit) => Akita.Response<any>;
-  static upload: (path: string, init?: RequestInit) => Akita.Response<any>;
-  static put: (path: string, init?: RequestInit) => Akita.Response<any>;
-  static patch: (path: string, init?: RequestInit) => Akita.Response<any>;
-  static delete: (path: string, init?: RequestInit) => Akita.Response<any>;
+  static get: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  static post: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  static upload: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  static put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  static patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  static delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   __params?: any;
-  get: (path: string, init?: RequestInit) => Akita.Response<any>;
-  post: (path: string, init?: RequestInit) => Akita.Response<any>;
-  upload: (path: string, init?: RequestInit) => Akita.Response<any>;
-  put: (path: string, init?: RequestInit) => Akita.Response<any>;
-  patch: (path: string, init?: RequestInit) => Akita.Response<any>;
-  delete: (path: string, init?: RequestInit) => Akita.Response<any>;
+  get: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  post: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  upload: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
 
   constructor(data?: any, params?: any) {
     if (data) {
@@ -91,8 +91,8 @@ export default class Model {
    * @param {string|number|Object} [conditions]
    * @returns {Query}
    */
-  static remove(conditions?: string | number | any): Akita.Query<void> {
-    let query = new Query(this, 'remove');
+  static remove(conditions?: string | number | any): Akita.Query<number> {
+    let query = new Query<number>(this, 'remove');
     if (conditions !== null && typeof conditions === 'object') {
       query.where(conditions);
     } else if (conditions !== undefined) {
@@ -110,7 +110,23 @@ export default class Model {
    * @returns {Query}
    */
   static count(conditions?: any): Akita.Query<number> {
-    let query = new Query(this, 'count');
+    let query = new Query<number>(this, 'count');
+    if (conditions) {
+      query.where(conditions);
+    }
+    return query;
+  }
+
+  /**
+   * Find records without paging.
+   * @example
+   * await Blog.find().where('status', 800);
+   * await Blog.find({ status:800 });
+   * @param {Object} [conditions]
+   * @returns {Query}
+   */
+  static watch(conditions?: any): Akita.Query<Akita.ChangeStream<any>> {
+    let query = new Query<Akita.ChangeStream<any>>(this, 'watch');
     if (conditions) {
       query.where(conditions);
     }
@@ -126,7 +142,7 @@ export default class Model {
    * @returns {Query}
    */
   static find(conditions?: any): Akita.Query<any[]> {
-    let query = new Query(this, 'find');
+    let query = new Query<any[]>(this, 'find');
     if (conditions) {
       query.where(conditions);
     }
@@ -141,8 +157,8 @@ export default class Model {
    * @param {Object} [conditions]
    * @returns {Query}
    */
-  static paginate(conditions: any): Akita.Query<Akita.PaginateResult<any>> {
-    let query = new Query(this, 'paginate');
+  static paginate(conditions?: any): Akita.Query<Akita.PaginateResult<any>> {
+    let query = new Query<Akita.PaginateResult<any>>(this, 'paginate');
     if (conditions) {
       query.where(conditions);
     }
@@ -182,7 +198,7 @@ export default class Model {
     return query;
   }
 
-  static request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any> | null) {
+  static request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any> | null, reducer?: Akita.Reducer<any>) {
     let p = this.path || '';
 
     if (!p.endsWith('/') && path) {
@@ -230,10 +246,10 @@ export default class Model {
       }
     }
 
-    return this.client.request(path, init, query);
+    return this.client.request(path, init, query, reducer);
   }
 
-  request(path: string, init?: Akita.RequestInit): Akita.Response<any> {
+  request(path: string, init?: Akita.RequestInit, reducer?: Akita.Reducer<any>): Akita.Result<any> {
     const M = <typeof Akita.Model>this.constructor;
     const pk = M.pk || 'id';
     let id = this[pk];
@@ -266,20 +282,20 @@ export default class Model {
       });
       init.query = query;
     }
-    return M.request(path, init, null);
+    return M.request(path, init, null, reducer);
   }
 
-  save(init?: Akita.RequestInit): Akita.Response<void> {
+  save(init?: Akita.RequestInit): Akita.Result<void> {
     return this.request('', Object.assign({}, {
       method: 'PATCH',
       body: this.toJSON()
-    }, init));
+    }, init), () => undefined);
   }
 
-  remove(init?: Akita.RequestInit): Akita.Response<void> {
+  remove(init?: Akita.RequestInit): Akita.Result<number> {
     return this.request('', Object.assign({}, {
       method: 'DELETE'
-    }, init));
+    }, init), (json: any) => (json && json.removed) || 0);
   }
 
   toJSON(): any {
@@ -295,14 +311,14 @@ export default class Model {
 }
 
 methods.forEach((method: string) => {
-  Model[method] = function (path: string, init?: RequestInit) {
+  Model[method] = function (path: string, init?: Akita.RequestInit) {
     debug(`${this.name}.${method}`, path, init || '');
     init = init || {};
     init.method = method.toUpperCase();
     return this.request(path, init, null);
   };
 
-  Model.prototype[method] = function (path: string, init?: RequestInit) {
+  Model.prototype[method] = function (path: string, init?: Akita.RequestInit) {
     const M = this.constructor;
     debug(`${M.name}.prototype.${method}`, path, init || '');
     init = init || {};

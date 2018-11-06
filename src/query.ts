@@ -3,7 +3,8 @@ import Akita = require('..');
 
 const debug = Debugger('akita:query');
 
-export default class Query {
+export default class Query<T> {
+  readonly [Symbol.toStringTag]: "Promise";
   model: typeof Akita.Model;
   _filters: null | Object;
   _data: null | Object;
@@ -21,6 +22,7 @@ export default class Query {
   _op: string;
   _promise: null | Promise<any>;
   _lastField: string;
+  _result: Akita.Result<T>;
 
   /**
    * @param {Model} model
@@ -28,6 +30,7 @@ export default class Query {
    * @constructor
    */
   constructor(model: typeof Akita.Model, op: string) {
+    this[Symbol.toStringTag] = 'Promise';
     this.model = model;
     this._filters = null;
     this._data = null;
@@ -50,6 +53,7 @@ export default class Query {
    * @returns {Query}
    */
   arg(args: string | Object, value?: any) {
+    if (this._result) throw new Error('Can not change query after exec.');
     if (!this._args) {
       this._args = {};
     }
@@ -77,6 +81,7 @@ export default class Query {
    * @returns {Query}
    */
   where(conditions: string | Object, value?: any) {
+    if (this._result) throw new Error('Can not change query after exec.');
     if (!this._filters) {
       this._filters = {};
     }
@@ -101,11 +106,13 @@ export default class Query {
    * @returns {Query}
    */
   search(keyword: string) {
+    if (this._result) throw new Error('Can not change query after exec.');
     this._search = keyword;
     return this;
   }
 
   __filter(type: string, value: any) {
+    if (this._result) throw new Error('Can not change query after exec.');
     if (!this._filters) {
       this._filters = {};
     }
@@ -129,6 +136,22 @@ export default class Query {
     return this.__filter('eq', value);
   }
 
+  ne(value: any) {
+    return this.__filter('ne', value);
+  }
+
+  regex(value: string) {
+    return this.__filter('regex', value);
+  }
+
+  in(value: any[]) {
+    return this.__filter('in', value);
+  }
+
+  nin(value: any[]) {
+    return this.__filter('nin', value);
+  }
+
   lt(value: any) {
     return this.__filter('lt', value);
   }
@@ -146,16 +169,19 @@ export default class Query {
   }
 
   limit(size: number) {
+    if (this._result) throw new Error('Can not change query after exec.');
     this._limit = size;
     return this;
   }
 
   page(value: number) {
+    if (this._result) throw new Error('Can not change query after exec.');
     this._page = value;
     return this;
   }
 
   sort(value: string) {
+    if (this._result) throw new Error('Can not change query after exec.');
     this._sort = value;
     return this;
   }
@@ -164,69 +190,73 @@ export default class Query {
    * Execute the query.
    * @returns {Promise<*>}
    */
-  exec() {
-    if (!this._promise) {
-      this._debug();
-      let init = this._createInit();
-      let path = init.path;
-      delete init.path;
-      let p;
-      // 处理请求
-      switch (this._op) {
-        case 'findOne':
-          // findOne = find + limit 1
-          p = this.model.request(path, init, this).then((results) => {
-            if (!results || !Array.isArray(results)) {
-              throw new Error(`Api error: GET ${path} should return an object array.`);
-            }
-            if (results.length) {
-              return results[0];
-            }
-            return null;
-          });
-          break;
-        case 'count':
-          p = this.model.request(path, init, this).then((result) => {
-            if (!result || typeof result !== 'object' || !result.hasOwnProperty('count')) {
-              throw new Error(`Api error: GET ${path} should return an object with count property.`);
-            }
-            return result.count;
-          });
-          break;
-        default:
-          p = this.model.request(path, init, this);
-      }
-      // 处理返回值
-      let M = this.model;
-
-      const createRecord = (data: Object) => new M(data, this._params);
-
-      switch (this._op) {
-        case 'findByPk':
-        case 'findOne':
-        case 'create':
-          p = p.then((object) => (object ? createRecord(object) : object));
-          break;
-        case 'find':
-          p = p.then((list) => {
-            if (!Array.isArray(list)) throw new Error(`Api error: GET ${path} should return an object array.`);
-            return list.map(createRecord);
-          });
-          break;
-        case 'paginate':
-          p = p.then((res) => {
-            if (res && res.results) {
-              res.results = res.results.map(createRecord);
-            }
-            return res;
-          });
-          break;
-        default:
-          break;
-      }
-      this._promise = p;
+  exec(): Akita.Result<T> {
+    if (this._result) {
+      return this._result;
     }
-    return this._promise;
+    this._debug();
+
+    let init = this._createInit();
+    let path = init.path;
+    delete init.path;
+
+    let reducer: Akita.Reducer<T>;
+
+    // 处理返回值
+    const M = this.model;
+    const createRecord = (data: Object) => new M(data, this._params);
+
+    switch (this._op) {
+      case 'remove':
+        reducer = (json: any) => (json && json.removed) || 0;
+        break;
+      case 'findOne':
+        // @ts-ignore
+        reducer = (json: any) => {
+          if (!json || !Array.isArray(json)) {
+            throw new Error(`Api error: GET ${path} should return an object array.`);
+          }
+          if (json.length) {
+            return createRecord(json[0]);
+          }
+          return null;
+        };
+        break;
+      case 'count':
+        reducer = (json: any) => {
+          if (!json || typeof json !== 'object' || !json.hasOwnProperty('count')) {
+            throw new Error(`Api error: GET ${path} should return an object with count property.`);
+          }
+          return json.count;
+        };
+        break;
+      case 'findByPk':
+      case 'findOne':
+      case 'create':
+        // @ts-ignore
+        reducer = (json: any) => json ? createRecord(json) : null;
+        break;
+      case 'find':
+        // @ts-ignore
+        reducer = (json: any) => {
+          if (!Array.isArray(json)) throw new Error(`Api error: GET ${path} should return an object array.`);
+          return json.map(createRecord);
+        };
+        break;
+      case 'paginate':
+        // @ts-ignore
+        reducer = (json: any) => {
+          if (json && json.results) {
+            json.results = json.results.map(createRecord);
+          }
+          return json;
+        };
+        break;
+      default:
+    }
+
+    this._result = M.request(path, init, this, reducer);
+    return this._result;
   }
 
   _debug() {
@@ -361,11 +391,11 @@ export default class Query {
     return init;
   }
 
-  then(onSuccess?: (value: any) => any, onFail?: (reason: any) => PromiseLike<never>) {
+  then(onSuccess?: (value: T) => any, onFail?: (reason: any) => Promise<never>) {
     return this.exec().then(onSuccess, onFail);
   }
 
-  catch(onFail: (reason: any) => PromiseLike<never>) {
+  catch(onFail: (reason: any) => Promise<never>) {
     return this.exec().catch(onFail);
   }
 }
