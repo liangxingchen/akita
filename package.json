@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.5.16",
+  "version": "0.6.0",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
@@ -51,7 +51,7 @@
   "devDependencies": {
     "@types/koa": "^2.0.46",
     "@types/koa-bodyparser": "^5.0.1",
-    "@types/koa-router": "^7.0.32",
+    "@types/koa-router": "^7.0.33",
     "@types/node": "^10.12.2",
     "@types/tape": "^4.2.32",
     "async-busboy": "^0.7.0",
@@ -60,9 +60,9 @@
     "koa-bodyparser": "^4.2.1",
     "koa-qs": "^2.0.0",
     "koa-router": "^7.4.0",
+    "nyc": "^13.1.0",
     "tape": "^4.9.1",
     "ts-node": "^7.0.1",
-    "typescript": "^3.1.6",
-    "ync": "0.0.9"
+    "typescript": "^3.1.6"
   }
 }

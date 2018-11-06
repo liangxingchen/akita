@@ -12,7 +12,7 @@ export default class Result<T> {
   _path: string;
   _init: Akita.RequestInit;
   _reducer?: Akita.Reducer<T>;
-  _stream: Akita.ChangeStream<any>;
+  _csPromise: Promise<Akita.ChangeStream<any>>;
 
   constructor(fetch: Function, path: string, init: Akita.RequestInit, query?: Akita.Query<T> | null, reducer?: Akita.Reducer<T>) {
     this[Symbol.toStringTag] = 'Promise';
@@ -143,11 +143,11 @@ export default class Result<T> {
    */
   then(onSuccess?: (value: T) => any, onFail?: (reason: any) => PromiseLike<never>): Promise<any> {
     if (this._query && this._query._op === 'watch') {
-      if (!this._stream) {
-        this._stream = new ChangeStream(this._reducer);
+      if (!this._csPromise) {
+        this._csPromise = this.stream().then((stream) => new ChangeStream(stream, this._reducer));
       }
       // @ts-ignore
-      return Promise.resolve(this._stream).then(onSuccess, onFail);
+      return this._csPromise.then(onSuccess, onFail)
     }
     if (this._reducer) {
       return this.json().then((json: any) => onSuccess(this._reducer(json)), onFail);

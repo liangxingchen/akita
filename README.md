@@ -317,6 +317,26 @@ _search | string |
 
 
 
+#### 10. Watch changes
+
+`GET /path/to/res/watch`
+
+*Query params:*
+
+param | type | default
+---- | ---- | ----
+_search | string |
+...filters | string/Object |
+
+*Result:*
+
+```js
+// JSON Stream
+{"type":"ADDED","object":{"id":1 /* Record 1 */ }}
+{"type":"MODIFIED","object":{"id":2 /* Record 1 */ }}
+{"type":"DELETED","object":{"id":2 /* Record 1 */ }}
+```
+
 ## Javascript client usage
 
 

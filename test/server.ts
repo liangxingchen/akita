@@ -1,3 +1,4 @@
+import stream = require('stream');
 import http = require('http');
 import Koa = require('koa');
 import Router = require('koa-router');
@@ -78,6 +79,26 @@ router.get('/goods/paginate', (ctx) => {
     filters
   };
   ctx.body = result;
+});
+
+// count
+router.get('/goods/count', (ctx) => {
+  ctx.body = {
+    count: data.goods.length
+  }
+});
+
+router.get('/goods/watch', (ctx) => {
+  let s = new stream.PassThrough();
+  ctx.body = s;
+  ctx.type = 'json';
+
+  s.write(JSON.stringify({ type: 'ADDED', object: data.goods[0] }) + '\n');
+
+  setTimeout(() => {
+    s.write(JSON.stringify({ type: 'MODIFIED', object: data.goods[1] }) + '\n');
+    s.destroy();
+  }, 1000);
 });
 
 // detail

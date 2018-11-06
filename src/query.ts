@@ -371,6 +371,9 @@ export default class Query<T> {
       case 'paginate':
         path += '/paginate';
         break;
+      case 'watch':
+        path += '/watch';
+        break;
       case 'create':
         init.method = 'POST';
         break;

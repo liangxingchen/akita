@@ -1,3 +1,4 @@
+import EventEmitter = require('events');
 
 export class Model {
   static path: string;
@@ -33,11 +34,17 @@ interface Model extends HttpMixed {
 
 export type ChangeType = 'ADDED' | 'MODIFIED' | 'DELETED';
 
-export interface ChangeStream<T> {
-  read(): Promise<{ type: ChangeType, object: T }>;
-  on(event: 'data', fn: (data: T, type: ChangeType) => void): void;
-  on(event: 'error', fn: (error: Error) => void): void;
-  close(): void;
+export interface Change<T> {
+  type: ChangeType;
+  object: T;
+}
+
+export interface ChangeStream<T> extends EventEmitter {
+  readonly closed: boolean;
+  read(): Promise<Change<T>>;
+  on(event: 'change', fn: (data: Change<T>) => void): this;
+  on(event: 'error', fn: (error: Error) => void): this;
+  cancel(): void;
 }
 
 export interface Query<R> extends Promise<R> {

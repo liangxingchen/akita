@@ -2,3 +2,5 @@ src
 test
 coverage
 .history
+.nyc_output
+tsconfig.json

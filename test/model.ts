@@ -26,25 +26,6 @@ class Order extends Model {
 }
 
 test('Model', (troot) => {
-  troot.test('watch', async (t) => {
-    let query = Goods.watch();
-    console.log('query', query);
-    let result = query.exec();
-    console.log('result', result);
-    let stream = await result;
-    console.log('stream', stream);
-    let event = await stream.read();
-    t.equal(event.type, 'ADDED');
-    t.equal(event.object.id, 1);
-    t.equal(event.object.title, 'iPhone');
-    event = await stream.read();
-    t.equal(event.type, 'MODIFIED');
-    t.equal(event.object.id, 2);
-    t.equal(event.object.title, 'iMac');
-  });
-
-  return;
-
   troot.test('Goods.find()', async (t) => {
     let list = await Goods.find({ owner: 'maichong', repo: 'akita' });
     t.ok(Array.isArray(list));
@@ -105,6 +86,21 @@ test('Model', (troot) => {
     t.end();
   });
 
+  troot.test('count', async (t) => {
+    t.equal(await Goods.count(), 2);
+    t.end();
+  });
+
+  troot.test('save', async (t) => {
+    let goods = await Goods.findOne();
+    goods.title = 'iPad';
+    let res = await goods.save().json();
+    t.equal(res.method, 'PATCH');
+    t.equal(res.url, '/goods/1001');
+    t.deepEqual(res.body, { id: 1001, title: 'iPad' });
+    t.end();
+  });
+
   troot.test('actions', async (t) => {
     let order = await Order.findOne({ user: 1 });
 
@@ -119,6 +115,29 @@ test('Model', (troot) => {
     t.equal(item.method, 'POST');
     t.equal(item.url, '/item');
     t.deepEqual(item.body, { name: 'test', title: 'hello' });
+    t.end();
+  });
+
+  troot.test('update record', async (t) => {
+    let item = await client('item').update(12, { name: 'test', title: 'hello' }).exec().json();
+    t.equal(item.method, 'PATCH');
+    t.equal(item.url, '/item/12');
+    t.deepEqual(item.body, { name: 'test', title: 'hello' });
+    t.end();
+  });
+
+  troot.test('update multi records', async (t) => {
+    let item = await client('item').update({ name: 'test', title: 'hello' }).exec().json();
+    t.equal(item.method, 'PATCH');
+    t.equal(item.url, '/item');
+    t.deepEqual(item.body, { name: 'test', title: 'hello' });
+    t.end();
+  });
+
+  troot.test('status', async (t) => {
+    t.equal(await Goods.find().exec().ok(), true);
+    t.equal(await Goods.find().exec().status(), 200);
+    t.equal(await Goods.find().exec().statusText(), 'OK');
     t.end();
   });
 
@@ -159,6 +178,31 @@ test('Model', (troot) => {
       _user: 'uid'
     });
     t.end();
+  });
+
+  troot.test('watch', async (t) => {
+    let stream = await Goods.watch();
+    let event = await stream.read();
+    t.equal(event.type, 'ADDED');
+    t.equal(event.object.id, 1001);
+    t.equal(event.object.title, 'iPhone');
+    event = await stream.read();
+    t.equal(event.type, 'MODIFIED');
+    t.equal(event.object.id, 1002);
+    t.equal(event.object.title, 'iMac');
+    t.end();
+  });
+
+  troot.test('watch event', async (t) => {
+    let stream = await Goods.watch();
+    stream.on('change', ({ type, object }) => {
+      t.equal(type, 'ADDED');
+      t.equal(object.id, 1001);
+      t.equal(object.title, 'iPhone');
+      stream.cancel();
+      t.equal(stream.closed, true);
+      t.end();
+    });
   });
 
   troot.end();
