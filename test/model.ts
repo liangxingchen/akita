@@ -186,6 +186,7 @@ test('Model', (troot) => {
     t.equal(event.type, 'ADDED');
     t.equal(event.object.id, 1001);
     t.equal(event.object.title, 'iPhone');
+    await event.object.save();
     event = await stream.read();
     t.equal(event.type, 'MODIFIED');
     t.equal(event.object.id, 1002);

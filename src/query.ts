@@ -233,6 +233,7 @@ export default class Query<T> {
       case 'findByPk':
       case 'findOne':
       case 'create':
+      case 'watch':
         // @ts-ignore
         reducer = (json: any) => json ? createRecord(json) : null;
         break;
