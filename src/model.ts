@@ -95,7 +95,7 @@ export default class Model {
     let query = new Query<number>(this, 'remove');
     if (conditions !== null && typeof conditions === 'object') {
       query.where(conditions);
-    } else if (conditions !== undefined) {
+    } else if (typeof conditions !== 'undefined') {
       query._id = conditions;
     }
     return query;
@@ -250,7 +250,7 @@ export default class Model {
   }
 
   request(path: string, init?: Akita.RequestInit, reducer?: Akita.Reducer<any>): Akita.Result<any> {
-    const M = <typeof Akita.Model>this.constructor;
+    const M = this.constructor as typeof Akita.Model;
     const pk = M.pk || 'id';
     let id = this[pk];
     if (!id) {
@@ -289,7 +289,7 @@ export default class Model {
     return this.request('', Object.assign({}, {
       method: 'PATCH',
       body: this.toJSON()
-    }, init), () => undefined);
+    }, init), () => Promise.resolve());
   }
 
   remove(init?: Akita.RequestInit): Akita.Result<number> {

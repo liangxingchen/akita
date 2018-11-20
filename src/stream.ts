@@ -1,10 +1,9 @@
 import Debugger = require('debug');
-import EventEmitter = require('events');
 import * as Akita from '..';
 
 const debug = Debugger('akita:stream');
 
-export default class ChangeStream<T> extends EventEmitter {
+export default class ChangeStream<T> {
   closed: boolean;
   _stream: NodeJS.ReadableStream | ReadableStream;
   _queue: Akita.Change<T>[];
@@ -14,14 +13,18 @@ export default class ChangeStream<T> extends EventEmitter {
   _handler: (data: Buffer) => void;
   _cache: string;
   _reducer: Akita.Reducer<any>;
+  _listeners: {
+    [name: string]: Function[];
+  };
 
   constructor(stream: NodeJS.ReadableStream | ReadableStream, reducer: Akita.Reducer<any>) {
-    super();
     this.closed = false;
     this._stream = stream;
     this._queue = [];
     this._cache = '';
     this._reducer = reducer;
+    this._listeners = {};
+
     const parseLine = () => {
       let index = this._cache.indexOf('\n');
       if (index < 0) return;
@@ -85,8 +88,38 @@ export default class ChangeStream<T> extends EventEmitter {
     }
   }
 
-  read(): Promise<{ type: Akita.ChangeType, object: T }> {
-    if (this.closed) return Promise.reject('Can not read from closed stream.');
+  on(name: string, fn): this {
+    if (!this._listeners[name]) {
+      this._listeners[name] = [];
+    }
+    this._listeners[name].push(fn);
+    return this;
+  }
+
+  emit(name: string, ...args: any[]) {
+    if (!this._listeners[name]) return;
+    this._listeners[name].forEach((fn) => {
+      fn.apply(null, args);
+    });
+  }
+
+  listenerCount(name: string): number {
+    return (this._listeners[name] || []).length;
+  }
+
+  removeListener(name: string, fn: Function): this {
+    if (!this._listeners[name]) return;
+    this._listeners[name] = this._listeners[name].filter((f) => f !== fn);
+    return this;
+  }
+
+  removeAllListeners(name: string): this {
+    delete this._listeners[name];
+    return this;
+  }
+
+  read(): Promise<{ type: Akita.ChangeType; object: T }> {
+    if (this.closed) return Promise.reject(new Error('Can not read from closed stream.'));
     if (this._queue.length) {
       return Promise.resolve(this._queue.shift());
     }
@@ -97,7 +130,7 @@ export default class ChangeStream<T> extends EventEmitter {
   }
 
   cancel() {
-    if (this.closed) return Promise.reject('Can not cancel closed stream.');
+    if (this.closed) return Promise.reject(new Error('Can not cancel closed stream.'));
     debug('cancel watch');
     // @ts-ignore
     if (this._stream.cancel) {

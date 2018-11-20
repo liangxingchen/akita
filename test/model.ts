@@ -33,7 +33,7 @@ test('Model', (troot) => {
     list.forEach((goods) => {
       t.ok(Number.isInteger(goods.id));
       t.ok(goods.title);
-    })
+    });
     t.end();
   });
 
@@ -54,11 +54,11 @@ test('Model', (troot) => {
     let res = await Goods.paginate().where({ a: 1 });
     t.deepEqual(res.filters, { a: '1' });
 
-    res = await Goods.paginate().where({ a: { $gt: 1 } });
-    t.deepEqual(res.filters, { a: { $gt: '1' } });
+    res = await Goods.paginate().where({ a: { $gt: 1 }});
+    t.deepEqual(res.filters, { a: { $gt: '1' }});
 
     res = await Goods.paginate().where('a').gt(1).search('keyword');
-    t.deepEqual(res.filters, { a: { $gt: '1' } });
+    t.deepEqual(res.filters, { a: { $gt: '1' }});
     t.deepEqual(res.search, 'keyword');
 
     t.end();

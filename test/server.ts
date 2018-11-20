@@ -85,7 +85,7 @@ router.get('/goods/paginate', (ctx) => {
 router.get('/goods/count', (ctx) => {
   ctx.body = {
     count: data.goods.length
-  }
+  };
 });
 
 router.get('/goods/watch', (ctx) => {

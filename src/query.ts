@@ -4,7 +4,7 @@ import Akita = require('..');
 const debug = Debugger('akita:query');
 
 export default class Query<T> {
-  readonly [Symbol.toStringTag]: "Promise";
+  readonly [Symbol.toStringTag]: 'Promise';
   model: typeof Akita.Model;
   _filters: null | Object;
   _data: null | Object;
@@ -13,7 +13,7 @@ export default class Query<T> {
   _sort: string;
   _id: null | any;
   _args: null | {
-    [key: string]: any
+    [key: string]: any;
   };
 
   _params: void | Object; // 查询时，起到作用的路径参数列表
@@ -85,10 +85,10 @@ export default class Query<T> {
     if (!this._filters) {
       this._filters = {};
     }
-    if (typeof conditions === 'object' && value === undefined) {
+    if (typeof conditions === 'object' && typeof value === 'undefined') {
       this._filters = Object.assign(this._filters, conditions);
     } else if (typeof conditions === 'string') {
-      if (value === undefined) { // where('foo')
+      if (typeof value === 'undefined') { // where('foo')
         this._lastField = conditions;
       } else {
         this._filters[conditions] = value;
@@ -231,11 +231,10 @@ export default class Query<T> {
         };
         break;
       case 'findByPk':
-      case 'findOne':
       case 'create':
       case 'watch':
         // @ts-ignore
-        reducer = (json: any) => json ? createRecord(json) : null;
+        reducer = (json: any) => (json ? createRecord(json) : null);
         break;
       case 'find':
         // @ts-ignore

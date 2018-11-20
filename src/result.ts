@@ -6,7 +6,7 @@ import * as Akita from '..';
 const debug = Debugger('akita:result');
 
 export default class Result<T> {
-  readonly [Symbol.toStringTag]: "Promise";
+  readonly [Symbol.toStringTag]: 'Promise';
   _query?: Akita.Query<T>;
   _responsePromise: Promise<Response>;
   _path: string;
@@ -34,11 +34,12 @@ export default class Result<T> {
     this._responsePromise = promise;
   }
 
-  response(): Promise<any> {
+  response(): Promise<Response> {
     return this._responsePromise;
   }
 
   stream(): Promise<NodeJS.ReadableStream> {
+    // @ts-ignore res.body 兼容 NodeJS.ReadableStream
     return this.response().then((res) => res.body);
   }
 
@@ -55,7 +56,8 @@ export default class Result<T> {
   }
 
   size(): Promise<number> {
-    return this.response().then((res) => res.size);
+    // @ts-ignore res.size
+    return this.response().then((res) => res.size || parseInt(res.headers.get('Content-Length')) || 0);
   }
 
   headers(): Promise<Headers> {
@@ -147,7 +149,7 @@ export default class Result<T> {
         this._csPromise = this.stream().then((stream) => new ChangeStream(stream, this._reducer));
       }
       // @ts-ignore
-      return this._csPromise.then(onSuccess, onFail)
+      return this._csPromise.then(onSuccess, onFail);
     }
     if (this._reducer) {
       return this.json().then((json: any) => onSuccess(this._reducer(json)), onFail);

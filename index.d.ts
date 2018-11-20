@@ -1,5 +1,3 @@
-import EventEmitter = require('events');
-
 export class Model {
   static path: string;
   static pk: string;
@@ -39,11 +37,13 @@ export interface Change<T> {
   object: T;
 }
 
-export interface ChangeStream<T> extends EventEmitter {
+export interface ChangeStream<T> {
   readonly closed: boolean;
   read(): Promise<Change<T>>;
   on(event: 'change', fn: (data: Change<T>) => void): this;
   on(event: 'error', fn: (error: Error) => void): this;
+  removeListener(name: string, fn: Function): this;
+  removeAllListeners(name: string): this;
   cancel(): void;
 }
 
@@ -114,7 +114,7 @@ export interface RequestInit {
 }
 
 export interface Reducer<T> {
-  (json: any): T
+  (json: any): T;
 }
 
 export interface Result<R> extends Promise<R> {
@@ -139,8 +139,8 @@ export interface ClientOptions {
 }
 
 export interface Client extends HttpMixed {
-  setOptions(options: any): void;
-  create(options: any): Client;
+  setOptions(options: ClientOptions): void;
+  create(options: ClientOptions): Client;
   resolve(key: string): Client;
   request(path: string, init?: RequestInit, query?: Query<any>, reducer?: Reducer<any>): Result<any>;
   _options: ClientOptions;
@@ -148,6 +148,6 @@ export interface Client extends HttpMixed {
   (path: string): typeof Model;
 }
 
-declare var akita: Client;
+declare const akita: Client;
 
 export default akita;

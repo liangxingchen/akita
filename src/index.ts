@@ -1,7 +1,7 @@
-/* eslint no-use-before-define:0 */
+// just for weixin
 
-import fetch = require('node-fetch-unix');
-import FormData = require('form-data');
+import fetch from './fetch';
+import FormData from './form-data';
 import { Model } from './client';
 import inject from './inject';
 
