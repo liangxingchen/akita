@@ -111,9 +111,6 @@ function create(options?: Akita.ClientOptions) {
     if (!init.headers) {
       init.headers = {};
     }
-    if (!init.headers['User-Agent']) {
-      init.headers['User-Agent'] = 'Akita/0.6.1 (+https://github.com/maichong/akita)';
-    }
 
     let apiRoot = client._options.apiRoot;
     if (apiRoot) {

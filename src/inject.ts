@@ -1,9 +1,32 @@
 /* eslint no-use-before-define:0 */
 
 import akita from './client';
-import { ClientOptions } from '..';
+import { Client, ClientOptions } from '..';
 
-export default function inject(fetch: any, FormData: any) {
+export default function inject(fetch: any, FormData: any, ua?: string) {
+  function setUA(client: Client) {
+    if (!client._options.init) {
+      client._options.init = {};
+    }
+    let init = client._options.init;
+    if (!init.headers) {
+      init.headers = {};
+    }
+    if (!init.headers['User-Agent']) {
+      init.headers['User-Agent'] = ua;
+    }
+  }
+
+  function setOptions(options) {
+    this._setOptions(options);
+    if (ua) {
+      setUA(this);
+    }
+  }
+
+  akita._setOptions = akita.setOptions;
+  akita.setOptions = setOptions;
+
   akita.setOptions({ fetch, FormData });
 
   const create = akita.create;
@@ -22,6 +45,11 @@ export default function inject(fetch: any, FormData: any) {
     let client = create(options);
     client.create = newCreate;
     client.resolve = newResolve;
+    if (ua) {
+      client._setOptions = client.setOptions;
+      client.setOptions = setOptions;
+      setUA(client);
+    }
     return client;
   }
 
@@ -42,6 +70,11 @@ export default function inject(fetch: any, FormData: any) {
     }
     client.create = newCreate;
     client.resolve = newResolve;
+    if (ua) {
+      client._setOptions = client.setOptions;
+      client.setOptions = setOptions;
+      setUA(client);
+    }
     return client;
   }
 
