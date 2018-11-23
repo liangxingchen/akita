@@ -4,7 +4,6 @@ import Akita = require('..');
 const debug = Debugger('akita:query');
 
 export default class Query<T> {
-  readonly [Symbol.toStringTag]: 'Promise';
   model: typeof Akita.Model;
   _filters: null | Object;
   _data: null | Object;
@@ -30,7 +29,6 @@ export default class Query<T> {
    * @constructor
    */
   constructor(model: typeof Akita.Model, op: string) {
-    this[Symbol.toStringTag] = 'Promise';
     this.model = model;
     this._filters = null;
     this._data = null;

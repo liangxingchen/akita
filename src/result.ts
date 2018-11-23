@@ -6,7 +6,6 @@ import * as Akita from '..';
 const debug = Debugger('akita:result');
 
 export default class Result<T> {
-  readonly [Symbol.toStringTag]: 'Promise';
   _query?: Akita.Query<T>;
   _responsePromise: Promise<Response>;
   _path: string;
@@ -15,7 +14,6 @@ export default class Result<T> {
   _csPromise: Promise<Akita.ChangeStream<any>>;
 
   constructor(fetch: Function, path: string, init: Akita.RequestInit, query?: Akita.Query<T> | null, reducer?: Akita.Reducer<T>) {
-    this[Symbol.toStringTag] = 'Promise';
     this._query = query;
     this._reducer = reducer;
     this._path = path;

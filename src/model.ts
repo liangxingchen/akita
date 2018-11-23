@@ -201,10 +201,10 @@ export default class Model {
   static request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any> | null, reducer?: Akita.Reducer<any>) {
     let p = this.path || '';
 
-    if (!p.endsWith('/') && path) {
+    if (p[p.length - 1] !== '/' && path) {
       p += '/';
     }
-    if (path.startsWith('/')) {
+    if (path[0] === '/') {
       path = path.substr(1);
     }
     path = p + path;
@@ -258,7 +258,7 @@ export default class Model {
       throw new Error(`Can not get pk field (${pk}) for ${method}: '${path}'`);
     }
     id = encodeURIComponent(id);
-    if (!path || path.startsWith('/')) {
+    if (!path || path[0] === '/') {
       path = id + path;
     } else {
       path = `${id}/${path}`;

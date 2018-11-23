@@ -32,6 +32,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
         }
         let arr = new Uint8Array(response._result);
         let str = String.fromCharCode.apply(String, arr);
+        str = decodeURIComponent(escape((str))); //没有这一步中文会乱码
         return Promise.resolve(str);
       }
     };
