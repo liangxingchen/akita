@@ -1,3 +1,5 @@
+/* eslint no-undefined:0 */
+
 import test = require('tape');
 import akita, { Model } from '../src/node';
 
@@ -54,11 +56,11 @@ test('Model', (troot) => {
     let res = await Goods.paginate().where({ a: 1 });
     t.deepEqual(res.filters, { a: '1' });
 
-    res = await Goods.paginate().where({ a: { $gt: 1 }});
-    t.deepEqual(res.filters, { a: { $gt: '1' }});
+    res = await Goods.paginate().where({ a: { $gt: 1 } });
+    t.deepEqual(res.filters, { a: { $gt: '1' } });
 
     res = await Goods.paginate().where('a').gt(1).search('keyword');
-    t.deepEqual(res.filters, { a: { $gt: '1' }});
+    t.deepEqual(res.filters, { a: { $gt: '1' } });
     t.deepEqual(res.search, 'keyword');
 
     t.end();
@@ -81,7 +83,7 @@ test('Model', (troot) => {
 
     let order = await Order.findOne({ user: 1 });
     res = await order.remove();
-    t.equal(res, 1);
+    t.equal(res, undefined);
 
     t.end();
   });
@@ -98,6 +100,17 @@ test('Model', (troot) => {
     t.equal(res.method, 'PATCH');
     t.equal(res.url, '/goods/1001');
     t.deepEqual(res.body, { id: 1001, title: 'iPad' });
+    t.end();
+  });
+
+  troot.test('change record after save', async (t) => {
+    let goods = await Goods.findOne();
+    goods.title = 'iPad';
+    let res = await goods.save();
+    t.equal(res, undefined);
+
+    t.deepEquals(goods.body, { id: 1001, title: 'iPad' });
+
     t.end();
   });
 

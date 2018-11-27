@@ -24,7 +24,7 @@ export class Model {
   constructor(data?: any, params?: any);
   request(path: string, init?: RequestInit, reducer?: Reducer<any>): Result<any>;
   save(init?: RequestInit): Result<void>;
-  remove(init?: RequestInit): Result<number>;
+  remove(init?: RequestInit): Result<void>;
 }
 
 interface Model extends HttpMixed {

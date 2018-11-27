@@ -289,13 +289,17 @@ export default class Model {
     return this.request('', Object.assign({}, {
       method: 'PATCH',
       body: this.toJSON()
-    }, init), () => Promise.resolve());
+    }, init), (data) => {
+      if (data && typeof data === 'object') {
+        Object.assign(this, data);
+      }
+    });
   }
 
-  remove(init?: Akita.RequestInit): Akita.Result<number> {
+  remove(init?: Akita.RequestInit): Akita.Result<void> {
     return this.request('', Object.assign({}, {
       method: 'DELETE'
-    }, init), (json: any) => (json && json.removed) || 0);
+    }, init), () => { });
   }
 
   toJSON(): any {
