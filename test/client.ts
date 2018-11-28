@@ -1,5 +1,5 @@
-import fs = require('fs');
-import test = require('tape');
+import * as fs from 'fs';
+import * as test from 'tape';
 import client from '../src/node';
 import { version } from '../package.json';
 
@@ -68,7 +68,7 @@ test('HTTP', (troot) => {
   });
 
   troot.test('test upload', (t) => {
-    client.upload('http://localhost:28000', {
+    client.post('http://localhost:28000', {
       body: {
         foo: 'bar',
         file: fs.createReadStream(process.cwd() + '/LICENSE')

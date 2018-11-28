@@ -16,7 +16,6 @@ export class Model {
   static request<T>(this: { new(): T }, path: string, init?: RequestInit, query?: Query<any> | null, reducer?: Reducer<any>): Result<any>;
   static get(path: string, init?: RequestInit): Result<any>;
   static post(path: string, init?: RequestInit): Result<any>;
-  static upload(path: string, init?: RequestInit): Result<any>;
   static put(path: string, init?: RequestInit): Result<any>;
   static patch(path: string, init?: RequestInit): Result<any>;
   static delete(path: string, init?: RequestInit): Result<any>;
@@ -85,7 +84,6 @@ export interface Query<R> extends Promise<R> {
 export interface HttpMixed {
   get(path: string, init?: RequestInit): Result<any>;
   post(path: string, init?: RequestInit): Result<any>;
-  upload(path: string, init?: RequestInit): Result<any>;
   put(path: string, init?: RequestInit): Result<any>;
   patch(path: string, init?: RequestInit): Result<any>;
   delete(path: string, init?: RequestInit): Result<any>;
@@ -145,6 +143,7 @@ export interface Client extends HttpMixed {
   request(path: string, init?: RequestInit, query?: Query<any>, reducer?: Reducer<any>): Result<any>;
   _options: ClientOptions;
   _count: number;
+  createBody(body: any): Object | FormData;
   (path: string): typeof Model;
 }
 

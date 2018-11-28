@@ -16,7 +16,6 @@ app.use(async (ctx, next) => {
   const FILES = {};
   // @ts-ignore
   ctx.files = FILES;
-  if (ctx.method !== 'POST') return next();
   if (!ctx.request.is('multipart/*')) return next();
   return asyncBusboy(ctx.req).then((res) => {
     const files = res.files;

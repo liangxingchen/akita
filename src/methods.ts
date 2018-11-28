@@ -1,2 +1,2 @@
 
-export default ['get', 'post', 'upload', 'put', 'patch', 'delete'];
+export default ['get', 'post', 'put', 'patch', 'delete'];

@@ -497,7 +497,12 @@ client.setOptions({ apiRoot: 'http://your.domain/' /* other options */});
 
 // send plain HTTP POST request
 // POST http://your.domain/blog
-await client.post('blog',{ body:{ title: 'my book' } });
+await client.post('blog',{ 
+  body:{ 
+    title: 'my book',
+    file: fs.createReadStream('file.zip') // upload file
+  } 
+});
 
 // define akita model:
 
@@ -514,6 +519,7 @@ class Blog extends Model{
 // create / update record
 let blog = await Blog.create({ title: 'my book' });
 blog.title = 'changed';
+blog.file = fs.createReadStream('file.zip'); // upload file when save record
 await blog.save();
 
 // find records with paging

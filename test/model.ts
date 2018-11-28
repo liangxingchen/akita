@@ -1,6 +1,7 @@
 /* eslint no-undefined:0 */
 
-import test = require('tape');
+import * as fs from 'fs';
+import * as test from 'tape';
 import akita, { Model } from '../src/node';
 
 const client = akita.create({
@@ -111,6 +112,17 @@ test('Model', (troot) => {
 
     t.deepEquals(goods.body, { id: 1001, title: 'iPad' });
 
+    t.end();
+  });
+
+  troot.test('upload file when save', async (t) => {
+    let goods = await Goods.findOne();
+    goods.title = 'iPad';
+    goods.file = fs.createReadStream(process.cwd() + '/LICENSE');
+    let res = await goods.save().json();
+    t.deepEqual(res.method, 'PATCH');
+    t.equal(res.body.title, 'iPad');
+    t.deepEqual(res.files.file.filename, 'LICENSE');
     t.end();
   });
 

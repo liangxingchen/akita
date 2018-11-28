@@ -11,14 +11,12 @@ export default class Model {
   static pk: string;
   static get: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   static post: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  static upload: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   static put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   static patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   static delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   __params?: any;
   get: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   post: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  upload: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;

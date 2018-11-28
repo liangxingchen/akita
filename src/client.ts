@@ -53,6 +53,44 @@ function create(options?: Akita.ClientOptions) {
     return FormData;
   }
 
+  client.createBody = function (body: any): Object | FormData {
+    let FormData = getFormDataClass();
+    if (!body || typeof body !== 'object' || !FormData || isBuffer(body) || body instanceof ArrayBuffer || body instanceof FormData) return body;
+
+    // 检查是否需要上传文件
+    let form = null;
+    // eslint-disable-next-line guard-for-in
+    for (let key in body) {
+      let value = body[key];
+      if (
+        value
+        && typeof value === 'object'
+        && (
+          (
+            // Readable Stream
+            typeof value.pipe === 'function'
+            && value.readable !== false
+            && typeof value._readableState === 'object'
+          )
+          ||
+          (
+            // Browser File
+            typeof value.slice === 'function'
+            && value.size
+            && value.lastModified
+          )
+        )
+      ) {
+        // upload file
+        form = new FormData();
+        // eslint-disable-next-line no-loop-func
+        Object.keys(body).forEach((name) => form.append(name, body[name]));
+        break;
+      }
+    }
+    return form || body;
+  };
+
   client.request = function request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any>, reducer?: Akita.Reducer<any>): Akita.Result<any> {
     init = Object.assign({}, init);
     let queryParams = Object.assign({}, init.query);
@@ -68,32 +106,21 @@ function create(options?: Akita.ClientOptions) {
     }
 
     if (init.body && typeof init.body === 'object') {
-      let body: Object = init.body;
+      init.body = client.createBody(init.body);
       let FormData = getFormDataClass();
 
-      if (init.method === 'UPLOAD') {
-        // 如果是UPLOAD
-        init.method = 'POST';
-        if (!FormData) {
-          /* istanbul ignore next */
-          throw new Error('Akita Error: Can not resolve FormData class when use upload method');
-        }
-        if (!(body instanceof FormData)) {
-          // 自动构造 FormData
-          let form = new FormData();
-          Object.keys(body).forEach((name) => form.append(name, body[name]));
-          init.body = form;
-        }
-      } else if (!isBuffer(body) && !(FormData && body instanceof FormData) && !(body instanceof ArrayBuffer)) {
+      if (!isBuffer(init.body) && !(FormData && init.body instanceof FormData) && !(init.body instanceof ArrayBuffer)) {
         // 如果是普通POST请求，转换成JSON或urlencoded
         if (!init.headers) {
           init.headers = {};
         }
-        if (!init.headers['Content-Type'] || init.headers['Content-Type'] === 'application/json') {
-          init.headers['Content-Type'] = 'application/json';
-          init.body = JSON.stringify(body);
+        if (!init.headers['Content-Type'] || init.headers['Content-Type'].indexOf('json') > -1) {
+          if (!init.headers['Content-Type']) {
+            init.headers['Content-Type'] = 'application/json';
+          }
+          init.body = JSON.stringify(init.body);
         } else if (init.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-          init.body = qs.stringify(body);
+          init.body = qs.stringify(init.body);
         } else {
           /* istanbul ignore next */
           throw new Error(`Akita Error: Unsupported Content-Type ${init.headers['Content-Type']}`);
