@@ -56,7 +56,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
 
     // 检测上传
     let fn = 'request';
-    if (init.method === 'POST' && init.body instanceof FormData) {
+    if (init.body instanceof FormData) {
       // eslint-disable-next-line guard-for-in
       for (let key in init.body) {
         let value = init.body[key];

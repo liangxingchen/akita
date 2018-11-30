@@ -118,10 +118,16 @@ test('Model', (troot) => {
   troot.test('upload file when save', async (t) => {
     let goods = await Goods.findOne();
     goods.title = 'iPad';
+    goods.number = 123;
+    goods.bool = false;
+    goods.array = [123, '456'];
     goods.file = fs.createReadStream(process.cwd() + '/LICENSE');
     let res = await goods.save().json();
     t.deepEqual(res.method, 'PATCH');
     t.equal(res.body.title, 'iPad');
+    t.equal(res.body.number, '123');
+    t.equal(res.body.bool, 'false');
+    t.deepEqual(res.body.array, ['123', '456']);
     t.deepEqual(res.files.file.filename, 'LICENSE');
     t.end();
   });

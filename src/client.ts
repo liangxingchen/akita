@@ -12,6 +12,27 @@ const debug = Debugger('akita:client');
 
 const INSTANCES = {};
 
+function isStream(value: any): boolean {
+  return (
+    value
+    && typeof value === 'object'
+    && typeof value.pipe === 'function'
+    && value.readable !== false
+    && typeof value._readableState === 'object'
+  );
+}
+
+// Browser File
+function isFile(value: any): boolean {
+  return (
+    value
+    && typeof value === 'object'
+    && typeof value.slice === 'function'
+    && value.size
+    && value.lastModified
+  );
+}
+
 function resolve(key: string) {
   if (!INSTANCES[key]) {
     INSTANCES[key] = create();
@@ -58,33 +79,33 @@ function create(options?: Akita.ClientOptions) {
     if (!body || typeof body !== 'object' || !FormData || isBuffer(body) || body instanceof ArrayBuffer || body instanceof FormData) return body;
 
     // 检查是否需要上传文件
-    let form = null;
+    let form: FormData = null;
+
+    function addField(path: string, value: any) {
+      if (typeof value === 'undefined') return;
+      if (!isStream(value) && !isFile(value)) {
+        if (typeof value === 'boolean' || typeof value === 'number' || value === null || value instanceof Date) {
+          value = String(value);
+        } else if (typeof value === 'object') {
+          // array or object
+          // eslint-disable-next-line guard-for-in
+          for (let key in value) {
+            addField(path + '[' + key + ']', value[key]);
+          }
+          return;
+        }
+      }
+      form.append(path, value);
+    }
+
     // eslint-disable-next-line guard-for-in
     for (let key in body) {
       let value = body[key];
-      if (
-        value
-        && typeof value === 'object'
-        && (
-          (
-            // Readable Stream
-            typeof value.pipe === 'function'
-            && value.readable !== false
-            && typeof value._readableState === 'object'
-          )
-          ||
-          (
-            // Browser File
-            typeof value.slice === 'function'
-            && value.size
-            && value.lastModified
-          )
-        )
-      ) {
+      if (isStream(value) || isFile(value)) {
         // upload file
         form = new FormData();
         // eslint-disable-next-line no-loop-func
-        Object.keys(body).forEach((name) => form.append(name, body[name]));
+        Object.keys(body).forEach((path) => addField(path, body[path]));
         break;
       }
     }
