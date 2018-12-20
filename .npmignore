@@ -4,3 +4,4 @@ coverage
 .history
 .nyc_output
 tsconfig.json
+yarn.lock
