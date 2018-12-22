@@ -125,7 +125,7 @@ export interface Result<R> extends Promise<R> {
   headers(): Promise<Headers>;
   buffer(): Promise<Buffer>;
   blob(): Promise<Blob>;
-  text(): Promise<String>;
+  text(): Promise<string>;
   json(): Promise<any>;
 }
 
