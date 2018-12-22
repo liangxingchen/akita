@@ -51,7 +51,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
         req.header = {};
       }
       req.method = 'PUT';
-      req.header['Akita-Method'] = 'PATCH';
+      req.header['akita-method'] = 'PATCH';
     }
 
     // 检测上传

@@ -1,3 +1,5 @@
+import { Readable } from 'stream';
+
 export class Model {
   static path: string;
   static pk: string;
@@ -41,6 +43,7 @@ export interface ChangeStream<T> {
   read(): Promise<Change<T>>;
   on(event: 'change', fn: (data: Change<T>) => void): this;
   on(event: 'error', fn: (error: Error) => void): this;
+  on(event: 'close', fn: () => void): this;
   removeListener(name: string, fn: Function): this;
   removeAllListeners(name: string): this;
   cancel(): void;
@@ -117,7 +120,7 @@ export interface Reducer<T> {
 
 export interface Result<R> extends Promise<R> {
   response(): Promise<Response>;
-  stream(): Promise<NodeJS.ReadableStream>;
+  stream(): Promise<Readable | ReadableStream>;
   ok(): Promise<boolean>;
   status(): Promise<number>;
   statusText(): Promise<string>;

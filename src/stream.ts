@@ -1,23 +1,25 @@
 import Debugger = require('debug');
 import * as Akita from '..';
+import { Readable } from 'stream';
 
 const debug = Debugger('akita:stream');
 
 export default class ChangeStream<T> {
   closed: boolean;
-  _stream: NodeJS.ReadableStream | ReadableStream;
+  _stream: Readable | ReadableStream;
   _queue: Akita.Change<T>[];
   _resolve: Function;
   _reject: Function;
   _reader: ReadableStreamReader;
   _handler: (data: Buffer) => void;
+  _close: () => void;
   _cache: string;
   _reducer: Akita.Reducer<any>;
   _listeners: {
     [name: string]: Function[];
   };
 
-  constructor(stream: NodeJS.ReadableStream | ReadableStream, reducer: Akita.Reducer<any>) {
+  constructor(stream: Readable | ReadableStream, reducer: Akita.Reducer<any>) {
     this.closed = false;
     this._stream = stream;
     this._queue = [];
@@ -26,6 +28,7 @@ export default class ChangeStream<T> {
     this._listeners = {};
 
     const parseLine = () => {
+      if (this.closed) return;
       let index = this._cache.indexOf('\n');
       if (index < 0) return;
       let line = this._cache.substr(0, index);
@@ -63,28 +66,44 @@ export default class ChangeStream<T> {
       }
       parseLine();
     };
+
     this._handler = (data: Buffer | string) => {
+      if (this.closed) return;
       let string = data.toString();
       debug('receive', string);
       this._cache += string;
       parseLine();
     };
 
+    this._close = () => {
+      if (this.closed) return;
+      if (this.listenerCount('close')) {
+        this.emit('close');
+      }
+      delete this._stream;
+      delete this._reader;
+      delete this._cache;
+      delete this._reducer;
+      delete this._handler;
+      this._listeners = {};
+      this._queue = [];
+    };
+
     // @ts-ignore
     if (stream.getReader) {
-      // @ts-ignore 浏览器 ReadableStream
-      this._reader = stream.getReader();
+      this._reader = (stream as ReadableStream).getReader();
       const read = ({ done, value }) => {
+        if (this.closed) return;
         this._handler(value || '');
         if (done) {
-          this.closed = true;
+          this._close();
         }
         this._reader.read().then(read);
       };
       this._reader.read().then(read);
     } else {
-      // @ts-ignore NodeJS.ReadableStream
-      stream.on('data', this._handler);
+      (stream as Readable).on('data', this._handler);
+      (stream as Readable).on('close', this._close);
     }
   }
 
@@ -130,16 +149,16 @@ export default class ChangeStream<T> {
   }
 
   cancel() {
-    if (this.closed) return Promise.reject(new Error('Can not cancel closed stream.'));
+    if (this.closed) throw new Error('Can not cancel closed stream.');
     debug('cancel watch');
+    this.closed = true;
     // @ts-ignore
     if (this._stream.cancel) {
-      // @ts-ignore 浏览器 ReadableStream
-      this._stream.cancel();
+      (this._stream as ReadableStream).cancel();
     } else {
-      // @ts-ignore NodeJS.ReadableStream
-      this._stream.destroy();
+      (this._stream as Readable).destroy();
+      (this._stream as Readable).removeListener('data', this._handler);
     }
-    this.closed = true;
+    this._close();
   }
 }

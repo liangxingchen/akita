@@ -222,6 +222,7 @@ test('Model', (troot) => {
     t.equal(event.type, 'MODIFIED');
     t.equal(event.object.id, 1002);
     t.equal(event.object.title, 'iMac');
+    stream.cancel();
     t.end();
   });
 

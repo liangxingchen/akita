@@ -1,6 +1,7 @@
 import isBuffer = require('is-buffer');
 import Debugger = require('debug');
 import ChangeStream from './stream';
+import { Readable } from 'stream';
 import * as Akita from '..';
 
 const debug = Debugger('akita:result');
@@ -36,8 +37,7 @@ export default class Result<T> {
     return this._responsePromise;
   }
 
-  stream(): Promise<NodeJS.ReadableStream> {
-    // @ts-ignore res.body 兼容 NodeJS.ReadableStream
+  stream(): Promise<Readable | ReadableStream> {
     return this.response().then((res) => res.body);
   }
 
