@@ -26,9 +26,13 @@ export class Model {
   request(path: string, init?: RequestInit, reducer?: Reducer<any>): Result<any>;
   save(init?: RequestInit): Result<void>;
   remove(init?: RequestInit): Result<void>;
-}
 
-interface Model extends HttpMixed {
+  // HTTTP
+  get(path: string, init?: RequestInit): Result<any>;
+  post(path: string, init?: RequestInit): Result<any>;
+  put(path: string, init?: RequestInit): Result<any>;
+  patch(path: string, init?: RequestInit): Result<any>;
+  delete(path: string, init?: RequestInit): Result<any>;
 }
 
 export type ChangeType = 'ADDED' | 'MODIFIED' | 'DELETED';
@@ -84,14 +88,6 @@ export interface Query<R> extends Promise<R> {
   exec(): Result<R>;
 }
 
-export interface HttpMixed {
-  get(path: string, init?: RequestInit): Result<any>;
-  post(path: string, init?: RequestInit): Result<any>;
-  put(path: string, init?: RequestInit): Result<any>;
-  patch(path: string, init?: RequestInit): Result<any>;
-  delete(path: string, init?: RequestInit): Result<any>;
-}
-
 export interface PaginateResult<T> {
   total: number;
   page: number;
@@ -139,7 +135,7 @@ export interface ClientOptions {
   FormData?: typeof FormData;
 }
 
-export interface Client extends HttpMixed {
+export interface Client {
   setOptions(options: ClientOptions): void;
   create(options: ClientOptions): Client;
   resolve(key: string): Client;
@@ -148,6 +144,13 @@ export interface Client extends HttpMixed {
   _count: number;
   createBody(body: any): Object | FormData;
   (path: string): typeof Model;
+
+  // HTTTP
+  get(path: string, init?: RequestInit): Result<any>;
+  post(path: string, init?: RequestInit): Result<any>;
+  put(path: string, init?: RequestInit): Result<any>;
+  patch(path: string, init?: RequestInit): Result<any>;
+  delete(path: string, init?: RequestInit): Result<any>;
 }
 
 declare const akita: Client;

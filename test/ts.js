@@ -9,6 +9,7 @@ require('./model.ts');
 
 require('tape').onFinish(() => {
   server.close();
+  process.exit();
 });
 
 require('tape').onFailure(() => {

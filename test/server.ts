@@ -32,6 +32,7 @@ app.use(async (ctx, next) => {
         FILES[fieldname] = file;
       }
     });
+    // @ts-ignore
     ctx.request.body = fields;
     return next();
   });
@@ -146,6 +147,7 @@ app.use((ctx) => {
     url: ctx.url,
     headers: ctx.headers,
     query: ctx.query,
+    // @ts-ignore
     body: ctx.request.body,
     // @ts-ignore
     files: ctx.files

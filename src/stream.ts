@@ -77,6 +77,7 @@ export default class ChangeStream<T> {
 
     this._close = () => {
       if (this.closed) return;
+      this.closed = true;
       if (this.listenerCount('close')) {
         this.emit('close');
       }
@@ -151,7 +152,6 @@ export default class ChangeStream<T> {
   cancel() {
     if (this.closed) throw new Error('Can not cancel closed stream.');
     debug('cancel watch');
-    this.closed = true;
     // @ts-ignore
     if (this._stream.cancel) {
       (this._stream as ReadableStream).cancel();
