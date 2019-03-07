@@ -1,4 +1,6 @@
 import { Readable } from 'stream';
+import { Agent } from 'http';
+import { Agent as HttpsAgent } from 'https';
 
 export class Model {
   static path: string;
@@ -101,13 +103,25 @@ export interface PaginateResult<T> {
 }
 
 export interface RequestInit {
+  // akita
   path?: string;
-  method?: string;
   query?: any;
+
+  // fetch standard
+  method?: string;
   body?: any;
   headers?: any;
   mode?: string;
   credentials?: string;
+  redirect?: 'follow' | 'manual' | 'error';
+  signal?: any;
+
+  // node-fetch
+  follow?: number;
+  timeout?: number;
+  compress?: boolean;
+  size?: number;
+  agent?: Agent | HttpsAgent;
 }
 
 export interface Reducer<T> {

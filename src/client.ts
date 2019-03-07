@@ -187,6 +187,7 @@ function create(options?: Akita.ClientOptions) {
 
     client._count += 1;
 
+    // @ts-ignore Result 与 Promise 兼容
     return new Result(fetch, path, init, query, reducer);
   };
 

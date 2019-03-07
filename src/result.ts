@@ -158,4 +158,8 @@ export default class Result<T> {
   catch(onFail: (reason: any) => PromiseLike<never>): Promise<void> {
     return this.json().catch(onFail);
   }
+
+  finally(fn: () => void) {
+    return this.json().finally(fn);
+  }
 }

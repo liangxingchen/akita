@@ -43,6 +43,7 @@ export default class Model {
   static create(data: any): Akita.Query<any> {
     let query = new Query(this, 'create');
     query._data = data || {};
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -72,6 +73,7 @@ export default class Model {
     } else if (typeof id === 'object') {
       query._data = id;
     }
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -96,6 +98,7 @@ export default class Model {
     } else if (typeof conditions !== 'undefined') {
       query._id = conditions;
     }
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -112,6 +115,7 @@ export default class Model {
     if (conditions) {
       query.where(conditions);
     }
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -128,6 +132,7 @@ export default class Model {
     if (conditions) {
       query.where(conditions);
     }
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -144,6 +149,7 @@ export default class Model {
     if (conditions) {
       query.where(conditions);
     }
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -160,6 +166,7 @@ export default class Model {
     if (conditions) {
       query.where(conditions);
     }
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -182,6 +189,7 @@ export default class Model {
         throw new Error('Akita Error: invalid params for Query#findOne()');
       }
     }
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 
@@ -193,6 +201,7 @@ export default class Model {
   static findByPk(id: string | number): Akita.Query<any> {
     let query = new Query(this, 'findByPk');
     query._id = id;
+    // @ts-ignore Query 与 Promise 兼容
     return query;
   }
 

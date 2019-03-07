@@ -1,11 +1,12 @@
 import * as fs from 'fs';
 import * as test from 'tape';
+import * as http from 'http';
 import client from '../src/node';
 import { version } from '../package.json';
 
 const client2 = client.resolve('http');
 
-client.setOptions({ init: { headers: { Agent: 'Akita' }}});
+client.setOptions({ init: { headers: { Agent: 'Akita' } } });
 client2.setOptions({ apiRoot: 'http://localhost:28000' });
 
 test('HTTP', (troot) => {
@@ -17,15 +18,15 @@ test('HTTP', (troot) => {
   });
 
   troot.test('test query', (t) => {
-    client.get('http://localhost:28000/get', { query: { foo: { bar: 'baz' }}}).then((res) => {
+    client.get('http://localhost:28000/get', { query: { foo: { bar: 'baz' } } }).then((res) => {
       t.equal(res.url, '/get?foo%5Bbar%5D=baz');
-      t.deepEqual(res.query, { foo: { bar: 'baz' }});
+      t.deepEqual(res.query, { foo: { bar: 'baz' } });
       t.end();
     }, t.end);
   });
 
   troot.test('test headers', (t) => {
-    client.get('http://localhost:28000', { headers: { foo: 'bar' }}).then((res) => {
+    client.get('http://localhost:28000', { headers: { foo: 'bar' } }).then((res) => {
       t.equal(res.headers.foo, 'bar');
       t.equal(res.headers['user-agent'], `Akita/${version} (+https://github.com/maichong/akita)`);
       t.end();
@@ -91,6 +92,28 @@ test('HTTP', (troot) => {
   troot.test('test buffer', (t) => {
     client2.get('/get').buffer().then((res) => {
       t.ok(Buffer.isBuffer(res));
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('HTTP Agent ', (t) => {
+    client2.get('/get', {
+      agent: new http.Agent({
+        keepAlive: false
+      })
+    }).then((res) => {
+      t.equal(res.headers['connection'], 'close');
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('HTTP Agent keepAlive', (t) => {
+    client2.get('/get', {
+      agent: new http.Agent({
+        keepAlive: true
+      })
+    }).then((res) => {
+      t.equal(res.headers['connection'], 'keep-alive');
       t.end();
     }, t.end);
   });

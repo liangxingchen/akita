@@ -253,6 +253,7 @@ export default class Query<T> {
       default:
     }
 
+    // @ts-ignore Query 与 Promise 兼容
     this._result = M.request(path, init, this, reducer);
     return this._result;
   }
@@ -398,5 +399,9 @@ export default class Query<T> {
 
   catch(onFail: (reason: any) => Promise<never>) {
     return this.exec().catch(onFail);
+  }
+
+  finally(fn: () => void) {
+    return this.exec().finally(fn);
   }
 }
