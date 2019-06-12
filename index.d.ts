@@ -7,6 +7,8 @@ export class Model {
   static pk: string;
   static client: Client;
 
+  constructor(data?: any, params?: any);
+
   static create<T>(this: { new(): T }, data: Object): Query<T>;
   static update<T>(this: { new(): T }, data?: Object): Query<T>;
   static update<T>(this: { new(): T }, id: string | number, data: any): Query<T>;
@@ -24,7 +26,6 @@ export class Model {
   static patch(path: string, init?: RequestInit): Result<any>;
   static delete(path: string, init?: RequestInit): Result<any>;
 
-  constructor(data?: any, params?: any);
   request(path: string, init?: RequestInit, reducer?: Reducer<any>): Result<any>;
   save(init?: RequestInit): Result<void>;
   remove(init?: RequestInit): Result<void>;
@@ -91,14 +92,12 @@ export interface Query<R> extends Promise<R> {
 }
 
 export interface PaginateResult<T> {
-  total: number;
-  page: number;
   limit: number;
+  total: number;
   totalPage: number;
+  page: number;
   previous: number;
   next: number;
-  search: string;
-  filters: any;
   results: T[];
 }
 
@@ -150,14 +149,15 @@ export interface ClientOptions {
 }
 
 export interface Client {
+  _options: ClientOptions;
+  _count: number;
+
+  (path: string): typeof Model;
   setOptions(options: ClientOptions): void;
   create(options: ClientOptions): Client;
   resolve(key: string): Client;
   request(path: string, init?: RequestInit, query?: Query<any>, reducer?: Reducer<any>): Result<any>;
-  _options: ClientOptions;
-  _count: number;
   createBody(body: any): Object | FormData;
-  (path: string): typeof Model;
 
   // HTTTP
   get(path: string, init?: RequestInit): Result<any>;

@@ -1,10 +1,10 @@
-import stream = require('stream');
-import http = require('http');
-import Koa = require('koa');
-import Router = require('koa-router');
-import bodyParser = require('koa-bodyparser');
+import * as stream from 'stream';
+import * as http from 'http';
+import * as Koa from 'koa';
+import * as Router from 'koa-router';
+import * as bodyParser from 'koa-bodyparser';
+import * as asyncBusboy from 'async-busboy';
 import { PaginateResult } from '..';
-const asyncBusboy = require('async-busboy');
 
 const router = new Router();
 const app = new Koa();
@@ -80,9 +80,7 @@ router.get('/goods/paginate', (ctx) => {
     totalPage: 1,
     previous: 0,
     next: 0,
-    search: ctx.query._search || '',
     results: data.goods,
-    filters
   };
   ctx.body = result;
 });
@@ -99,10 +97,10 @@ router.get('/goods/watch', (ctx) => {
   ctx.body = s;
   ctx.type = 'json';
 
-  s.write(JSON.stringify({ type: 'ADDED', object: data.goods[0] }) + '\n');
+  s.write(`${JSON.stringify({ type: 'ADDED', object: data.goods[0] })}\n`);
 
   setTimeout(() => {
-    s.write(JSON.stringify({ type: 'MODIFIED', object: data.goods[1] }) + '\n');
+    s.write(`${JSON.stringify({ type: 'MODIFIED', object: data.goods[1] })}\n`);
     s.destroy();
   }, 1000);
 });

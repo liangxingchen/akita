@@ -1,4 +1,4 @@
-import Debugger = require('debug');
+import * as Debugger from 'debug';
 import * as Akita from '..';
 import { Readable } from 'stream';
 

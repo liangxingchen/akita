@@ -1,5 +1,5 @@
-import isBuffer = require('is-buffer');
-import Debugger = require('debug');
+import * as isBuffer from 'is-buffer';
+import * as Debugger from 'debug';
 import ChangeStream from './stream';
 import { Readable } from 'stream';
 import * as Akita from '..';

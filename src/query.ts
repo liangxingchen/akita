@@ -1,5 +1,5 @@
-import Debugger = require('debug');
-import Akita = require('..');
+import * as Debugger from 'debug';
+import * as Akita from '..';
 
 const debug = Debugger('akita:query');
 

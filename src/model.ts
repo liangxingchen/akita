@@ -1,4 +1,4 @@
-import Debugger = require('debug');
+import * as Debugger from 'debug';
 import methods from './methods';
 import Query from './query';
 import * as Akita from '..';
@@ -14,12 +14,13 @@ export default class Model {
   static put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   static patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   static delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  __params?: any;
+
   get: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   post: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
   delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  private __params?: any;
 
   constructor(data?: any, params?: any) {
     if (data) {

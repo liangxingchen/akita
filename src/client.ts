@@ -1,8 +1,8 @@
 /* eslint no-use-before-define:0 */
 
-import Debugger = require('debug');
-import qs = require('qs');
-import isBuffer = require('is-buffer');
+import * as Debugger from 'debug';
+import * as qs from 'qs';
+import * as isBuffer from 'is-buffer';
 import methods from './methods';
 import Model from './model';
 import Result from './result';
@@ -90,7 +90,7 @@ function create(options?: Akita.ClientOptions) {
           // array or object
           // eslint-disable-next-line guard-for-in
           for (let key in value) {
-            addField(path + '[' + key + ']', value[key]);
+            addField(`${path}[${key}]`, value[key]);
           }
           return;
         }

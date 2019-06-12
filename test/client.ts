@@ -72,7 +72,7 @@ test('HTTP', (troot) => {
     client.post('http://localhost:28000', {
       body: {
         foo: 'bar',
-        file: fs.createReadStream(process.cwd() + '/LICENSE')
+        file: fs.createReadStream(`${process.cwd()}/LICENSE`)
       }
     }).then((res) => {
       t.deepEqual(res.method, 'POST');

@@ -53,23 +53,8 @@ test('Model', (troot) => {
     t.end();
   });
 
-  troot.test('filters & search', async (t) => {
-    let res = await Goods.paginate().where({ a: 1 });
-    t.deepEqual(res.filters, { a: '1' });
-
-    res = await Goods.paginate().where({ a: { $gt: 1 } });
-    t.deepEqual(res.filters, { a: { $gt: '1' } });
-
-    res = await Goods.paginate().where('a').gt(1).search('keyword');
-    t.deepEqual(res.filters, { a: { $gt: '1' } });
-    t.deepEqual(res.search, 'keyword');
-
-    t.end();
-  });
-
   troot.test('page & limit', async (t) => {
     let res = await Goods.paginate().where({ a: 1 }).page(2).limit(100);
-    t.deepEqual(res.filters, { a: '1' });
     t.deepEqual(res.page, 2);
     t.deepEqual(res.limit, 100);
 
@@ -121,7 +106,7 @@ test('Model', (troot) => {
     goods.number = 123;
     goods.bool = false;
     goods.array = [123, '456'];
-    goods.file = fs.createReadStream(process.cwd() + '/LICENSE');
+    goods.file = fs.createReadStream(`${process.cwd()}/LICENSE`);
     let res = await goods.save().json();
     t.deepEqual(res.method, 'PATCH');
     t.equal(res.body.title, 'iPad');
