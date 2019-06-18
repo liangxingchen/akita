@@ -119,7 +119,12 @@ function create(options?: Akita.ClientOptions) {
 
     let queryString = qs.stringify(queryParams);
     if (queryString) {
-      path += `?${queryString}`;
+      if (path.indexOf('?') < 0) {
+        queryString = `?${queryString}`;
+      } else if (path[path.length - 1] !== '&' && path[path.length - 1] !== '?') {
+        queryString = `&${queryString}`;
+      }
+      path += queryString;
     }
 
     if (init.headers) {

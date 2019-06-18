@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.8.0",
+  "version": "0.8.1",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
@@ -54,16 +54,16 @@
   "devDependencies": {
     "@types/koa": "^2.0.48",
     "@types/koa-bodyparser": "^4.3.0",
-    "@types/koa-router": "^7.0.40",
+    "@types/koa-router": "^7.0.41",
     "@types/node": "^12.0.8",
     "@types/tape": "^4.2.33",
     "@typescript-eslint/eslint-plugin": "^1.10.2",
     "@typescript-eslint/parser": "^1.10.2",
     "async-busboy": "^0.7.0",
-    "babel-eslint": "^10.0.1",
+    "babel-eslint": "^10.0.2",
     "cross-env": "^5.2.0",
     "eslint": "^5.16.0",
-    "eslint-config-alloy": "^2.0.3",
+    "eslint-config-alloy": "^2.0.4",
     "eslint-plugin-react": "^7.13.0",
     "koa": "^2.7.0",
     "koa-bodyparser": "^4.2.1",
@@ -71,7 +71,7 @@
     "koa-router": "^7.4.0",
     "nyc": "^14.1.1",
     "tape": "^4.10.2",
-    "ts-node": "^8.2.0",
-    "typescript": "^3.5.1"
+    "ts-node": "^8.3.0",
+    "typescript": "^3.5.2"
   }
 }

@@ -31,8 +31,10 @@ module.exports = {
     'prefer-template': 'error',
     'prefer-object-spread': 'off',
     radix: 'off',
+    'react/jsx-fragments': 'off',
     'react/jsx-indent': ['error', 2],
     'react/jsx-indent-props': ['error', 2],
+    'require-atomic-updates': 'off',
     // 一个缩进必须用两个空格替代
     '@typescript-eslint/indent': [
       'error',
@@ -40,8 +42,13 @@ module.exports = {
       { SwitchCase: 1, flatTernaryExpressions: true }
     ],
     '@typescript-eslint/explicit-member-accessibility': 'off',
+    '@typescript-eslint/no-empty-interface': 'off',
     '@typescript-eslint/no-inferrable-types': 'off',
+    '@typescript-eslint/no-var-requires': 'off',
+    '@typescript-eslint/no-this-alias': 'off',
+    '@typescript-eslint/no-object-literal-type-assertion': 'off',
     '@typescript-eslint/prefer-function-type': 'off',
+    '@typescript-eslint/unified-signatures': 'off',
     '@typescript-eslint/member-ordering': ['error', {
       default: [
         "public-static-field",

@@ -11,7 +11,8 @@ client2.setOptions({ apiRoot: 'http://localhost:28000' });
 
 test('HTTP', (troot) => {
   troot.test('test get', (t) => {
-    client.get('http://localhost:28000/get').then((res) => {
+    client.get('http://localhost:28000/get?a=b&c=d').then((res) => {
+      t.equal(res.url, '/get?a=b&c=d');
       t.ok(res);
       t.end();
     }, t.end);
@@ -21,6 +22,30 @@ test('HTTP', (troot) => {
     client.get('http://localhost:28000/get', { query: { foo: { bar: 'baz' } } }).then((res) => {
       t.equal(res.url, '/get?foo%5Bbar%5D=baz');
       t.deepEqual(res.query, { foo: { bar: 'baz' } });
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('test query', (t) => {
+    client.get('http://localhost:28000/get?', { query: { foo: { bar: 'baz' } } }).then((res) => {
+      t.equal(res.url, '/get?foo%5Bbar%5D=baz');
+      t.deepEqual(res.query, { foo: { bar: 'baz' } });
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('test query', (t) => {
+    client.get('http://localhost:28000/get?a=b', { query: { foo: { bar: 'baz' } } }).then((res) => {
+      t.equal(res.url, '/get?a=b&foo%5Bbar%5D=baz');
+      t.deepEqual(res.query, { a: 'b', foo: { bar: 'baz' } });
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('test query', (t) => {
+    client.get('http://localhost:28000/get?a=b&', { query: { foo: { bar: 'baz' } } }).then((res) => {
+      t.equal(res.url, '/get?a=b&foo%5Bbar%5D=baz');
+      t.deepEqual(res.query, { a: 'b', foo: { bar: 'baz' } });
       t.end();
     }, t.end);
   });
