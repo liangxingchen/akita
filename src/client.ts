@@ -2,7 +2,7 @@
 
 import * as Debugger from 'debug';
 import * as qs from 'qs';
-import * as isBuffer from 'is-buffer';
+import isBuffer = require('is-buffer');
 import methods from './methods';
 import Model from './model';
 import Result from './result';

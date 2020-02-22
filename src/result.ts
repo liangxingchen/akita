@@ -1,4 +1,4 @@
-import * as isBuffer from 'is-buffer';
+import isBuffer = require('is-buffer');
 import * as Debugger from 'debug';
 import ChangeStream from './stream';
 import { Readable } from 'stream';

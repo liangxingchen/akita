@@ -4,6 +4,15 @@ import FormData from './form-data';
 import Headers from './headers';
 import * as Akita from '..';
 
+function uint8ArrayToString(data: Uint8Array) {
+  let text: string = '';
+  // eslint-disable-next-line @typescript-eslint/prefer-for-of
+  for (let i = 0; i < data.length; i++) {
+    text += String.fromCharCode(data[i]);
+  }
+  return text;
+}
+
 export default function fetch(url: string, init: Akita.RequestInit): Promise<Response> {
   return new Promise((resolve, reject) => {
     let response = {
@@ -31,7 +40,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
           return Promise.resolve(response._result);
         }
         let arr = new Uint8Array(response._result);
-        let str = String.fromCharCode.apply(String, arr);
+        let str = uint8ArrayToString(arr);
         str = decodeURIComponent(escape((str))); // 没有这一步中文会乱码
         return Promise.resolve(str);
       }
