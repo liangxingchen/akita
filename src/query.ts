@@ -15,7 +15,7 @@ export default class Query<T> {
     [key: string]: any;
   };
 
-  _params: void | Object; // 查询时，起到作用的路径参数列表
+  _params?: Object; // 查询时，起到作用的路径参数列表
   _search: string;
 
   _op: string;
@@ -83,10 +83,11 @@ export default class Query<T> {
     if (!this._filters) {
       this._filters = {};
     }
-    if (typeof conditions === 'object' && typeof value === 'undefined') {
+    if (typeof conditions === 'object' && value === undefined) {
       this._filters = Object.assign(this._filters, conditions);
     } else if (typeof conditions === 'string') {
-      if (typeof value === 'undefined') { // where('foo')
+      if (value === undefined) {
+        // where('foo')
         this._lastField = conditions;
       } else {
         this._filters[conditions] = value;
@@ -206,7 +207,7 @@ export default class Query<T> {
 
     switch (this._op) {
       case 'remove':
-        reducer = (json: any) => (json && json.removed) || 0;
+        reducer = (json: any) => json?.removed || 0;
         break;
       case 'findOne':
         // @ts-ignore
@@ -244,7 +245,7 @@ export default class Query<T> {
       case 'paginate':
         // @ts-ignore
         reducer = (json: any) => {
-          if (json && json.results) {
+          if (json?.results) {
             json.results = json.results.map(createRecord);
           }
           return json;

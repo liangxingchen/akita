@@ -158,22 +158,33 @@ test('Model', (troot) => {
   });
 
   troot.test('query', async (t) => {
-    let item = await client('item').find({ a: '1' })
+    let item = await client('item')
+      .find({ a: '1' })
       .where({ b: '2', c: '3' })
       .where('d', '4')
-      .where('e').eq('5')
-      .where('f').ne('6')
-      .where('g').regex('exp')
-      .where('h').in(['a', 'b'])
-      .where('i').nin(['c'])
-      .where('j').lt('7')
-      .where('k').lte('8')
-      .where('l').gt('9')
-      .where('m').gte('10')
+      .where('e')
+      .eq('5')
+      .where('f')
+      .ne('6')
+      .where('g')
+      .regex('exp')
+      .where('h')
+      .in(['a', 'b'])
+      .where('i')
+      .nin(['c'])
+      .where('j')
+      .lt('7')
+      .where('k')
+      .lte('8')
+      .where('l')
+      .gt('9')
+      .where('m')
+      .gte('10')
       .limit(20)
       .sort('-sort')
       .arg('user', 'uid')
-      .exec().json();
+      .exec()
+      .json();
 
     t.deepEqual(item.query, {
       a: '1',
@@ -211,15 +222,16 @@ test('Model', (troot) => {
     t.end();
   });
 
-  troot.test('watch event', async (t) => {
-    let stream = await Goods.watch();
-    stream.on('change', ({ type, object }) => {
-      t.equal(type, 'ADDED');
-      t.equal(object.id, 1001);
-      t.equal(object.title, 'iPhone');
-      stream.cancel();
-      t.equal(stream.closed, true);
-      t.end();
+  troot.test('watch event', (t) => {
+    Goods.watch().then((stream) => {
+      stream.on('change', ({ type, object }) => {
+        t.equal(type, 'ADDED');
+        t.equal(object.id, 1001);
+        t.equal(object.title, 'iPhone');
+        stream.cancel();
+        t.equal(stream.closed, true, 'stream should be closed');
+        t.end();
+      });
     });
   });
 

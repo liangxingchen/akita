@@ -96,7 +96,7 @@ export default class Model {
     let query = new Query<number>(this, 'remove');
     if (conditions !== null && typeof conditions === 'object') {
       query.where(conditions);
-    } else if (typeof conditions !== 'undefined') {
+    } else if (conditions !== undefined) {
       query._id = conditions;
     }
     // @ts-ignore Query 与 Promise 兼容
@@ -206,7 +206,12 @@ export default class Model {
     return query;
   }
 
-  static request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any> | null, reducer?: Akita.Reducer<any>) {
+  static request(
+    path: string,
+    init?: Akita.RequestInit,
+    query?: Akita.Query<any> | null,
+    reducer?: Akita.Reducer<any>
+  ) {
     let p = this.path || '';
 
     if (p[p.length - 1] !== '/' && path) {
@@ -219,18 +224,18 @@ export default class Model {
 
     if (path && init && (init.query || init.body)) {
       let queryParams = init.query && Object.assign({}, init.query);
-      let bodyParams = init.body && (typeof init.body === 'object') && Object.assign({}, init.body);
+      let bodyParams = init.body && typeof init.body === 'object' && Object.assign({}, init.body);
       let params = {};
       let queryEmits = [];
       let bodyEmits = [];
       path = path.replace(/:\w+/g, (match) => {
         let key = match.substr(1); // trim :
-        if (queryParams && queryParams.hasOwnProperty(key)) {
+        if (queryParams?.hasOwnProperty(key)) {
           queryEmits.push(key);
           params[key] = queryParams[key];
           return encodeURIComponent(queryParams[key]);
         }
-        if (bodyParams && bodyParams.hasOwnProperty(key)) {
+        if (bodyParams?.hasOwnProperty(key)) {
           bodyEmits.push(key);
           params[key] = bodyParams[key];
           return encodeURIComponent(bodyParams[key]);
@@ -246,7 +251,7 @@ export default class Model {
         });
         init = Object.assign({}, init, { query: queryParams });
       }
-      if (bodyParams && bodyParams.length) {
+      if (bodyParams?.length) {
         bodyEmits.forEach((key) => {
           delete bodyParams[key];
         });
@@ -262,7 +267,7 @@ export default class Model {
     const pk = M.pk || 'id';
     let id = this[pk];
     if (!id) {
-      let method = (init && init.method) || 'GET';
+      let method = init?.method || 'GET';
       throw new Error(`Can not get pk field (${pk}) for ${method}: '${path}'`);
     }
     id = encodeURIComponent(id);
@@ -283,8 +288,6 @@ export default class Model {
             query[key] = this.__params[key];
           } else if (this.hasOwnProperty(key)) {
             query[key] = this[key];
-          } else if (this.hasOwnProperty(key)) {
-            query[key] = this[key];
           }
         }
       });
@@ -294,20 +297,36 @@ export default class Model {
   }
 
   save(init?: Akita.RequestInit): Akita.Result<void> {
-    return this.request('', Object.assign({}, {
-      method: 'PATCH',
-      body: this.toJSON()
-    }, init), (data) => {
-      if (data && typeof data === 'object') {
-        Object.assign(this, data);
+    return this.request(
+      '',
+      Object.assign(
+        {},
+        {
+          method: 'PATCH',
+          body: this.toJSON()
+        },
+        init
+      ),
+      (data) => {
+        if (data && typeof data === 'object') {
+          Object.assign(this, data);
+        }
       }
-    });
+    );
   }
 
   remove(init?: Akita.RequestInit): Akita.Result<void> {
-    return this.request('', Object.assign({}, {
-      method: 'DELETE'
-    }, init), () => { });
+    return this.request(
+      '',
+      Object.assign(
+        {},
+        {
+          method: 'DELETE'
+        },
+        init
+      ),
+      () => {}
+    );
   }
 
   toJSON(): any {

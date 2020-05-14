@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.8.2",
+  "version": "0.9.0",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
@@ -10,8 +10,11 @@
     "build": "tsc",
     "test": "cross-env DEBUG=akita* tape test/ts.js",
     "cover": "cross-env DEBUG=akita* nyc node_modules/.bin/tape test/ts.js; nyc report --reporter=html",
-    "eslint": "eslint --ext .ts,.tsx ./",
-    "fix": "eslint --ext .tsx,.ts --fix ./",
+    "eslint": "eslint --ext .ts ./",
+    "eslint:fix": "eslint --ext .ts --fix ./",
+    "prettier": "prettier -l src/** test/**",
+    "prettier:fix": "prettier --write -l src/** test/**",
+    "fix": "yarn prettier:fix",
     "prepublish": "npm run test && npm run build"
   },
   "repository": {
@@ -34,10 +37,12 @@
       ".tsx"
     ],
     "exclude": [
+      ".history",
       "coverage",
       "test",
       "lib",
-      "**/*.d.ts"
+      "**/*.d.ts",
+      "*.js"
     ],
     "reporter": [
       "html"
@@ -46,32 +51,33 @@
   },
   "dependencies": {
     "debug": "^4.1.1",
-    "form-data": "^2.3.3",
-    "is-buffer": "^2.0.3",
+    "form-data": "^3.0.0",
+    "is-buffer": "^2.0.4",
     "node-fetch-unix": "^2.3.0",
-    "qs": "^6.7.0"
+    "qs": "^6.9.4"
   },
   "devDependencies": {
-    "@types/koa": "^2.0.48",
+    "@types/koa": "^2.11.3",
     "@types/koa-bodyparser": "^4.3.0",
-    "@types/koa-router": "^7.0.41",
-    "@types/node": "^12.0.8",
-    "@types/tape": "^4.2.33",
-    "@typescript-eslint/eslint-plugin": "^1.10.2",
-    "@typescript-eslint/parser": "^1.10.2",
+    "@types/koa-router": "^7.4.0",
+    "@types/node": "^12.12.37",
+    "@types/tape": "^4.13.0",
+    "@typescript-eslint/eslint-plugin": "^2.33.0",
+    "@typescript-eslint/parser": "^2.33.0",
     "async-busboy": "^0.7.0",
-    "babel-eslint": "^10.0.2",
-    "cross-env": "^5.2.0",
-    "eslint": "^5.16.0",
-    "eslint-config-alloy": "^2.0.4",
-    "eslint-plugin-react": "^7.13.0",
-    "koa": "^2.7.0",
-    "koa-bodyparser": "^4.2.1",
+    "babel-eslint": "^10.1.0",
+    "cross-env": "^7.0.2",
+    "eslint": "^7.0.0",
+    "eslint-config-alloy": "^3.7.2",
+    "eslint-plugin-react": "^7.20.0",
+    "koa": "^2.11.0",
+    "koa-bodyparser": "^4.3.0",
     "koa-qs": "^2.0.0",
-    "koa-router": "^7.4.0",
-    "nyc": "^14.1.1",
-    "tape": "^4.10.2",
-    "ts-node": "^8.3.0",
-    "typescript": "^3.5.2"
+    "koa-router": "^8.0.8",
+    "nyc": "^15.0.1",
+    "prettier": "^2.0.5",
+    "tape": "^5.0.0",
+    "ts-node": "^8.10.1",
+    "typescript": "^3.9.2"
   }
 }

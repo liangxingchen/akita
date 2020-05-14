@@ -41,7 +41,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
         }
         let arr = new Uint8Array(response._result);
         let str = uint8ArrayToString(arr);
-        str = decodeURIComponent(escape((str))); // 没有这一步中文会乱码
+        str = decodeURIComponent(escape(str)); // 没有这一步中文会乱码
         return Promise.resolve(str);
       }
     };
@@ -105,7 +105,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
     };
 
     req.fail = function (res) {
-      if (res && res.errMsg) {
+      if (res?.errMsg) {
         reject(new Error(res.errMsg));
       } else {
         reject(res);

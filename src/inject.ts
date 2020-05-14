@@ -18,8 +18,10 @@ export default function inject(fetch: any, FormData: any, ua?: string) {
   }
 
   function setOptions(options) {
+    // eslint-disable-next-line @typescript-eslint/no-invalid-this
     this._setOptions(options);
     if (ua) {
+      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       setUA(this);
     }
   }

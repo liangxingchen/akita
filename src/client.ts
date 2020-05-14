@@ -14,23 +14,17 @@ const INSTANCES = {};
 
 function isStream(value: any): boolean {
   return (
-    value
-    && typeof value === 'object'
-    && typeof value.pipe === 'function'
-    && value.readable !== false
-    && typeof value._readableState === 'object'
+    value &&
+    typeof value === 'object' &&
+    typeof value.pipe === 'function' &&
+    value.readable !== false &&
+    typeof value._readableState === 'object'
   );
 }
 
 // Browser File
 function isFile(value: any): boolean {
-  return (
-    value
-    && typeof value === 'object'
-    && typeof value.slice === 'function'
-    && value.size
-    && value.lastModified
-  );
+  return value && typeof value === 'object' && typeof value.slice === 'function' && value.size && value.lastModified;
 }
 
 function resolve(key: string) {
@@ -76,13 +70,21 @@ function create(options?: Akita.ClientOptions) {
 
   client.createBody = function (body: any): Object | FormData {
     let FormData = getFormDataClass();
-    if (!body || typeof body !== 'object' || !FormData || isBuffer(body) || body instanceof ArrayBuffer || body instanceof FormData) return body;
+    if (
+      !body ||
+      typeof body !== 'object' ||
+      !FormData ||
+      isBuffer(body) ||
+      body instanceof ArrayBuffer ||
+      body instanceof FormData
+    )
+      return body;
 
     // 检查是否需要上传文件
     let form: FormData = null;
 
     function addField(path: string, value: any) {
-      if (typeof value === 'undefined') return;
+      if (value === undefined) return;
       if (!isStream(value) && !isFile(value)) {
         if (typeof value === 'boolean' || typeof value === 'number' || value === null || value instanceof Date) {
           value = String(value);
@@ -112,12 +114,17 @@ function create(options?: Akita.ClientOptions) {
     return form || body;
   };
 
-  client.request = function request(path: string, init?: Akita.RequestInit, query?: Akita.Query<any>, reducer?: Akita.Reducer<any>): Akita.Result<any> {
+  client.request = function request(
+    path: string,
+    init?: Akita.RequestInit,
+    query?: Akita.Query<any>,
+    reducer?: Akita.Reducer<any>
+  ): Akita.Result<any> {
     init = Object.assign({}, init);
     let queryParams = Object.assign({}, init.query);
     delete init.query;
 
-    let queryString = qs.stringify(queryParams);
+    let queryString = qs.stringify(queryParams, client._options.qsOptions);
     if (queryString) {
       if (path.indexOf('?') < 0) {
         queryString = `?${queryString}`;

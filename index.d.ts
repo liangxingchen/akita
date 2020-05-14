@@ -1,3 +1,4 @@
+import { IStringifyOptions } from 'qs';
 import { Readable } from 'stream';
 import { Agent } from 'http';
 import { Agent as HttpsAgent } from 'https';
@@ -30,7 +31,7 @@ export class Model {
   save(init?: RequestInit): Result<void>;
   remove(init?: RequestInit): Result<void>;
 
-  // HTTTP
+  // HTTP
   get(path: string, init?: RequestInit): Result<any>;
   post(path: string, init?: RequestInit): Result<any>;
   put(path: string, init?: RequestInit): Result<any>;
@@ -146,6 +147,7 @@ export interface ClientOptions {
   init?: RequestInit;
   fetch?: Function;
   FormData?: typeof FormData;
+  qsOptions?: IStringifyOptions;
 }
 
 export interface Client {

@@ -51,7 +51,7 @@ const data = {
     { id: 1, user: 1, goods: 1 },
     { id: 2, user: 1, goods: 1 },
     { id: 3, user: 1, goods: 2 },
-    { id: 4, user: 2, goods: 1 },
+    { id: 4, user: 2, goods: 1 }
   ]
 };
 
@@ -80,7 +80,7 @@ router.get('/goods/paginate', (ctx) => {
     totalPage: 1,
     previous: 0,
     next: 0,
-    results: data.goods,
+    results: data.goods
   };
   ctx.body = result;
 });
@@ -157,7 +157,6 @@ app.use((ctx) => {
     files: ctx.files
   };
 });
-
 
 const server = http.createServer(app.callback());
 

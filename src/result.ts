@@ -14,7 +14,13 @@ export default class Result<T> {
   _reducer?: Akita.Reducer<T>;
   _csPromise: Promise<Akita.ChangeStream<any>>;
 
-  constructor(fetch: Function, path: string, init: Akita.RequestInit, query?: Akita.Query<T> | null, reducer?: Akita.Reducer<T>) {
+  constructor(
+    fetch: Function,
+    path: string,
+    init: Akita.RequestInit,
+    query?: Akita.Query<T> | null,
+    reducer?: Akita.Reducer<T>
+  ) {
     this._query = query;
     this._reducer = reducer;
     this._path = path;
@@ -22,13 +28,16 @@ export default class Result<T> {
 
     let promise = fetch(path, init);
     if (debug.enabled) {
-      promise = promise.then((res) => {
-        debug('response status:', res.status, res.statusText);
-        return res;
-      }, (error) => {
-        debug('fetch error:', error.message);
-        return Promise.reject(error);
-      });
+      promise = promise.then(
+        (res) => {
+          debug('response status:', res.status, res.statusText);
+          return res;
+        },
+        (error) => {
+          debug('fetch error:', error.message);
+          return Promise.reject(error);
+        }
+      );
     }
     this._responsePromise = promise;
   }
@@ -72,15 +81,18 @@ export default class Result<T> {
       if (res.arrayBuffer) {
         fn = 'arrayBuffer';
       }
-      return res[fn]().then((buf) => {
-        if (!isBuffer(buf) && buf instanceof ArrayBuffer && typeof Buffer === 'function') {
-          return Buffer.from(buf);
+      return res[fn]().then(
+        (buf) => {
+          if (!isBuffer(buf) && buf instanceof ArrayBuffer && typeof Buffer === 'function') {
+            return Buffer.from(buf);
+          }
+          return buf;
+        },
+        (error) => {
+          debug('get buffer error:', error.message);
+          return Promise.reject(error);
         }
-        return buf;
-      }, (error) => {
-        debug('get buffer error:', error.message);
-        return Promise.reject(error);
-      });
+      );
     });
   }
 
@@ -93,10 +105,12 @@ export default class Result<T> {
    * @returns {Promise<string>}
    */
   text(): Promise<string> {
-    return this.response().then((res) => res.text().then((text) => {
-      debug('response text:', text);
-      return text;
-    }));
+    return this.response().then((res) =>
+      res.text().then((text) => {
+        debug('response text:', text);
+        return text;
+      })
+    );
   }
 
   /**
@@ -108,32 +122,35 @@ export default class Result<T> {
       if (res.status === 204) {
         return Promise.resolve();
       }
-      return res.text().then((text) => {
-        debug('response text:', text);
-        if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
-          debug(`return null when ${this._query._op} 404`);
-          return null;
-        }
-        let json;
-        try {
-          json = JSON.parse(text);
-        } catch (error) {
-          return Promise.reject(new Error(`invalid json response body at ${this._path} ${error.message}`));
-        }
-        if (json && json.error && ['0', 'null', 'none'].indexOf(json.error) < 0) {
-          let error = new Error(json.error);
-          Object.keys(json).forEach((key) => {
-            if (['error', 'message', 'stack'].indexOf(key) === -1) {
-              error[key] = json[key];
-            }
-          });
+      return res.text().then(
+        (text) => {
+          debug('response text:', text);
+          if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
+            debug(`return null when ${this._query._op} 404`);
+            return null;
+          }
+          let json;
+          try {
+            json = JSON.parse(text);
+          } catch (error) {
+            return Promise.reject(new Error(`invalid json response body at ${this._path} ${error.message}`));
+          }
+          if (json?.error && ['0', 'null', 'none'].indexOf(json.error) < 0) {
+            let error = new Error(json.error);
+            Object.keys(json).forEach((key) => {
+              if (['error', 'message', 'stack'].indexOf(key) === -1) {
+                error[key] = json[key];
+              }
+            });
+            return Promise.reject(error);
+          }
+          return json;
+        },
+        (error) => {
+          debug('json parse error:', error.message);
           return Promise.reject(error);
         }
-        return json;
-      }, (error) => {
-        debug('json parse error:', error.message);
-        return Promise.reject(error);
-      });
+      );
     });
   }
 

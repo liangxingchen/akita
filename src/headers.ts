@@ -22,7 +22,7 @@ export default class Headers {
   }
 
   has(name: string): boolean {
-    return typeof this.data[name] !== 'undefined';
+    return this.data[name] !== undefined;
   }
 
   set(name: string, value: string) {
