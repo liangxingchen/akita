@@ -8,8 +8,8 @@ import * as Akita from '..';
 const debug = Debugger('akita:request');
 
 function execHooks(request: Akita.Request<any>, hooks: Akita.Hook | Akita.Hook[]): void | Promise<void> {
+  let promise: void | Promise<void>;
   if (Array.isArray(hooks)) {
-    let promise: void | Promise<void>;
     hooks.forEach((h) => {
       if (promise) {
         promise = promise.then(() => {
@@ -20,15 +20,17 @@ function execHooks(request: Akita.Request<any>, hooks: Akita.Hook | Akita.Hook[]
         promise = h(request);
       }
     });
-    return promise;
+  } else {
+    promise = hooks(request);
   }
-  return hooks(request);
+  if (promise) {
+    return promise.then(() => Promise.resolve());
+  }
 }
 
 export default class Request<T> {
   client: Akita.Client;
   _query?: Akita.Query<T>;
-  _responsePromise: Promise<Response>;
   _fetch: any;
   url: string;
   init: Akita.RequestInit;
@@ -38,6 +40,11 @@ export default class Request<T> {
   raw?: string;
   value?: any;
   _steps: number;
+  _responsePromise: Promise<Response>;
+  _bufferPromise: Promise<Buffer>;
+  _blobPromise: Promise<Blob>;
+  _textPromise: Promise<string>;
+  _dataPromise: Promise<any>;
 
   constructor(
     client: Akita.Client,
@@ -52,7 +59,7 @@ export default class Request<T> {
     this._reducer = reducer;
     this._fetch = fetch;
     this.url = url;
-    this.init = init;
+    this.init = init || {};
     this._steps = 0;
 
     let promise;
@@ -73,7 +80,7 @@ export default class Request<T> {
     }
 
     if (promise) {
-      promise.then(() => this._send());
+      promise = promise.then(() => this._send());
     } else {
       promise = this._send();
     }
@@ -91,7 +98,25 @@ export default class Request<T> {
   }
 
   _send() {
-    const { client, init } = this;
+    let { client, url, init } = this;
+
+    // headers
+    let headers = init.headers || {};
+
+    if (client._options.init) {
+      init = Object.assign({}, client._options.init, init);
+      if (client._options.init.headers) {
+        headers = Object.assign({}, client._options.init.headers, headers);
+      }
+    }
+
+    init.headers = headers;
+    this.init = init;
+
+    if (debug.enabled) {
+      debug(init.method, url, JSON.stringify(init));
+    }
+
     if (init.body && typeof init.body === 'object') {
       init.body = client.createBody(init.body);
       let FormData = client.getFormDataClass();
@@ -115,10 +140,10 @@ export default class Request<T> {
       }
     }
     this._addStep();
-    let promise: Promise<Response> = this._fetch(this.url, this.init).then(
+    let promise: Promise<Response> = this._fetch(url, init).then(
       (res) => {
         this._addStep();
-        debug('response status:', res.status, res.statusText);
+        debug('response:', this.url, res.status, res.statusText);
         this.res = res;
         // onResponse
         if (client._options.onResponse) {
@@ -130,7 +155,7 @@ export default class Request<T> {
             });
           }
         }
-        return res;
+        return Promise.resolve(res);
       },
       (error) => {
         debug('fetch error:', error.message);
@@ -186,42 +211,48 @@ export default class Request<T> {
    * @returns {Promise.<any>}
    */
   buffer(): Promise<Buffer> {
-    return this._responsePromise.then((res) => {
-      let fn = 'buffer';
-      if (res.arrayBuffer) {
-        fn = 'arrayBuffer';
-      }
-      return res[fn]().then(
-        (buf) => {
-          if (!isBuffer(buf) && buf instanceof ArrayBuffer && typeof Buffer === 'function') {
-            return Buffer.from(buf);
-          }
-          this._addStep();
-          return buf;
-        },
-        (error) => {
-          debug('get buffer error:', error.message);
-          this.client._updateProgress(this as any);
-          return Promise.reject(error);
+    if (!this._bufferPromise) {
+      this._bufferPromise = this._responsePromise.then((res) => {
+        let fn = 'buffer';
+        if (res.arrayBuffer) {
+          fn = 'arrayBuffer';
         }
-      );
-    });
+        return res[fn]().then(
+          (buf) => {
+            if (!isBuffer(buf) && buf instanceof ArrayBuffer && typeof Buffer === 'function') {
+              return Buffer.from(buf);
+            }
+            this._addStep();
+            return buf;
+          },
+          (error) => {
+            debug('get buffer error:', error.message);
+            this.client._updateProgress(this as any);
+            return Promise.reject(error);
+          }
+        );
+      });
+    }
+    return this._bufferPromise;
   }
 
   blob(): Promise<Blob> {
-    return this._responsePromise.then((res) =>
-      res.blob().then(
-        (blob) => {
-          this._addStep();
-          return blob;
-        },
-        (error) => {
-          debug('get blob error:', error.message);
-          this.client._updateProgress(this as any);
-          return Promise.reject(error);
-        }
-      )
-    );
+    if (!this._blobPromise) {
+      this._blobPromise = this._responsePromise.then((res) =>
+        res.blob().then(
+          (blob) => {
+            this._addStep();
+            return blob;
+          },
+          (error) => {
+            debug('get blob error:', error.message);
+            this.client._updateProgress(this as any);
+            return Promise.reject(error);
+          }
+        )
+      );
+    }
+    return this._blobPromise;
   }
 
   /**
@@ -229,21 +260,28 @@ export default class Request<T> {
    * @returns {Promise<string>}
    */
   text(): Promise<string> {
-    return this._responsePromise.then((res) =>
-      res.text().then(
-        (text) => {
-          debug('response text:', text);
-          this.raw = text;
-          this._addStep();
-          return text;
-        },
-        (error) => {
-          debug('get text error:', error.message);
-          this.client._updateProgress(this as any);
-          return Promise.reject(error);
-        }
-      )
-    );
+    if (!this._textPromise) {
+      if (this.raw) {
+        this._textPromise = Promise.resolve(this.raw);
+      } else {
+        this._textPromise = this._responsePromise.then((res) =>
+          res.text().then(
+            (text) => {
+              debug('response text:', text);
+              this.raw = text;
+              this._addStep();
+              return text;
+            },
+            (error) => {
+              debug('get text error:', error.message);
+              this.client._updateProgress(this as any);
+              return Promise.reject(error);
+            }
+          )
+        );
+      }
+    }
+    return this._textPromise;
   }
 
   _decode() {
@@ -273,39 +311,46 @@ export default class Request<T> {
    * @returns {Promise.<any>}
    */
   data(): Promise<any> {
-    return this._responsePromise.then((res) => {
-      if (res.status === 204) {
-        this._addStep();
-        return Promise.resolve(null);
-      }
-      return res.text().then(
-        (text) => {
-          this._addStep();
-          debug('response text:', text);
-          if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
-            debug(`return null when ${this._query._op} 404`);
-            return null;
+    if (!this._dataPromise) {
+      if (this.value !== undefined) {
+        this._dataPromise = Promise.resolve(this.value);
+      } else {
+        this._dataPromise = this._responsePromise.then((res) => {
+          if (res.status === 204) {
+            this._addStep();
+            return Promise.resolve(null);
           }
-          this.raw = text;
+          return res.text().then(
+            (text) => {
+              this._addStep();
+              debug('response text:', text);
+              if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
+                debug(`return null when ${this._query._op} 404`);
+                return null;
+              }
+              this.raw = text;
 
-          const client = this.client;
+              const client = this.client;
 
-          if (client._options.onDecode) {
-            debug('exec onDecode');
-            let promise = execHooks(this as any, client._options.onDecode);
-            if (promise) {
-              return promise.then(() => Promise.resolve(this._decode()));
+              if (client._options.onDecode) {
+                debug('exec onDecode');
+                let promise = execHooks(this as any, client._options.onDecode);
+                if (promise) {
+                  return promise.then(() => Promise.resolve(this._decode()));
+                }
+              }
+              return this._decode();
+            },
+            (error) => {
+              debug('get text raw error:', error.message);
+              this.client._updateProgress(this as any);
+              return Promise.reject(error);
             }
-          }
-          return this._decode();
-        },
-        (error) => {
-          debug('get text raw error:', error.message);
-          this.client._updateProgress(this as any);
-          return Promise.reject(error);
-        }
-      );
-    });
+          );
+        });
+      }
+    }
+    return this._dataPromise;
   }
 
   /**

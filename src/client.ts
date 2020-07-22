@@ -135,21 +135,6 @@ function create(options?: Akita.ClientOptions) {
       path += queryString;
     }
 
-    if (init.headers) {
-      init.headers = Object.assign({}, init.headers);
-    }
-
-    if (client._options.init) {
-      init = Object.assign({}, client._options.init, init);
-      if (client._options.init.headers) {
-        init.headers = Object.assign({}, client._options.init.headers, init.headers);
-      }
-    }
-
-    if (!init.headers) {
-      init.headers = {};
-    }
-
     let apiRoot = client._options.apiRoot;
     if (apiRoot) {
       if (apiRoot[apiRoot.length - 1] === '/' && path[0] === '/') {
@@ -158,10 +143,6 @@ function create(options?: Akita.ClientOptions) {
         path = `/${path}`;
       }
       path = apiRoot + path;
-    }
-
-    if (debug.enabled) {
-      debug(init.method, path, JSON.stringify(init));
     }
 
     let fetch = client._options.fetch;
