@@ -168,7 +168,7 @@ function create(options?: Akita.ClientOptions) {
 
     if (!fetch) {
       if (typeof window !== 'undefined') {
-        fetch = window.fetch;
+        fetch = window.fetch.bind(window);
       } else if (typeof global !== 'undefined') {
         // @ts-ignore
         fetch = global.fetch;

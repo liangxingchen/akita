@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "0.10.0",
+  "version": "0.10.1",
   "description": "akita api client",
   "main": "lib/node.js",
   "browser": "lib/client.js",
