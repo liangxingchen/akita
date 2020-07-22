@@ -82,7 +82,7 @@ test('Model', (troot) => {
   troot.test('save', async (t) => {
     let goods = await Goods.findOne();
     goods.title = 'iPad';
-    let res = await goods.save().json();
+    let res = await goods.save().data();
     t.equal(res.method, 'PATCH');
     t.equal(res.url, '/goods/1001');
     t.deepEqual(res.body, { id: 1001, title: 'iPad' });
@@ -107,7 +107,7 @@ test('Model', (troot) => {
     goods.bool = false;
     goods.array = [123, '456'];
     goods.file = fs.createReadStream(`${process.cwd()}/LICENSE`);
-    let res = await goods.save().json();
+    let res = await goods.save().data();
     t.deepEqual(res.method, 'PATCH');
     t.equal(res.body.title, 'iPad');
     t.equal(res.body.number, '123');
@@ -127,7 +127,7 @@ test('Model', (troot) => {
   });
 
   troot.test('create', async (t) => {
-    let item = await client('item').create({ name: 'test', title: 'hello' }).exec().json();
+    let item = await client('item').create({ name: 'test', title: 'hello' }).exec().data();
     t.equal(item.method, 'POST');
     t.equal(item.url, '/item');
     t.deepEqual(item.body, { name: 'test', title: 'hello' });
@@ -135,7 +135,7 @@ test('Model', (troot) => {
   });
 
   troot.test('update record', async (t) => {
-    let item = await client('item').update(12, { name: 'test', title: 'hello' }).exec().json();
+    let item = await client('item').update(12, { name: 'test', title: 'hello' }).exec().data();
     t.equal(item.method, 'PATCH');
     t.equal(item.url, '/item/12');
     t.deepEqual(item.body, { name: 'test', title: 'hello' });
@@ -143,7 +143,7 @@ test('Model', (troot) => {
   });
 
   troot.test('update multi records', async (t) => {
-    let item = await client('item').update({ name: 'test', title: 'hello' }).exec().json();
+    let item = await client('item').update({ name: 'test', title: 'hello' }).exec().data();
     t.equal(item.method, 'PATCH');
     t.equal(item.url, '/item');
     t.deepEqual(item.body, { name: 'test', title: 'hello' });
@@ -184,7 +184,7 @@ test('Model', (troot) => {
       .sort('-sort')
       .arg('user', 'uid')
       .exec()
-      .json();
+      .data();
 
     t.deepEqual(item.query, {
       a: '1',

@@ -58,7 +58,9 @@ const data = {
 // list
 router.get('/timeout', (ctx) => {
   ctx.body = {};
-  return new Promise((resolve) => setTimeout(resolve, 2000));
+  return new Promise((resolve) => {
+    setTimeout(resolve, 2000);
+  });
 });
 
 // list

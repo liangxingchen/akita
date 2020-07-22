@@ -21,7 +21,7 @@ export default class Query<T> {
   _op: string;
   _promise: null | Promise<any>;
   _lastField: string;
-  _result: Akita.Result<T>;
+  _result: Akita.Request<T>;
 
   /**
    * @param {Model} model
@@ -189,7 +189,7 @@ export default class Query<T> {
    * Execute the query.
    * @returns {Promise<*>}
    */
-  exec(): Akita.Result<T> {
+  exec(): Akita.Request<T> {
     if (this._result) {
       return this._result;
     }

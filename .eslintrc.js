@@ -5,7 +5,7 @@ module.exports = {
     'arrow-parens': 'error',
     complexity: 'off',
     'guard-for-in': 'off',
-    'max-params': ['error', 5],
+    'max-params': ['error', 6],
     'max-nested-callbacks': ['error', 4],
     // 禁止不必要的布尔转换
     'no-extra-boolean-cast': 'error',
@@ -37,6 +37,7 @@ module.exports = {
     '@typescript-eslint/no-object-literal-type-assertion': 'off',
     '@typescript-eslint/no-require-imports': 'warn',
     '@typescript-eslint/prefer-function-type': 'off',
+    '@typescript-eslint/prefer-optional-chain': 'off',
     '@typescript-eslint/unified-signatures': 'off',
     '@typescript-eslint/member-ordering': [
       'error',

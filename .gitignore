@@ -40,4 +40,3 @@ jspm_packages
 package-lock.json
 .history
 lib/*.js
-yarn.lock

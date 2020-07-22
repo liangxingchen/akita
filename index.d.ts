@@ -10,33 +10,39 @@ export class Model {
 
   constructor(data?: any, params?: any);
 
-  static create<T>(this: { new(): T }, data: Object): Query<T>;
-  static update<T>(this: { new(): T }, data?: Object): Query<T>;
-  static update<T>(this: { new(): T }, id: string | number, data: any): Query<T>;
-  static remove<T>(this: { new(): T }, conditions?: any | string | number): Query<number>;
-  static count<T>(this: { new(): T }, conditions?: any): Query<number>;
-  static paginate<T>(this: { new(): T }, conditions?: any): Query<PaginateResult<T>>;
-  static find<T>(this: { new(): T }, conditions?: any): Query<T[]>;
-  static findByPk<T>(this: { new(): T }, conditions: number | string): Query<T | null>;
-  static findOne<T>(this: { new(): T }, conditions?: any): Query<T | null>;
-  static watch<T>(this: { new(): T }, conditions?: any): Query<ChangeStream<T>>;
-  static request<T>(this: { new(): T }, path: string, init?: RequestInit, query?: Query<any> | null, reducer?: Reducer<any>): Result<any>;
-  static get(path: string, init?: RequestInit): Result<any>;
-  static post(path: string, init?: RequestInit): Result<any>;
-  static put(path: string, init?: RequestInit): Result<any>;
-  static patch(path: string, init?: RequestInit): Result<any>;
-  static delete(path: string, init?: RequestInit): Result<any>;
+  static create<T>(this: { new (): T }, data: any): Query<T>;
+  static update<T>(this: { new (): T }, data?: any): Query<T>;
+  static update<T>(this: { new (): T }, id: string | number, data: any): Query<T>;
+  static remove<T>(this: { new (): T }, conditions?: any | string | number): Query<number>;
+  static count<T>(this: { new (): T }, conditions?: any): Query<number>;
+  static paginate<T>(this: { new (): T }, conditions?: any): Query<PaginateResult<T>>;
+  static find<T>(this: { new (): T }, conditions?: any): Query<T[]>;
+  static findByPk<T>(this: { new (): T }, conditions: number | string): Query<T | null>;
+  static findOne<T>(this: { new (): T }, conditions?: any): Query<T | null>;
+  static watch<T>(this: { new (): T }, conditions?: any): Query<ChangeStream<T>>;
+  static request<T>(
+    this: { new (): T },
+    path: string,
+    init?: RequestInit,
+    query?: Query<any> | null,
+    reducer?: Reducer<any>
+  ): Request<any>;
+  static get(path: string, init?: RequestInit): Request<any>;
+  static post(path: string, init?: RequestInit): Request<any>;
+  static put(path: string, init?: RequestInit): Request<any>;
+  static patch(path: string, init?: RequestInit): Request<any>;
+  static delete(path: string, init?: RequestInit): Request<any>;
 
-  request(path: string, init?: RequestInit, reducer?: Reducer<any>): Result<any>;
-  save(init?: RequestInit): Result<void>;
-  remove(init?: RequestInit): Result<void>;
+  request(path: string, init?: RequestInit, reducer?: Reducer<any>): Request<any>;
+  save(init?: RequestInit): Request<void>;
+  remove(init?: RequestInit): Request<void>;
 
   // HTTP
-  get(path: string, init?: RequestInit): Result<any>;
-  post(path: string, init?: RequestInit): Result<any>;
-  put(path: string, init?: RequestInit): Result<any>;
-  patch(path: string, init?: RequestInit): Result<any>;
-  delete(path: string, init?: RequestInit): Result<any>;
+  get(path: string, init?: RequestInit): Request<any>;
+  post(path: string, init?: RequestInit): Request<any>;
+  put(path: string, init?: RequestInit): Request<any>;
+  patch(path: string, init?: RequestInit): Request<any>;
+  delete(path: string, init?: RequestInit): Request<any>;
 }
 
 export type ChangeType = 'ADDED' | 'MODIFIED' | 'DELETED';
@@ -66,7 +72,7 @@ export interface Query<R> extends Promise<R> {
 
   search(keyword: string): this;
 
-  where(conditions: Object | string): this;
+  where(conditions: any | string): this;
   where(conditions: string, value: any): this;
 
   eq(value: any): this;
@@ -89,7 +95,7 @@ export interface Query<R> extends Promise<R> {
   page(size: number): this;
   sort(sortBy: string): this;
 
-  exec(): Result<R>;
+  exec(): Request<R>;
 }
 
 export interface PaginateResult<T> {
@@ -128,7 +134,38 @@ export interface Reducer<T> {
   (json: any): T;
 }
 
-export interface Result<R> extends Promise<R> {
+/**
+ * Request 请求类
+ */
+export interface Request<R> extends Promise<R> {
+  _steps: number;
+
+  /**
+   * 请求所属Client
+   */
+  client: Client;
+  /**
+   * 请求的完整URL地址
+   */
+  url: string;
+  /**
+   * 请求的fetch init参数
+   */
+  init: RequestInit;
+  /**
+   * 返回的 Response 对象
+   */
+  res?: Response;
+  /**
+   * 返回的原始字符串结果
+   */
+  raw?: string;
+  /**
+   * 返回的解析过的JS对象结果
+   * 在调用 .data() 方法时可由 onDecode 钩子通过raw解析得来
+   */
+  value?: any;
+
   response(): Promise<Response>;
   stream(): Promise<Readable | ReadableStream>;
   ok(): Promise<boolean>;
@@ -139,7 +176,11 @@ export interface Result<R> extends Promise<R> {
   buffer(): Promise<Buffer>;
   blob(): Promise<Blob>;
   text(): Promise<string>;
-  json(): Promise<any>;
+  data(): Promise<any>;
+}
+
+export interface Hook {
+  (request: Request<any>): void | Promise<void>;
 }
 
 export interface ClientOptions {
@@ -148,25 +189,35 @@ export interface ClientOptions {
   fetch?: Function;
   FormData?: typeof FormData;
   qsOptions?: IStringifyOptions;
+  onEncode?: Hook | Hook[];
+  onRequest?: Hook | Hook[];
+  onResponse?: Hook | Hook[];
+  onDecode?: Hook | Hook[];
+  onProgress?: (progress: number) => void;
 }
 
 export interface Client {
   _options: ClientOptions;
   _count: number;
+  _tasks: Request<any>[];
+  _updateProgress: (req?: Request<any>) => void;
+  _updateProgressTimer?: any;
+  progress?: number;
 
   (path: string): typeof Model;
   setOptions(options: ClientOptions): void;
   create(options: ClientOptions): Client;
   resolve(key: string): Client;
-  request(path: string, init?: RequestInit, query?: Query<any>, reducer?: Reducer<any>): Result<any>;
-  createBody(body: any): Object | FormData;
+  request(path: string, init?: RequestInit, query?: Query<any>, reducer?: Reducer<any>): Request<any>;
+  getFormDataClass(): any;
+  createBody(body: any): any | FormData;
 
   // HTTTP
-  get(path: string, init?: RequestInit): Result<any>;
-  post(path: string, init?: RequestInit): Result<any>;
-  put(path: string, init?: RequestInit): Result<any>;
-  patch(path: string, init?: RequestInit): Result<any>;
-  delete(path: string, init?: RequestInit): Result<any>;
+  get(path: string, init?: RequestInit): Request<any>;
+  post(path: string, init?: RequestInit): Request<any>;
+  put(path: string, init?: RequestInit): Request<any>;
+  patch(path: string, init?: RequestInit): Request<any>;
+  delete(path: string, init?: RequestInit): Request<any>;
 }
 
 declare const akita: Client;

@@ -9,17 +9,17 @@ export default class Model {
   static path: string;
   static client: Akita.Client;
   static pk: string;
-  static get: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  static post: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  static put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  static patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  static delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  static get: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  static post: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  static put: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  static patch: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  static delete: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
 
-  get: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  post: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  put: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  patch: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
-  delete: (path: string, init?: Akita.RequestInit) => Akita.Result<any>;
+  get: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  post: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  put: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  patch: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
+  delete: (path: string, init?: Akita.RequestInit) => Akita.Request<any>;
   private __params?: any;
 
   constructor(data?: any, params?: any) {
@@ -262,7 +262,7 @@ export default class Model {
     return this.client.request(path, init, query, reducer);
   }
 
-  request(path: string, init?: Akita.RequestInit, reducer?: Akita.Reducer<any>): Akita.Result<any> {
+  request(path: string, init?: Akita.RequestInit, reducer?: Akita.Reducer<any>): Akita.Request<any> {
     const M = this.constructor as typeof Akita.Model;
     const pk = M.pk || 'id';
     let id = this[pk];
@@ -296,7 +296,7 @@ export default class Model {
     return M.request(path, init, null, reducer);
   }
 
-  save(init?: Akita.RequestInit): Akita.Result<void> {
+  save(init?: Akita.RequestInit): Akita.Request<void> {
     return this.request(
       '',
       Object.assign(
@@ -315,7 +315,7 @@ export default class Model {
     );
   }
 
-  remove(init?: Akita.RequestInit): Akita.Result<void> {
+  remove(init?: Akita.RequestInit): Akita.Request<void> {
     return this.request(
       '',
       Object.assign(

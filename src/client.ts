@@ -5,7 +5,7 @@ import * as qs from 'qs';
 import isBuffer = require('is-buffer');
 import methods from './methods';
 import Model from './model';
-import Result from './result';
+import Request from './request';
 import * as Akita from '..';
 
 const debug = Debugger('akita:client');
@@ -48,13 +48,14 @@ function create(options?: Akita.ClientOptions) {
 
   // 已经发送请求的数量
   client._count = 0;
+  client._tasks = [];
   client.create = create;
   client.resolve = resolve;
   client.setOptions = (opts: Object) => {
     client._options = Object.assign({}, client._options, opts);
   };
 
-  function getFormDataClass(): typeof FormData {
+  client.getFormDataClass = function getFormDataClass(): typeof FormData {
     let FormData = client._options.FormData;
     // @ts-ignore window.FormData
     if (!FormData && typeof window === 'object' && window.FormData) {
@@ -66,10 +67,10 @@ function create(options?: Akita.ClientOptions) {
       FormData = global.FormData;
     }
     return FormData;
-  }
+  };
 
   client.createBody = function (body: any): Object | FormData {
-    let FormData = getFormDataClass();
+    let FormData = client.getFormDataClass();
     if (
       !body ||
       typeof body !== 'object' ||
@@ -119,7 +120,7 @@ function create(options?: Akita.ClientOptions) {
     init?: Akita.RequestInit,
     query?: Akita.Query<any>,
     reducer?: Akita.Reducer<any>
-  ): Akita.Result<any> {
+  ): Akita.Request<any> {
     init = Object.assign({}, init);
     let queryParams = Object.assign({}, init.query);
     delete init.query;
@@ -136,29 +137,6 @@ function create(options?: Akita.ClientOptions) {
 
     if (init.headers) {
       init.headers = Object.assign({}, init.headers);
-    }
-
-    if (init.body && typeof init.body === 'object') {
-      init.body = client.createBody(init.body);
-      let FormData = getFormDataClass();
-
-      if (!isBuffer(init.body) && !(FormData && init.body instanceof FormData) && !(init.body instanceof ArrayBuffer)) {
-        // 如果是普通POST请求，转换成JSON或urlencoded
-        if (!init.headers) {
-          init.headers = {};
-        }
-        if (!init.headers['Content-Type'] || init.headers['Content-Type'].indexOf('json') > -1) {
-          if (!init.headers['Content-Type']) {
-            init.headers['Content-Type'] = 'application/json';
-          }
-          init.body = JSON.stringify(init.body);
-        } else if (init.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
-          init.body = qs.stringify(init.body);
-        } else {
-          /* istanbul ignore next */
-          throw new Error(`Akita Error: Unsupported Content-Type ${init.headers['Content-Type']}`);
-        }
-      }
     }
 
     if (client._options.init) {
@@ -197,10 +175,34 @@ function create(options?: Akita.ClientOptions) {
       }
     }
 
-    client._count += 1;
+    // @ts-ignore Request 与 Promise 兼容
+    let req = new Request(client, fetch, path, init, query, reducer) as Akita.Request<any>;
 
-    // @ts-ignore Result 与 Promise 兼容
-    return new Result(fetch, path, init, query, reducer);
+    client._count += 1;
+    client._tasks.push(req);
+
+    client._updateProgress();
+    return req;
+  };
+
+  client._updateProgress = function (req?: Akita.Request<any>) {
+    if (req) {
+      client._tasks = client._tasks.filter((r) => r !== req);
+    }
+    if (client._updateProgressTimer || !client._options.onProgress) return;
+    client._updateProgressTimer = setTimeout(() => {
+      client._updateProgressTimer = 0;
+      let progress = 1;
+      let total = client._tasks.length * 3;
+      if (total) {
+        let steps = 0;
+        client._tasks.forEach((r) => {
+          steps += r._steps;
+        });
+        progress = steps / total;
+      }
+      client._options.onProgress(progress);
+    }, 5);
   };
 
   methods.forEach((method) => {
