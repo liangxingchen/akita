@@ -1,3 +1,8 @@
+/* eslint spaced-comment:0 */
+
+/// <reference types="node"/>
+/// <reference lib="dom"/>
+
 import { IStringifyOptions } from 'qs';
 import { Readable } from 'stream';
 import { Agent } from 'http';
@@ -200,7 +205,7 @@ export interface Client {
   _options: ClientOptions;
   _count: number;
   _tasks: Request<any>[];
-  _updateProgress: (req?: Request<any>) => void;
+  _updateProgress: () => void;
   _updateProgressTimer?: any;
   progress?: number;
 

@@ -1,8 +1,8 @@
-import isBuffer = require('is-buffer');
 import * as Debugger from 'debug';
 import * as qs from 'qs';
-import ChangeStream from './stream';
 import { Readable } from 'stream';
+import ChangeStream from './stream';
+import { isUint8Array } from './utils';
 import * as Akita from '..';
 
 const debug = Debugger('akita:request');
@@ -45,6 +45,7 @@ export default class Request<T> {
   _blobPromise: Promise<Blob>;
   _textPromise: Promise<string>;
   _dataPromise: Promise<any>;
+  _endAt: number;
 
   constructor(
     client: Akita.Client,
@@ -91,10 +92,14 @@ export default class Request<T> {
   _addStep() {
     this._steps += 1;
     if (this._steps >= 3) {
-      this.client._updateProgress(this as any);
-    } else {
-      this.client._updateProgress();
+      this._endAt = Date.now();
     }
+    this.client._updateProgress();
+  }
+
+  _end() {
+    this._endAt = Date.now();
+    this.client._updateProgress();
   }
 
   _send() {
@@ -121,7 +126,7 @@ export default class Request<T> {
       init.body = client.createBody(init.body);
       let FormData = client.getFormDataClass();
 
-      if (!isBuffer(init.body) && !(FormData && init.body instanceof FormData) && !(init.body instanceof ArrayBuffer)) {
+      if (!isUint8Array(init.body) && !(FormData && init.body instanceof FormData)) {
         // 如果是普通POST请求，转换成JSON或urlencoded
         if (!init.headers) {
           init.headers = {};
@@ -159,7 +164,7 @@ export default class Request<T> {
       },
       (error) => {
         debug('fetch error:', error.message);
-        this.client._updateProgress(this as any);
+        this._end();
         return Promise.reject(error);
       }
     );
@@ -174,7 +179,7 @@ export default class Request<T> {
     // @ts-ignore
     if (this.res) return Promise.resolve(this.res.body);
     return this._responsePromise.then((res) => {
-      this._addStep();
+      this._end();
       return res.body;
     });
   }
@@ -219,15 +224,18 @@ export default class Request<T> {
         }
         return res[fn]().then(
           (buf) => {
-            if (!isBuffer(buf) && buf instanceof ArrayBuffer && typeof Buffer === 'function') {
-              return Buffer.from(buf);
+            if (!isUint8Array(buf)) {
+              if (typeof Buffer === 'function') {
+                return Buffer.from(buf);
+              }
+              return buf;
             }
             this._addStep();
             return buf;
           },
           (error) => {
             debug('get buffer error:', error.message);
-            this.client._updateProgress(this as any);
+            this._end();
             return Promise.reject(error);
           }
         );
@@ -246,7 +254,7 @@ export default class Request<T> {
           },
           (error) => {
             debug('get blob error:', error.message);
-            this.client._updateProgress(this as any);
+            this._end();
             return Promise.reject(error);
           }
         )
@@ -274,7 +282,7 @@ export default class Request<T> {
             },
             (error) => {
               debug('get text error:', error.message);
-              this.client._updateProgress(this as any);
+              this._end();
               return Promise.reject(error);
             }
           )
@@ -322,7 +330,7 @@ export default class Request<T> {
           }
           return res.text().then(
             (text) => {
-              this._addStep();
+              this._end();
               debug('response text:', text);
               if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
                 debug(`return null when ${this._query._op} 404`);
@@ -343,7 +351,7 @@ export default class Request<T> {
             },
             (error) => {
               debug('get text raw error:', error.message);
-              this.client._updateProgress(this as any);
+              this._end();
               return Promise.reject(error);
             }
           );

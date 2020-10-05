@@ -134,6 +134,25 @@ test('HTTP', (troot) => {
       }, t.end);
   });
 
+  troot.test('test upload buffer', (t) => {
+    let buffer = fs.readFileSync(`${process.cwd()}/LICENSE`);
+    // @ts-ignore
+    buffer.name = 'LICENSE';
+    client
+      .post('http://localhost:28000', {
+        body: {
+          foo: 'bar',
+          file: buffer
+        }
+      })
+      .then((res) => {
+        t.deepEqual(res.method, 'POST');
+        t.deepEqual(res.body, { foo: 'bar' });
+        t.deepEqual(res.files.file.filename, 'LICENSE');
+        t.end();
+      }, t.end);
+  });
+
   troot.test('test text', (t) => {
     client
       .get('http://localhost:28000')

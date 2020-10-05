@@ -1,31 +1,13 @@
 /* eslint no-use-before-define:0 */
 
-import * as Debugger from 'debug';
 import * as qs from 'qs';
-import isBuffer = require('is-buffer');
 import methods from './methods';
 import Model from './model';
 import Request from './request';
+import { isUint8Array, isReadableStream, isFile } from './utils';
 import * as Akita from '..';
 
-const debug = Debugger('akita:client');
-
 const INSTANCES = {};
-
-function isStream(value: any): boolean {
-  return (
-    value &&
-    typeof value === 'object' &&
-    typeof value.pipe === 'function' &&
-    value.readable !== false &&
-    typeof value._readableState === 'object'
-  );
-}
-
-// Browser File
-function isFile(value: any): boolean {
-  return value && typeof value === 'object' && typeof value.slice === 'function' && value.size && value.lastModified;
-}
 
 function resolve(key: string) {
   if (!INSTANCES[key]) {
@@ -71,22 +53,14 @@ function create(options?: Akita.ClientOptions) {
 
   client.createBody = function (body: any): Object | FormData {
     let FormData = client.getFormDataClass();
-    if (
-      !body ||
-      typeof body !== 'object' ||
-      !FormData ||
-      isBuffer(body) ||
-      body instanceof ArrayBuffer ||
-      body instanceof FormData
-    )
-      return body;
+    if (!body || typeof body !== 'object' || !FormData || isUint8Array(body) || body instanceof FormData) return body;
 
     // 检查是否需要上传文件
     let form: FormData = null;
 
     function addField(path: string, value: any) {
       if (value === undefined) return;
-      if (!isStream(value) && !isFile(value)) {
+      if (!isReadableStream(value) && !isFile(value) && !isUint8Array(value)) {
         if (typeof value === 'boolean' || typeof value === 'number' || value === null || value instanceof Date) {
           value = String(value);
         } else if (typeof value === 'object') {
@@ -104,7 +78,7 @@ function create(options?: Akita.ClientOptions) {
     // eslint-disable-next-line guard-for-in
     for (let key in body) {
       let value = body[key];
-      if (isStream(value) || isFile(value)) {
+      if (isReadableStream(value) || isFile(value) || isUint8Array(value)) {
         // upload file
         form = new FormData();
         // eslint-disable-next-line no-loop-func
@@ -166,13 +140,11 @@ function create(options?: Akita.ClientOptions) {
     return req;
   };
 
-  client._updateProgress = function (req?: Akita.Request<any>) {
-    if (req) {
-      client._tasks = client._tasks.filter((r) => r !== req);
-    }
+  client._updateProgress = function () {
     if (client._updateProgressTimer || !client._options.onProgress) return;
     client._updateProgressTimer = setTimeout(() => {
       client._updateProgressTimer = 0;
+      if (!client._options.onProgress) return;
       let progress = 1;
       let total = client._tasks.length * 3;
       if (total) {
@@ -187,7 +159,7 @@ function create(options?: Akita.ClientOptions) {
   };
 
   methods.forEach((method) => {
-    client[method] = function (path: string, init?: RequestInit) {
+    client[method] = function (path: string, init?: Akita.RequestInit) {
       init = init || {};
       init.method = method.toUpperCase();
       return client.request(path, init);

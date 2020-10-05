@@ -10,6 +10,7 @@ export default class ChangeStream<T> {
   _queue: Akita.Change<T>[];
   _resolve: Function;
   _reject: Function;
+  // eslint-disable-next-line no-undef
   _reader: ReadableStreamReader;
   _handler: (data: Buffer) => void;
   _close: () => void;
