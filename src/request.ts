@@ -1,7 +1,7 @@
 import * as Debugger from 'debug';
 import * as qs from 'qs';
 import { Readable } from 'stream';
-import ChangeStream from './stream';
+import JsonStream from './json-stream';
 import { isUint8Array } from './utils';
 import * as Akita from '..';
 
@@ -36,7 +36,7 @@ export default class Request<T> {
   init: Akita.RequestInit;
   res?: Response;
   _reducer?: Akita.Reducer<T>;
-  _csPromise: Promise<Akita.ChangeStream<any>>;
+  _jsPromise: Promise<Akita.JsonStream<any>>;
   raw?: string;
   value?: any;
   _steps: number;
@@ -145,6 +145,9 @@ export default class Request<T> {
       }
     }
     this._addStep();
+    if (debug.enabled) {
+      debug('fetch', url, JSON.stringify(init));
+    }
     let promise: Promise<Response> = this._fetch(url, init).then(
       (res) => {
         this._addStep();
@@ -182,6 +185,14 @@ export default class Request<T> {
       this._end();
       return res.body;
     });
+  }
+
+  jsonStream(): Promise<JsonStream<any>> {
+    if (!this._jsPromise) {
+      this._jsPromise = this.stream().then((stream) => new JsonStream(stream, this._reducer));
+    }
+    // @ts-ignore
+    return this._jsPromise;
   }
 
   ok(): Promise<boolean> {
@@ -367,11 +378,7 @@ export default class Request<T> {
    */
   then(onSuccess?: (value: T) => any, onFail?: (reason: any) => PromiseLike<never>): Promise<any> {
     if (this._query && this._query._op === 'watch') {
-      if (!this._csPromise) {
-        this._csPromise = this.stream().then((stream) => new ChangeStream(stream, this._reducer));
-      }
-      // @ts-ignore
-      return this._csPromise.then(onSuccess, onFail);
+      return this.jsonStream().then(onSuccess as any, onFail);
     }
     if (this._reducer) {
       return this.data().then((json: any) => onSuccess(this._reducer(json)), onFail);

@@ -57,10 +57,12 @@ export interface Change<T> {
   object: T;
 }
 
-export interface ChangeStream<T> {
+export interface ChangeStream<T> extends JsonStream<Change<T>> {}
+
+export interface JsonStream<T> {
   readonly closed: boolean;
-  read(): Promise<Change<T>>;
-  on(event: 'change', fn: (data: Change<T>) => void): this;
+  read(): Promise<T>;
+  on(event: 'data', fn: (data: T) => void): this;
   on(event: 'error', fn: (error: Error) => void): this;
   on(event: 'close', fn: () => void): this;
   removeListener(name: string, fn: Function): this;
@@ -173,6 +175,7 @@ export interface Request<R> extends Promise<R> {
 
   response(): Promise<Response>;
   stream(): Promise<Readable | ReadableStream>;
+  jsonStream<T = any>(): Promise<JsonStream<T>>;
   ok(): Promise<boolean>;
   status(): Promise<number>;
   statusText(): Promise<string>;

@@ -3,7 +3,7 @@ import * as http from 'http';
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
-import * as asyncBusboy from 'async-busboy';
+import upload from './upload';
 import { PaginateResult } from '..';
 
 const router = new Router();
@@ -11,32 +11,7 @@ const app = new Koa();
 
 require('koa-qs')(app);
 app.use(bodyParser());
-
-app.use(async (ctx, next) => {
-  const FILES = {};
-  // @ts-ignore
-  ctx.files = FILES;
-  if (!ctx.request.is('multipart/*')) return next();
-  return asyncBusboy(ctx.req).then((res) => {
-    const files = res.files;
-    const fields = res.fields;
-    files.forEach((file) => {
-      let fieldname = file.fieldname;
-      if (FILES[fieldname]) {
-        if (Array.isArray(FILES[fieldname])) {
-          FILES[fieldname].push(file);
-        } else {
-          FILES[fieldname] = [FILES[fieldname], file];
-        }
-      } else {
-        FILES[fieldname] = file;
-      }
-    });
-    // @ts-ignore
-    ctx.request.body = fields;
-    return next();
-  });
-});
+app.use(upload());
 
 const data = {
   users: [
@@ -103,7 +78,9 @@ router.get('/goods/watch', (ctx) => {
 
   setTimeout(() => {
     s.write(`${JSON.stringify({ type: 'MODIFIED', object: data.goods[1] })}\n`);
-    s.destroy();
+    setTimeout(() => {
+      s.end();
+    }, 1000);
   }, 1000);
 });
 

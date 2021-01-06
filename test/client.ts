@@ -199,5 +199,54 @@ test('HTTP', (troot) => {
       }, t.end);
   });
 
+  troot.test('json stream', async (t) => {
+    let stream = await client2.get('/goods/watch').jsonStream();
+    let event = await stream.read();
+    t.equal(event.type, 'ADDED');
+    t.equal(event.object.id, 1001);
+    t.equal(event.object.title, 'iPhone');
+
+    event = await stream.read();
+    t.equal(event.type, 'MODIFIED');
+    t.equal(event.object.id, 1002);
+    t.equal(event.object.title, 'iMac');
+    // 1s 后会被服务端关闭
+    event = await stream.read();
+    t.equal(event, undefined);
+
+    t.end();
+  });
+
+  troot.test('cancel json stream', async (t) => {
+    let stream = await client2.get('/goods/watch').jsonStream();
+    let event = await stream.read();
+    t.equal(event.type, 'ADDED');
+    t.equal(event.object.id, 1001);
+    t.equal(event.object.title, 'iPhone');
+
+    // 500ms 后从前端关闭
+    setTimeout(() => stream.cancel(), 500);
+    event = await stream.read();
+    t.equal(event, undefined);
+
+    t.end();
+  });
+
+  troot.test('json stream event', (t) => {
+    client2
+      .get('/goods/watch')
+      .jsonStream()
+      .then((stream) => {
+        stream.on('data', ({ type, object }) => {
+          t.equal(type, 'ADDED');
+          t.equal(object.id, 1001);
+          t.equal(object.title, 'iPhone');
+          stream.cancel();
+          t.equal(stream.closed, true, 'stream should be closed');
+          t.end();
+        });
+      });
+  });
+
   troot.end();
 });

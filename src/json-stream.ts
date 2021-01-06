@@ -2,9 +2,9 @@ import * as Debugger from 'debug';
 import * as Akita from '..';
 import { Readable } from 'stream';
 
-const debug = Debugger('akita:stream');
+const debug = Debugger('akita:json-stream');
 
-export default class ChangeStream<T> {
+export default class JsonStream<T> {
   closed: boolean;
   _stream: Readable | ReadableStream;
   _queue: Akita.Change<T>[];
@@ -32,36 +32,37 @@ export default class ChangeStream<T> {
       if (this.closed) return;
       let index = this._cache.indexOf('\n');
       if (index < 0) return;
-      let line = this._cache.substr(0, index);
+      let line = this._cache.substr(0, index).trim();
       this._cache = this._cache.substr(index + 1);
       if (line) {
-        let json = JSON.parse(line);
-        if (!json.type || !json.object) {
-          let error = new Error('Invalid change stream data');
+        let json;
+        try {
+          json = JSON.parse(line);
+        } catch (e) {
           if (this.listenerCount('error')) {
-            this.emit('error', error);
+            this.emit('error', e);
           }
           if (this._reject) {
-            this._reject(error);
+            this._reject(e);
             this._resolve = null;
             this._reject = null;
             return;
           }
         }
-        if (this._reducer) {
+        if (this._reducer && json.object) {
           json.object = this._reducer(json.object);
         }
-        if (this.listenerCount('change')) {
+        if (this.listenerCount('data')) {
           while (this._queue.length) {
-            this.emit('change', this._queue.shift());
+            this.emit('data', this._queue.shift());
           }
-          this.emit('change', json);
+          this.emit('data', json);
         }
         if (this._resolve) {
           this._resolve(json);
           this._resolve = null;
           this._reject = null;
-        } else if (!this.listenerCount('change')) {
+        } else if (!this.listenerCount('data')) {
           this._queue.push(json);
         }
       }
@@ -81,6 +82,11 @@ export default class ChangeStream<T> {
       this.closed = true;
       if (this.listenerCount('close')) {
         this.emit('close');
+      }
+      if (this._resolve) {
+        this._resolve(undefined);
+        this._resolve = null;
+        this._reject = null;
       }
       delete this._stream;
       delete this._reader;

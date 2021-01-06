@@ -224,7 +224,7 @@ test('Model', (troot) => {
 
   troot.test('watch event', (t) => {
     Goods.watch().then((stream) => {
-      stream.on('change', ({ type, object }) => {
+      stream.on('data', ({ type, object }) => {
         t.equal(type, 'ADDED');
         t.equal(object.id, 1001);
         t.equal(object.title, 'iPhone');

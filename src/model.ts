@@ -128,8 +128,8 @@ export default class Model {
    * @param {Object} [conditions]
    * @returns {Query}
    */
-  static watch(conditions?: any): Akita.Query<Akita.ChangeStream<any>> {
-    let query = new Query<Akita.ChangeStream<any>>(this, 'watch');
+  static watch(conditions?: any): Akita.Query<Akita.JsonStream<any>> {
+    let query = new Query<Akita.JsonStream<any>>(this, 'watch');
     if (conditions) {
       query.where(conditions);
     }
