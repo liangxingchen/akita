@@ -4,6 +4,18 @@ import { Readable } from 'stream';
 
 const debug = Debugger('akita:json-stream');
 
+function uint8ArrayToString(data: Uint8Array | string) {
+  if (typeof data === 'string') return data;
+  if (typeof Buffer !== 'undefined' && Buffer.isBuffer(data)) return data.toString('utf-8');
+  if (typeof TextDecoder !== 'undefined') return new TextDecoder('utf-8').decode(data);
+  let str = '';
+  // eslint-disable-next-line
+  for (let i = 0; i < data.length; i += 1) {
+    str += String.fromCharCode(data[i]);
+  }
+  return str;
+}
+
 export default class JsonStream<T> {
   closed: boolean;
   _stream: Readable | ReadableStream;
@@ -69,9 +81,9 @@ export default class JsonStream<T> {
       parseLine();
     };
 
-    this._handler = (data: Buffer | string) => {
+    this._handler = (data: Uint8Array | string) => {
       if (this.closed) return;
-      let string = data.toString();
+      let string = uint8ArrayToString(data);
       debug('receive', string);
       this._cache += string;
       parseLine();
