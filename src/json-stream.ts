@@ -24,8 +24,6 @@ export default class JsonStream<T> {
   _reject: Function;
   // eslint-disable-next-line no-undef
   _reader: ReadableStreamReader;
-  _handler: (data: Buffer) => void;
-  _close: () => void;
   _cache: string;
   _reducer: Akita.Reducer<any>;
   _listeners: {
@@ -40,92 +38,106 @@ export default class JsonStream<T> {
     this._reducer = reducer;
     this._listeners = {};
 
-    const parseLine = () => {
-      if (this.closed) return;
-      let index = this._cache.indexOf('\n');
-      if (index < 0) return;
-      let line = this._cache.substr(0, index).trim();
-      this._cache = this._cache.substr(index + 1);
-      if (line) {
-        let json;
-        try {
-          json = JSON.parse(line);
-        } catch (e) {
-          if (this.listenerCount('error')) {
-            this.emit('error', e);
-          }
-          if (this._reject) {
-            this._reject(e);
-            this._resolve = null;
-            this._reject = null;
-            return;
-          }
-        }
-        if (this._reducer && json.object) {
-          json.object = this._reducer(json.object);
-        }
-        if (this.listenerCount('data')) {
-          while (this._queue.length) {
-            this.emit('data', this._queue.shift());
-          }
-          this.emit('data', json);
-        }
-        if (this._resolve) {
-          this._resolve(json);
-          this._resolve = null;
-          this._reject = null;
-        } else if (!this.listenerCount('data')) {
-          this._queue.push(json);
-        }
-      }
-      parseLine();
-    };
-
-    this._handler = (data: Uint8Array | string) => {
-      if (this.closed) return;
-      let string = uint8ArrayToString(data);
-      debug('receive', string);
-      this._cache += string;
-      parseLine();
-    };
-
-    this._close = () => {
-      if (this.closed) return;
-      this.closed = true;
-      if (this.listenerCount('close')) {
-        this.emit('close');
-      }
-      if (this._resolve) {
-        this._resolve(undefined);
-        this._resolve = null;
-        this._reject = null;
-      }
-      delete this._stream;
-      delete this._reader;
-      delete this._cache;
-      delete this._reducer;
-      delete this._handler;
-      this._listeners = {};
-    };
-
     // @ts-ignore
     if (stream.getReader) {
       this._reader = (stream as ReadableStream).getReader();
       const read = ({ done, value }) => {
         if (this.closed) return;
-        this._handler(value || (done && this._cache ? '\n' : ''));
+        this._receive(value || (done && this._cache ? '\n' : ''));
         if (done) {
           this._close();
         } else {
-          this._reader.read().then(read);
+          this._reader.read().then(read, this._onError);
         }
       };
-      this._reader.read().then(read);
+      this._reader.read().then(read, this._onError);
     } else {
-      (stream as Readable).on('data', this._handler);
+      (stream as Readable).on('data', this._receive);
       (stream as Readable).on('close', this._close);
     }
   }
+
+  _receive = (data: Uint8Array | string) => {
+    let string = uint8ArrayToString(data);
+    debug('receive', string);
+    if (this.closed) return;
+    this._cache += string;
+    this._parse();
+  };
+
+  _parse() {
+    if (this.closed || !this._cache) return;
+    let index = this._cache.indexOf('\n');
+    if (index < 0) return;
+    let line = this._cache.substr(0, index).trim();
+    this._cache = this._cache.substr(index + 1);
+    if (line) {
+      let json;
+      try {
+        json = JSON.parse(line);
+      } catch (e) {
+        this._onError(e);
+        return;
+      }
+      if (this._reducer && json.object) {
+        json.object = this._reducer(json.object);
+      }
+      if (this.listenerCount('data')) {
+        while (this._queue.length) {
+          this.emit('data', this._queue.shift());
+        }
+        this.emit('data', json);
+      }
+      if (this._resolve) {
+        this._resolve(json);
+        this._resolve = null;
+        this._reject = null;
+      } else if (!this.listenerCount('data')) {
+        this._queue.push(json);
+      }
+      this._parse();
+    }
+  }
+
+  _onError = (error: Error) => {
+    if (this.listenerCount('error')) {
+      this.emit('error', error);
+    }
+    if (this._reject) {
+      this._reject(error);
+      this._resolve = null;
+      this._reject = null;
+    }
+    if (!this.closed) this._close();
+  };
+
+  _close = () => {
+    debug('_close');
+    if (this.closed) return;
+    this.closed = true;
+    if (this.listenerCount('close')) {
+      this.emit('close');
+    }
+    if (this._resolve) {
+      this._resolve(undefined);
+      this._resolve = null;
+      this._reject = null;
+    }
+
+    // @ts-ignore
+    if (!this._stream.getReader) {
+      // @ts-ignore
+      this._stream.removeListener('data', this._receive);
+      // @ts-ignore
+      this._stream.removeListener('close', this._close);
+    }
+
+    delete this._stream;
+    delete this._reader;
+    delete this._cache;
+    delete this._reducer;
+    this._listeners = {};
+  };
 
   on(name: string, fn): this {
     if (!this._listeners[name]) {
@@ -176,7 +188,7 @@ export default class JsonStream<T> {
       (this._stream as ReadableStream).cancel();
     } else {
       (this._stream as Readable).destroy();
-      (this._stream as Readable).removeListener('data', this._handler);
+      (this._stream as Readable).removeListener('data', this._receive);
     }
     this._close();
   }
