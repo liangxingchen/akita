@@ -106,7 +106,6 @@ export default class JsonStream<T> {
       delete this._reducer;
       delete this._handler;
       this._listeners = {};
-      this._queue = [];
     };
 
     // @ts-ignore
@@ -114,11 +113,12 @@ export default class JsonStream<T> {
       this._reader = (stream as ReadableStream).getReader();
       const read = ({ done, value }) => {
         if (this.closed) return;
-        this._handler(value || '');
+        this._handler(value || (done && this._cache ? '\n' : ''));
         if (done) {
           this._close();
+        } else {
+          this._reader.read().then(read);
         }
-        this._reader.read().then(read);
       };
       this._reader.read().then(read);
     } else {
@@ -158,10 +158,10 @@ export default class JsonStream<T> {
   }
 
   read(): Promise<{ type: Akita.ChangeType; object: T }> {
-    if (this.closed) return Promise.reject(new Error('Can not read from closed stream.'));
     if (this._queue.length) {
       return Promise.resolve(this._queue.shift());
     }
+    if (this.closed) return Promise.reject(new Error('Can not read from closed stream.'));
     return new Promise((resolve, reject) => {
       this._resolve = resolve;
       this._reject = reject;
