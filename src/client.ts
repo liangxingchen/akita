@@ -30,6 +30,7 @@ function create(options?: Akita.ClientOptions) {
 
   // 已经发送请求的数量
   client._count = 0;
+  client._progress = 1;
   client._tasks = [];
   client.create = create;
   client.resolve = resolve;
@@ -141,20 +142,30 @@ function create(options?: Akita.ClientOptions) {
   };
 
   client._updateProgress = function () {
+    let now = Date.now();
+    client._tasks = client._tasks.filter((t) => !t._endAt || now - t._endAt < 1000);
+    if (client._tasks.find((t) => t._endAt)) {
+      setTimeout(() => {
+        client._updateProgress();
+      }, 1000);
+    }
     if (client._updateProgressTimer || !client._options.onProgress) return;
     client._updateProgressTimer = setTimeout(() => {
       client._updateProgressTimer = 0;
       if (!client._options.onProgress) return;
-      let progress = 1;
+      let process = 1;
       let total = client._tasks.length * 3;
       if (total) {
         let steps = 0;
         client._tasks.forEach((r) => {
-          steps += r._steps;
+          steps += r._endAt ? 3 : r._steps;
         });
-        progress = steps / total;
+        process = steps / total;
       }
-      client._options.onProgress(progress);
+      if (process !== this._progress) {
+        this._progress = process;
+        client._options.onProgress(process);
+      }
     }, 5);
   };
 

@@ -146,6 +146,7 @@ export interface Reducer<T> {
  */
 export interface Request<R> extends Promise<R> {
   _steps: number;
+  _endAt?: number;
 
   /**
    * 请求所属Client
@@ -207,6 +208,7 @@ export interface ClientOptions {
 export interface Client {
   _options: ClientOptions;
   _count: number;
+  _progress: number;
   _tasks: Request<any>[];
   _updateProgress: () => void;
   _updateProgressTimer?: any;
