@@ -188,8 +188,12 @@ export interface Request<R> extends Promise<R> {
   data(): Promise<any>;
 }
 
-export interface Hook {
+export interface RequestHook {
   (request: Request<any>): void | Promise<void>;
+}
+
+export interface ProgressHook {
+  (progress: number): void;
 }
 
 export interface ClientOptions {
@@ -198,11 +202,11 @@ export interface ClientOptions {
   fetch?: Function;
   FormData?: typeof FormData;
   qsOptions?: IStringifyOptions;
-  onEncode?: Hook | Hook[];
-  onRequest?: Hook | Hook[];
-  onResponse?: Hook | Hook[];
-  onDecode?: Hook | Hook[];
-  onProgress?: (progress: number) => void;
+  onEncode?: RequestHook | RequestHook[];
+  onRequest?: RequestHook | RequestHook[];
+  onResponse?: RequestHook | RequestHook[];
+  onDecode?: RequestHook | RequestHook[];
+  onProgress?: ProgressHook | ProgressHook[];
 }
 
 export interface Client {
@@ -228,6 +232,12 @@ export interface Client {
   put(path: string, init?: RequestInit): Request<any>;
   patch(path: string, init?: RequestInit): Request<any>;
   delete(path: string, init?: RequestInit): Request<any>;
+
+  on(event: 'encode' | 'request' | 'response' | 'decode', hook: RequestHook): Client;
+  on(event: 'progress', hook: ProgressHook): Client;
+
+  off(event: 'encode' | 'request' | 'response' | 'decode', hook: RequestHook): Client;
+  off(event: 'progress', hook: ProgressHook): Client;
 }
 
 declare const akita: Client;

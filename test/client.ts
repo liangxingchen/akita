@@ -23,6 +23,10 @@ client.setOptions({
     console.log('progress', progress);
   }
 });
+
+client.on('request', async (req) => console.log('request hook:', req.url));
+client.on('request', (req) => console.log('request hook:', req.url));
+
 client2.setOptions({
   apiRoot: 'http://localhost:28000'
 });

@@ -38,6 +38,34 @@ function create(options?: Akita.ClientOptions) {
     client._options = Object.assign({}, client._options, opts);
   };
 
+  client.on = (event, hook) => {
+    let name = `on${event[0].toUpperCase()}${event.substr(1)}`;
+    if (!client._options[name]) {
+      client._options[name] = hook;
+      return client;
+    }
+    if (Array.isArray(client._options[name])) {
+      client._options[name].push(hook);
+    } else {
+      client._options[name] = [client._options[name], hook];
+    }
+    return client;
+  };
+
+  client.off = (event, hook) => {
+    let name = `on${event[0].toUpperCase()}${event.substr(1)}`;
+    if (!client._options[name]) {
+      return client;
+    }
+    if (Array.isArray(client._options[name])) {
+      client._options[name] = client._options[name].filter((f) => f !== hook);
+      if (!client._options[name].length) client._options[name] = null;
+    } else if (client._options[name] === hook) {
+      client._options[name] = null;
+    }
+    return client;
+  };
+
   client.getFormDataClass = function getFormDataClass(): typeof FormData {
     let FormData = client._options.FormData;
     // @ts-ignore window.FormData
@@ -164,7 +192,11 @@ function create(options?: Akita.ClientOptions) {
       }
       if (process !== this._progress) {
         this._progress = process;
-        client._options.onProgress(process);
+        if (Array.isArray(client._options.onProgress)) {
+          client._options.onProgress.forEach((fn) => fn(process));
+        } else {
+          client._options.onProgress(process);
+        }
       }
     }, 5);
   };

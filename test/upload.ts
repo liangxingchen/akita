@@ -161,7 +161,7 @@ function parse(req: IncomingMessage, config: UploadMiddlewareConfig) {
       reject(error);
     }
 
-    busboy.on('partsLimit', function () {
+    busboy.on('partsLimit', () => {
       const err = new Error('Reach parts limit');
       // @ts-ignore
       err.code = 'Request_parts_limit';

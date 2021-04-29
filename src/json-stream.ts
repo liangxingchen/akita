@@ -23,7 +23,7 @@ export default class JsonStream<T> {
   _resolve: Function;
   _reject: Function;
   // eslint-disable-next-line no-undef
-  _reader: ReadableStreamReader;
+  _reader: ReadableStreamReader<any>;
   _cache: string;
   _reducer: Akita.Reducer<any>;
   _listeners: {

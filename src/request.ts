@@ -7,7 +7,7 @@ import * as Akita from '..';
 
 const debug = Debugger('akita:request');
 
-function execHooks(request: Akita.Request<any>, hooks: Akita.Hook | Akita.Hook[]): void | Promise<void> {
+function execHooks(request: Akita.Request<any>, hooks: Akita.RequestHook | Akita.RequestHook[]): void | Promise<void> {
   let promise: void | Promise<void>;
   if (Array.isArray(hooks)) {
     hooks.forEach((h) => {
