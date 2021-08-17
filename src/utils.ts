@@ -22,5 +22,6 @@ export function isReadableStream(value: any): boolean {
  * 判断一个值是浏览器环境中的File/Blob
  */
 export function isFile(value: any): boolean {
+  if(typeof Blob==='function' && value instanceof Blob) return true;
   return value && typeof value.slice === 'function' && value.size && value.lastModified;
 }

@@ -5,5 +5,5 @@ import * as FormData from 'form-data';
 import { Model } from './client';
 import inject from './inject';
 
-export default inject(fetch, FormData, 'Akita/0.12.0 (+https://github.com/maichong/akita)');
+export default inject(fetch, FormData, 'Akita/0.12.1 (+https://github.com/maichong/akita)');
 export { Model };
