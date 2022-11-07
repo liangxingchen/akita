@@ -1,6 +1,6 @@
 {
   "name": "akita",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Http client for NodeJs / browser and WeChat, based on fetch()",
   "main": "lib/node.js",
   "browser": "lib/client.js",
