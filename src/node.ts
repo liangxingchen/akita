@@ -1,9 +1,7 @@
 /* eslint no-use-before-define:0 */
 
-import * as fetch from 'node-fetch-unix';
+import * as fetch from 'node-fetch';
 import * as FormData from 'form-data';
-import { Model } from './client';
 import inject from './inject';
 
-export default inject(fetch, FormData, 'Akita/0.12.1 (+https://github.com/maichong/akita)');
-export { Model };
+export default inject(fetch, FormData, 'Akita/1.0.0 (+https://github.com/liangxingchen/akita)');

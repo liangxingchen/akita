@@ -3,8 +3,8 @@ import * as fs from 'fs';
 import * as Path from 'path';
 import { Readable } from 'stream';
 import { IncomingMessage } from 'http';
+// @ts-ignore
 import * as Busboy from 'busboy';
-import { Context } from 'koa';
 
 export interface UploadFile extends Readable {
   fieldname: string;
@@ -51,7 +51,7 @@ function extractFormData(string: string) {
   const arr = string.split('[');
   const first = arr.shift();
   const res = arr.map((v) => v.split(']')[0]);
-  res.unshift(first);
+  res.unshift(first as string);
   return res;
 }
 
@@ -71,7 +71,7 @@ function objectFromBluePrint(arr: any[], value: any) {
     if (Number(next).toString() === 'NaN') {
       return { [next]: acc };
     } else {
-      const newAcc = [];
+      const newAcc: any[] = [];
       newAcc[Number(next)] = acc;
       return newAcc;
     }
@@ -104,7 +104,7 @@ function reconcile(obj: any, target: any): any {
 
 function parse(req: IncomingMessage, config: UploadMiddlewareConfig) {
   return new Promise((resolve, reject) => {
-    const busboy = new Busboy({ headers: req.headers });
+    const busboy: any = new Busboy({ headers: req.headers });
     const fields: any = {};
     const promises: Promise<UploadFile>[] = [];
 
@@ -202,7 +202,7 @@ function parse(req: IncomingMessage, config: UploadMiddlewareConfig) {
 }
 
 export default function (config: UploadMiddlewareConfig = {}): any {
-  return async function (ctx: Context, next: Function) {
+  return async function (ctx: any, next: Function) {
     if (typeof ctx.files === 'undefined' && ctx.request.is('multipart/*')) {
       const res: any = await parse(ctx.req, config);
       const files = res.files;

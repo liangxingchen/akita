@@ -1,5 +1,3 @@
-/* eslint spaced-comment:0 */
-
 /// <reference types="node"/>
 /// <reference lib="dom"/>
 
@@ -8,121 +6,75 @@ import { Readable } from 'stream';
 import { Agent } from 'http';
 import { Agent as HttpsAgent } from 'https';
 
-export class Model {
-  static path: string;
-  static pk: string;
-  static client: Client;
-
-  constructor(data?: any, params?: any);
-
-  static create<T>(this: { new (): T }, data: any): Query<T>;
-  static update<T>(this: { new (): T }, data?: any): Query<T>;
-  static update<T>(this: { new (): T }, id: string | number, data: any): Query<T>;
-  static remove<T>(this: { new (): T }, conditions?: any | string | number): Query<number>;
-  static count<T>(this: { new (): T }, conditions?: any): Query<number>;
-  static paginate<T>(this: { new (): T }, conditions?: any): Query<PaginateResult<T>>;
-  static find<T>(this: { new (): T }, conditions?: any): Query<T[]>;
-  static findByPk<T>(this: { new (): T }, conditions: number | string): Query<T | null>;
-  static findOne<T>(this: { new (): T }, conditions?: any): Query<T | null>;
-  static watch<T>(this: { new (): T }, conditions?: any): Query<ChangeStream<T>>;
-  static request<T>(
-    this: { new (): T },
-    path: string,
-    init?: RequestInit,
-    query?: Query<any> | null,
-    reducer?: Reducer<any>
-  ): Request<any>;
-  static get(path: string, init?: RequestInit): Request<any>;
-  static post(path: string, init?: RequestInit): Request<any>;
-  static put(path: string, init?: RequestInit): Request<any>;
-  static patch(path: string, init?: RequestInit): Request<any>;
-  static delete(path: string, init?: RequestInit): Request<any>;
-
-  request(path: string, init?: RequestInit, reducer?: Reducer<any>): Request<any>;
-  save(init?: RequestInit): Request<void>;
-  remove(init?: RequestInit): Request<void>;
-
-  // HTTP
-  get(path: string, init?: RequestInit): Request<any>;
-  post(path: string, init?: RequestInit): Request<any>;
-  put(path: string, init?: RequestInit): Request<any>;
-  patch(path: string, init?: RequestInit): Request<any>;
-  delete(path: string, init?: RequestInit): Request<any>;
+/**
+ * 数据处理器，对返回的数据进行预处理，用于自定义增减数据字段
+ */
+export interface Reducer<T> {
+  (json: any): T;
 }
 
-export type ChangeType = 'ADDED' | 'MODIFIED' | 'DELETED';
-
-export interface Change<T> {
-  type: ChangeType;
-  object: T;
-}
-
-export interface ChangeStream<T> extends JsonStream<Change<T>> {}
-
+/**
+ * JSON数据流
+ */
 export interface JsonStream<T> {
+  /**
+   * 流是否已关闭
+   */
   readonly closed: boolean;
+  /**
+   * 从数据流中读取一条数据
+   */
   read(): Promise<T>;
+  /**
+   * 监听数据事件
+   */
   on(event: 'data', fn: (data: T) => void): this;
+  /**
+   * 监听错误事件
+   */
   on(event: 'error', fn: (error: Error) => void): this;
+  /**
+   * 监听关闭事件
+   */
   on(event: 'close', fn: () => void): this;
+  /**
+   * 移除时间的单个监听器
+   */
   removeListener(name: string, fn: Function): this;
+  /**
+   * 移除事件的所有监听器
+   */
   removeAllListeners(name: string): this;
-  cancel(): void;
+  /**
+   * 关闭流
+   */
+  close(): void;
 }
 
-export interface Query<R> extends Promise<R> {
-  _op: string;
-  _params: any;
-
-  arg(args: any): this;
-  arg(key: string, value: any): this;
-
-  search(keyword: string): this;
-
-  where(conditions: any | string): this;
-  where(conditions: string, value: any): this;
-
-  eq(value: any): this;
-  ne(value: any): this;
-
-  regex(value: string): this;
-
-  in(value: any[]): this;
-  nin(value: any[]): this;
-
-  // less than
-  lt(value: any): this;
-  lte(value: any): this;
-
-  // greater than
-  gt(value: any): this;
-  gte(value: any): this;
-
-  limit(size: number): this;
-  page(size: number): this;
-  sort(sortBy: string): this;
-
-  exec(): Request<R>;
-}
-
-export interface PaginateResult<T> {
-  limit: number;
-  total: number;
-  totalPage: number;
-  page: number;
-  previous: number;
-  next: number;
-  results: T[];
-}
-
+/**
+ * 请求参数
+ */
 export interface RequestInit {
-  // akita
+  /**
+   * 请求路径
+   */
   path?: string;
+  /**
+   * HTTP query参数对象
+   */
   query?: any;
 
-  // fetch standard
+  /**
+   * 请求方法，默认 GET
+   */
   method?: string;
+  /**
+   * 请求Body数据
+   */
   body?: any;
+  /**
+   * HTTP 请求 Headers
+   */
   headers?: any;
   mode?: string;
   credentials?: string;
@@ -135,10 +87,6 @@ export interface RequestInit {
   compress?: boolean;
   size?: number;
   agent?: Agent | HttpsAgent;
-}
-
-export interface Reducer<T> {
-  (json: any): T;
 }
 
 /**
@@ -173,19 +121,55 @@ export interface Request<R> extends Promise<R> {
    * 在调用 .data() 方法时可由 onDecode 钩子通过raw解析得来
    */
   value?: any;
-
-  response(): Promise<Response>;
-  stream(): Promise<Readable | ReadableStream>;
-  jsonStream<T = any>(): Promise<JsonStream<T>>;
-  ok(): Promise<boolean>;
-  status(): Promise<number>;
-  statusText(): Promise<string>;
-  size(): Promise<number>;
-  headers(): Promise<Headers>;
-  buffer(): Promise<Buffer>;
-  blob(): Promise<Blob>;
-  text(): Promise<string>;
+  /**
+   * 获取请求的返回数据，自动调用JSON解码
+   * .data() 调用可省略，比如 let res = await client.get('/api');
+   */
   data(): Promise<any>;
+  /**
+   * 获取返回的原始字符串
+   */
+  text(): Promise<string>;
+  /**
+   * 获取返回的原始Buffer数据
+   */
+  buffer(): Promise<Buffer>;
+  /**
+   * 获取返回的原始Blob数据，浏览器端可用，类似于 buffer()
+   */
+  blob(): Promise<Blob>;
+  /**
+   * 获取返回的数据流
+   */
+  stream(): Promise<Readable | ReadableStream>;
+  /**
+   * 获取返回的JSON数据流，服务端返回数据应为每行一个JSON对象
+   */
+  jsonStream<T = any>(): Promise<JsonStream<T>>;
+  /**
+   * 获取返回的原始Response对象
+   */
+  response(): Promise<Response>;
+  /**
+   * 判断请求是否成功
+   */
+  ok(): Promise<boolean>;
+  /**
+   * 获取请求的状态码
+   */
+  status(): Promise<number>;
+  /**
+   * 获取请求的状态文本
+   */
+  statusText(): Promise<string>;
+  /**
+   * 获取返回的数据大小，通过解析 Content-Length
+   */
+  size(): Promise<number>;
+  /**
+   * 获取返回的响应Headers
+   */
+  headers(): Promise<Headers>;
 }
 
 export interface RequestHook {
@@ -196,46 +180,124 @@ export interface ProgressHook {
   (progress: number): void;
 }
 
+/**
+ * 客户端配置
+ */
 export interface ClientOptions {
+  /**
+   * 请求的基础URL
+   */
   apiRoot?: string;
+  /**
+   * fetch() 函数默认参数
+   */
   init?: RequestInit;
+  /**
+   * fetch 函数引用，默认自动识别
+   */
   fetch?: Function;
+  /**
+   * FormData类引用，默认自动识别
+   */
   FormData?: typeof FormData;
+  /**
+   * qs 配置，用于序列化 query 参数
+   */
   qsOptions?: IStringifyOptions;
+  /**
+   * 请求前对Body进行编码的前置钩子
+   */
   onEncode?: RequestHook | RequestHook[];
+  /**
+   * 请求前钩子
+   */
   onRequest?: RequestHook | RequestHook[];
+  /**
+   * 请求响应后钩子
+   */
   onResponse?: RequestHook | RequestHook[];
+  /**
+   * 请求响应后对Body进行解码的前置钩子
+   */
   onDecode?: RequestHook | RequestHook[];
+  /**
+   * 请求进度通知钩子
+   */
   onProgress?: ProgressHook | ProgressHook[];
 }
 
 export interface Client {
-  _options: ClientOptions;
   _count: number;
   _progress: number;
   _tasks: Request<any>[];
   _updateProgress: () => void;
   _updateProgressTimer?: any;
-  progress?: number;
 
-  (path: string): typeof Model;
-  setOptions(options: ClientOptions): void;
+  /**
+   * 客户端配置
+   */
+  readonly options: ClientOptions;
+  /**
+   * 请求进度，0-1
+   */
+  readonly progress?: number;
+
+  /**
+   * 创建新的客户端实例
+   */
   create(options: ClientOptions): Client;
+  /**
+   * 找回一个已经被初始化的客户端实例，如果不存在将会创建一个新的
+   * 方便多个模块共享一个客户端实例
+   */
   resolve(key: string): Client;
-  request(path: string, init?: RequestInit, query?: Query<any>, reducer?: Reducer<any>): Request<any>;
+  /**
+   * 设置客户端配置，新配置会被合并到 client.options 中
+   */
+  setOptions(options: ClientOptions): void;
+  /**
+   * 获取FormData类引用
+   */
   getFormDataClass(): any;
+  /**
+   * 对body数据进行编码
+   */
   createBody(body: any): any | FormData;
 
-  // HTTTP
+  /**
+   * 发起一个请求
+   */
+  request(path: string, init?: RequestInit, reducer?: Reducer<any>): Request<any>;
+  /**
+   * 发起一个GET请求
+   */
   get(path: string, init?: RequestInit): Request<any>;
+  /**
+   * 发起一个POST请求
+   */
   post(path: string, init?: RequestInit): Request<any>;
+  /**
+   * 发起一个PUT请求
+   */
   put(path: string, init?: RequestInit): Request<any>;
+  /**
+   * 发起一个PATCH请求
+   */
   patch(path: string, init?: RequestInit): Request<any>;
+  /**
+   * 发起一个DELETE请求
+   */
   delete(path: string, init?: RequestInit): Request<any>;
 
+  /**
+   * 监听事件
+   */
   on(event: 'encode' | 'request' | 'response' | 'decode', hook: RequestHook): Client;
   on(event: 'progress', hook: ProgressHook): Client;
 
+  /**
+   * 取消监听事件
+   */
   off(event: 'encode' | 'request' | 'response' | 'decode', hook: RequestHook): Client;
   off(event: 'progress', hook: ProgressHook): Client;
 }

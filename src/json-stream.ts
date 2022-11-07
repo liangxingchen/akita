@@ -19,7 +19,7 @@ function uint8ArrayToString(data: Uint8Array | string) {
 export default class JsonStream<T> {
   closed: boolean;
   _stream: Readable | ReadableStream;
-  _queue: Akita.Change<T>[];
+  _queue: T[];
   _resolve: Function;
   _reject: Function;
   // eslint-disable-next-line no-undef
@@ -169,7 +169,7 @@ export default class JsonStream<T> {
     return this;
   }
 
-  read(): Promise<{ type: Akita.ChangeType; object: T }> {
+  read(): Promise<T> {
     if (this._queue.length) {
       return Promise.resolve(this._queue.shift());
     }
@@ -180,9 +180,9 @@ export default class JsonStream<T> {
     });
   }
 
-  cancel() {
-    if (this.closed) throw new Error('Can not cancel closed stream.');
-    debug('cancel watch');
+  close() {
+    if (this.closed) return;
+    debug('close json stream');
     // @ts-ignore
     if (this._stream.cancel) {
       (this._stream as ReadableStream).cancel();

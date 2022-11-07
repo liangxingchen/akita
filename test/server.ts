@@ -4,13 +4,12 @@ import * as Koa from 'koa';
 import * as Router from 'koa-router';
 import * as bodyParser from 'koa-bodyparser';
 import upload from './upload';
-import { PaginateResult } from '..';
 
-const router = new Router();
-const app = new Koa();
+const router: any = new Router();
+const app: any = new Koa();
 
 require('koa-qs')(app);
-app.use(bodyParser());
+app.use(bodyParser({}));
 app.use(upload());
 
 const data = {
@@ -50,7 +49,7 @@ router.get('/goods/paginate', (ctx) => {
     if (key[0] === '_') continue;
     filters[key] = ctx.query[key];
   }
-  let result: PaginateResult<any> = {
+  let result = {
     total: data.goods.length,
     page: parseInt(ctx.query._page) || 1,
     limit: parseInt(ctx.query._limit) || 1,

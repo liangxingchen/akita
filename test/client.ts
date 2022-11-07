@@ -76,7 +76,7 @@ test('HTTP', (troot) => {
   troot.test('test headers', (t) => {
     client.get('http://localhost:28000', { headers: { foo: 'bar' } }).then((res) => {
       t.equal(res.headers.foo, 'bar');
-      t.equal(res.headers['user-agent'], `Akita/${version} (+https://github.com/maichong/akita)`);
+      t.equal(res.headers['user-agent'], `Akita/${version} (+https://github.com/liangxingchen/akita)`);
       t.end();
     }, t.end);
   });
@@ -221,7 +221,7 @@ test('HTTP', (troot) => {
     t.end();
   });
 
-  troot.test('cancel json stream', async (t) => {
+  troot.test('close json stream', async (t) => {
     let stream = await client2.get('/goods/watch').jsonStream();
     let event = await stream.read();
     t.equal(event.type, 'ADDED');
@@ -229,7 +229,7 @@ test('HTTP', (troot) => {
     t.equal(event.object.title, 'iPhone');
 
     // 500ms 后从前端关闭
-    setTimeout(() => stream.cancel(), 500);
+    setTimeout(() => stream.close(), 500);
     event = await stream.read();
     t.equal(event, undefined);
 
@@ -245,7 +245,7 @@ test('HTTP', (troot) => {
           t.equal(type, 'ADDED');
           t.equal(object.id, 1001);
           t.equal(object.title, 'iPhone');
-          stream.cancel();
+          stream.close();
           t.equal(stream.closed, true, 'stream should be closed');
           t.end();
         });

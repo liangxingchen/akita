@@ -30,7 +30,6 @@ function execHooks(request: Akita.Request<any>, hooks: Akita.RequestHook | Akita
 
 export default class Request<T> {
   client: Akita.Client;
-  _query?: Akita.Query<T>;
   _fetch: any;
   url: string;
   init: Akita.RequestInit;
@@ -47,16 +46,8 @@ export default class Request<T> {
   _dataPromise: Promise<any>;
   _endAt: number;
 
-  constructor(
-    client: Akita.Client,
-    fetch: Function,
-    url: string,
-    init: any,
-    query?: Akita.Query<T> | null,
-    reducer?: Akita.Reducer<T>
-  ) {
+  constructor(client: Akita.Client, fetch: Function, url: string, init: any, reducer?: Akita.Reducer<T>) {
     this.client = client;
-    this._query = query;
     this._reducer = reducer;
     this._fetch = fetch;
     this.url = url;
@@ -65,18 +56,18 @@ export default class Request<T> {
 
     let promise;
     // onEncode
-    if (init.body && client._options.onEncode) {
+    if (init.body && client.options.onEncode) {
       debug('exec onEncode');
-      promise = execHooks(this as any, client._options.onEncode);
+      promise = execHooks(this as any, client.options.onEncode);
     }
 
     // onRequest
-    if (client._options.onRequest) {
+    if (client.options.onRequest) {
       debug('exec onRequest');
       if (promise) {
-        promise = promise.then(() => execHooks(this as any, client._options.onRequest));
+        promise = promise.then(() => execHooks(this as any, client.options.onRequest));
       } else {
-        promise = execHooks(this as any, client._options.onRequest);
+        promise = execHooks(this as any, client.options.onRequest);
       }
     }
 
@@ -108,10 +99,10 @@ export default class Request<T> {
     // headers
     let headers = init.headers || {};
 
-    if (client._options.init) {
-      init = Object.assign({}, client._options.init, init);
-      if (client._options.init.headers) {
-        headers = Object.assign({}, client._options.init.headers, headers);
+    if (client.options.init) {
+      init = Object.assign({}, client.options.init, init);
+      if (client.options.init.headers) {
+        headers = Object.assign({}, client.options.init.headers, headers);
       }
     }
 
@@ -154,9 +145,9 @@ export default class Request<T> {
         debug('response:', this.url, res.status, res.statusText);
         this.res = res;
         // onResponse
-        if (client._options.onResponse) {
+        if (client.options.onResponse) {
           debug('exec onResponse');
-          let p = execHooks(this as any, client._options.onResponse);
+          let p = execHooks(this as any, client.options.onResponse);
           if (p) {
             return p.then(() => {
               return Promise.resolve(res);
@@ -343,17 +334,13 @@ export default class Request<T> {
             (text) => {
               this._end();
               debug('response text:', text);
-              if (res.status === 404 && this._query && ['findByPk', 'remove'].indexOf(this._query._op) > -1) {
-                debug(`return null when ${this._query._op} 404`);
-                return null;
-              }
               this.raw = text;
 
               const client = this.client;
 
-              if (client._options.onDecode) {
+              if (client.options.onDecode) {
                 debug('exec onDecode');
-                let promise = execHooks(this as any, client._options.onDecode);
+                let promise = execHooks(this as any, client.options.onDecode);
                 if (promise) {
                   return promise.then(() => Promise.resolve(this._decode()));
                 }
@@ -377,9 +364,6 @@ export default class Request<T> {
    * @returns {Promise<any>}
    */
   then(onSuccess?: (value: T) => any, onFail?: (reason: any) => PromiseLike<never>): Promise<any> {
-    if (this._query && this._query._op === 'watch') {
-      return this.jsonStream().then(onSuccess as any, onFail);
-    }
     if (this._reducer) {
       return this.data().then((json: any) => onSuccess(this._reducer(json)), onFail);
     }

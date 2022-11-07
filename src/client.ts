@@ -2,7 +2,6 @@
 
 import * as qs from 'qs';
 import methods from './methods';
-import Model from './model';
 import Request from './request';
 import { isUint8Array, isReadableStream, isFile } from './utils';
 import * as Akita from '..';
@@ -18,15 +17,9 @@ function resolve(key: string) {
 
 function create(options?: Akita.ClientOptions) {
   // @ts-ignore
-  const client: Akita.Client = function client(path: string): typeof Akita.Model {
-    // @ts-ignore
-    return class AnonymousModel extends Model {
-      static path = path;
-      static client = client;
-    };
+  const client: Akita.Client = {
+    options: options || {}
   };
-
-  client._options = options || {};
 
   // 已经发送请求的数量
   client._count = 0;
@@ -35,39 +28,39 @@ function create(options?: Akita.ClientOptions) {
   client.create = create;
   client.resolve = resolve;
   client.setOptions = (opts: Object) => {
-    client._options = Object.assign({}, client._options, opts);
+    Object.assign(client.options, opts);
   };
 
   client.on = (event, hook) => {
     let name = `on${event[0].toUpperCase()}${event.substr(1)}`;
-    if (!client._options[name]) {
-      client._options[name] = hook;
+    if (!client.options[name]) {
+      client.options[name] = hook;
       return client;
     }
-    if (Array.isArray(client._options[name])) {
-      client._options[name].push(hook);
+    if (Array.isArray(client.options[name])) {
+      client.options[name].push(hook);
     } else {
-      client._options[name] = [client._options[name], hook];
+      client.options[name] = [client.options[name], hook];
     }
     return client;
   };
 
   client.off = (event, hook) => {
     let name = `on${event[0].toUpperCase()}${event.substr(1)}`;
-    if (!client._options[name]) {
+    if (!client.options[name]) {
       return client;
     }
-    if (Array.isArray(client._options[name])) {
-      client._options[name] = client._options[name].filter((f) => f !== hook);
-      if (!client._options[name].length) client._options[name] = null;
-    } else if (client._options[name] === hook) {
-      client._options[name] = null;
+    if (Array.isArray(client.options[name])) {
+      client.options[name] = client.options[name].filter((f) => f !== hook);
+      if (!client.options[name].length) client.options[name] = null;
+    } else if (client.options[name] === hook) {
+      client.options[name] = null;
     }
     return client;
   };
 
   client.getFormDataClass = function getFormDataClass(): typeof FormData {
-    let FormData = client._options.FormData;
+    let FormData = client.options.FormData;
     // @ts-ignore window.FormData
     if (!FormData && typeof window === 'object' && window.FormData) {
       // @ts-ignore window.FormData
@@ -121,14 +114,13 @@ function create(options?: Akita.ClientOptions) {
   client.request = function request(
     path: string,
     init?: Akita.RequestInit,
-    query?: Akita.Query<any>,
     reducer?: Akita.Reducer<any>
   ): Akita.Request<any> {
     init = Object.assign({}, init);
     let queryParams = Object.assign({}, init.query);
     delete init.query;
 
-    let queryString = qs.stringify(queryParams, client._options.qsOptions);
+    let queryString = qs.stringify(queryParams, client.options.qsOptions);
     if (queryString) {
       if (path.indexOf('?') < 0) {
         queryString = `?${queryString}`;
@@ -138,7 +130,7 @@ function create(options?: Akita.ClientOptions) {
       path += queryString;
     }
 
-    let apiRoot = client._options.apiRoot;
+    let apiRoot = client.options.apiRoot;
     if (apiRoot) {
       if (apiRoot[apiRoot.length - 1] === '/' && path[0] === '/') {
         path = path.substring(1);
@@ -148,7 +140,7 @@ function create(options?: Akita.ClientOptions) {
       path = apiRoot + path;
     }
 
-    let fetch = client._options.fetch;
+    let fetch = client.options.fetch;
 
     if (!fetch) {
       if (typeof window !== 'undefined') {
@@ -160,7 +152,7 @@ function create(options?: Akita.ClientOptions) {
     }
 
     // @ts-ignore Request 与 Promise 兼容
-    let req = new Request(client, fetch, path, init, query, reducer) as Akita.Request<any>;
+    let req = new Request(client, fetch, path, init, reducer) as Akita.Request<any>;
 
     client._count += 1;
     client._tasks.push(req);
@@ -177,10 +169,10 @@ function create(options?: Akita.ClientOptions) {
         client._updateProgress();
       }, 1000);
     }
-    if (client._updateProgressTimer || !client._options.onProgress) return;
+    if (client._updateProgressTimer || !client.options.onProgress) return;
     client._updateProgressTimer = setTimeout(() => {
       client._updateProgressTimer = 0;
-      if (!client._options.onProgress) return;
+      if (!client.options.onProgress) return;
       let process = 1;
       let total = client._tasks.length * 3;
       if (total) {
@@ -192,10 +184,10 @@ function create(options?: Akita.ClientOptions) {
       }
       if (process !== this._progress) {
         this._progress = process;
-        if (Array.isArray(client._options.onProgress)) {
-          client._options.onProgress.forEach((fn) => fn(process));
+        if (Array.isArray(client.options.onProgress)) {
+          client.options.onProgress.forEach((fn) => fn(process));
         } else {
-          client._options.onProgress(process);
+          client.options.onProgress(process);
         }
       }
     }, 5);
@@ -213,4 +205,3 @@ function create(options?: Akita.ClientOptions) {
 }
 
 export default resolve('default');
-export { Model };

@@ -5,10 +5,10 @@ import { Client, ClientOptions } from '..';
 
 export default function inject(fetch: any, FormData: any, ua?: string) {
   function setUA(client: Client) {
-    if (!client._options.init) {
-      client._options.init = {};
+    if (!client.options.init) {
+      client.options.init = {};
     }
-    let init = client._options.init;
+    let init = client.options.init;
     if (!init.headers) {
       init.headers = {};
     }
@@ -61,13 +61,13 @@ export default function inject(fetch: any, FormData: any, ua?: string) {
     if (!client._count) {
       // 还未发送请求，新实例
       /* istanbul ignore else */
-      if (!client._options.fetch) {
-        client.setOptions({ fetch });
+      if (!client.options.fetch) {
+        client.options.fetch = fetch;
       }
       /* istanbul ignore else */
-      if (!client._options.FormData) {
+      if (!client.options.FormData) {
         // 还未发送请求，新实例
-        client.setOptions({ FormData });
+        client.options.FormData = FormData;
       }
     }
     client.create = newCreate;

@@ -3,19 +3,12 @@
 .env
 .gitmodules
 LICENSE
-Dockerfile
 
 .history/**
 .nyc_output/**
 coverage/**
 node_modules/**
-dist/**
-runtime/**
-public/**
-packages/alaska-admin-ueditor/ueditor/**
-./fonts/**
-samoyed/.history/**
-alaska/.history/**
+lib/**
 
 *ignore
 *.ttf
@@ -35,7 +28,3 @@ alaska/.history/**
 
 package-lock.json
 yarn.lock
-src/modules.d.js
-src/modules.js
-views.js
-admin/views.d.ts
