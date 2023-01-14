@@ -74,8 +74,14 @@ function create(options?: Akita.ClientOptions) {
   };
 
   client.createBody = function (body: any): Object | FormData {
+    if (!body || typeof body !== 'object' || isUint8Array(body)) return body;
+
+    if (typeof ArrayBuffer === 'function' && body instanceof ArrayBuffer && typeof Uint8Array === 'function') {
+      return new Uint8Array(body);
+    }
+
     let FormData = client.getFormDataClass();
-    if (!body || typeof body !== 'object' || !FormData || isUint8Array(body) || body instanceof FormData) return body;
+    if (!FormData || body instanceof FormData) return body;
 
     // 检查是否需要上传文件
     let form: FormData = null;
