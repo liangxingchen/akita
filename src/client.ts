@@ -74,7 +74,7 @@ function create(options?: Akita.ClientOptions) {
   };
 
   client.createBody = function (body: any): Object | FormData {
-    if (!body || typeof body !== 'object' || isUint8Array(body)) return body;
+    if (!body || typeof body !== 'object' || isUint8Array(body) || isReadableStream(body)) return body;
 
     if (typeof ArrayBuffer === 'function' && body instanceof ArrayBuffer && typeof Uint8Array === 'function') {
       return new Uint8Array(body);

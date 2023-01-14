@@ -120,12 +120,12 @@ export interface Request<R> extends Promise<R> {
    * 返回的解析过的JS对象结果
    * 在调用 .data() 方法时可由 onDecode 钩子通过raw解析得来
    */
-  value?: any;
+  value?: R;
   /**
    * 获取请求的返回数据，自动调用JSON解码
    * .data() 调用可省略，比如 let res = await client.get('/api');
    */
-  data(): Promise<any>;
+  data(): Promise<R>;
   /**
    * 获取返回的原始字符串
    */
@@ -145,7 +145,7 @@ export interface Request<R> extends Promise<R> {
   /**
    * 获取返回的JSON数据流，服务端返回数据应为每行一个JSON对象
    */
-  jsonStream<T = any>(): Promise<JsonStream<T>>;
+  jsonStream<T = R>(): Promise<JsonStream<T>>;
   /**
    * 获取返回的原始Response对象
    */
@@ -267,27 +267,27 @@ export interface Client {
   /**
    * 发起一个请求
    */
-  request(path: string, init?: RequestInit, reducer?: Reducer<any>): Request<any>;
+  request<T = any>(path: string, init?: RequestInit, reducer?: Reducer<T>): Request<T>;
   /**
    * 发起一个GET请求
    */
-  get(path: string, init?: RequestInit): Request<any>;
+  get<T = any>(path: string, init?: RequestInit): Request<T>;
   /**
    * 发起一个POST请求
    */
-  post(path: string, init?: RequestInit): Request<any>;
+  post<T = any>(path: string, init?: RequestInit): Request<T>;
   /**
    * 发起一个PUT请求
    */
-  put(path: string, init?: RequestInit): Request<any>;
+  put<T = any>(path: string, init?: RequestInit): Request<T>;
   /**
    * 发起一个PATCH请求
    */
-  patch(path: string, init?: RequestInit): Request<any>;
+  patch<T = any>(path: string, init?: RequestInit): Request<T>;
   /**
    * 发起一个DELETE请求
    */
-  delete(path: string, init?: RequestInit): Request<any>;
+  delete(path: string, init?: RequestInit): Request<null>;
 
   /**
    * 监听事件

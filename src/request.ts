@@ -2,7 +2,7 @@ import * as Debugger from 'debug';
 import * as qs from 'qs';
 import { Readable } from 'stream';
 import JsonStream from './json-stream';
-import { isUint8Array } from './utils';
+import { isReadableStream, isUint8Array } from './utils';
 import * as Akita from '..';
 
 const debug = Debugger('akita:request');
@@ -117,7 +117,7 @@ export default class Request<T> {
       init.body = client.createBody(init.body);
       let FormData = client.getFormDataClass();
 
-      if (!isUint8Array(init.body) && !(FormData && init.body instanceof FormData)) {
+      if (!isUint8Array(init.body) && !(FormData && init.body instanceof FormData) && !isReadableStream(init.body)) {
         // 如果是普通POST请求，转换成JSON或urlencoded
         if (!init.headers) {
           init.headers = {};
@@ -320,7 +320,7 @@ export default class Request<T> {
    * 获取解析后的数据
    * @returns {Promise.<any>}
    */
-  data(): Promise<any> {
+  data(): Promise<T> {
     if (!this._dataPromise) {
       if (this.value !== undefined) {
         this._dataPromise = Promise.resolve(this.value);
@@ -370,7 +370,7 @@ export default class Request<T> {
     return this.data().then(onSuccess, onFail);
   }
 
-  catch(onFail: (reason: any) => PromiseLike<never>): Promise<void> {
+  catch(onFail: (reason: any) => PromiseLike<never>): Promise<T> {
     return this.data().catch(onFail);
   }
 
