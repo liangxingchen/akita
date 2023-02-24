@@ -166,6 +166,7 @@ export default class Request<T> {
   }
 
   response(): Promise<Response> {
+    if (!this._endAt) this._end();
     return this._responsePromise;
   }
 

@@ -161,13 +161,17 @@ function create(options?: Akita.ClientOptions) {
     let req = new Request(client, fetch, path, init, reducer) as Akita.Request<any>;
 
     client._count += 1;
-    client._tasks.push(req);
+
+    if (client.options.onProgress) {
+      client._tasks.push(req);
+    }
 
     client._updateProgress();
     return req;
   };
 
   client._updateProgress = function () {
+    if (!client.options.onProgress) return;
     let now = Date.now();
     client._tasks = client._tasks.filter((t) => !t._endAt || now - t._endAt < 1000);
     if (client._tasks.find((t) => t._endAt)) {
@@ -175,7 +179,7 @@ function create(options?: Akita.ClientOptions) {
         client._updateProgress();
       }, 1000);
     }
-    if (client._updateProgressTimer || !client.options.onProgress) return;
+    if (client._updateProgressTimer) return;
     client._updateProgressTimer = setTimeout(() => {
       client._updateProgressTimer = 0;
       if (!client.options.onProgress) return;
