@@ -3,8 +3,7 @@
 
 import { IStringifyOptions } from 'qs';
 import { Readable } from 'stream';
-import { Agent } from 'http';
-import { Agent as HttpsAgent } from 'https';
+import { RequestOptions } from 'http';
 
 /**
  * 数据处理器，对返回的数据进行预处理，用于自定义增减数据字段
@@ -63,7 +62,6 @@ export interface RequestInit {
    * HTTP query参数对象
    */
   query?: any;
-
   /**
    * 请求方法，默认 GET
    */
@@ -76,17 +74,41 @@ export interface RequestInit {
    * HTTP 请求 Headers
    */
   headers?: any;
-  mode?: string;
-  credentials?: string;
+  mode?: 'cors' | 'navigate' | 'no-cors' | 'same-origin';
+  credentials?: 'omit' | 'include' | 'same-origin';
+  /**
+   * NodeJs only. set to `manual` to extract redirect headers, `error` to reject redirect
+   * @default follow
+   */
   redirect?: 'follow' | 'manual' | 'error';
-  signal?: any;
-
-  // node-fetch
+  /**
+   * NodeJs only. pass an instance of AbortSignal to optionally abort requests
+   */
+  signal?: AbortSignal;
+  /**
+   * NodeJs only. maximum redirect count. 0 to not follow redirect
+   * @default 20
+   */
   follow?: number;
+  /**
+   * NodeJs only. req/res timeout in ms, it resets on redirect. 0 to disable (OS limit applies). Signal is recommended instead.
+   * @default 0
+   */
   timeout?: number;
+  /**
+   * NodeJs only. support gzip/deflate content encoding. false to disable
+   * @default true
+   */
   compress?: boolean;
+  /**
+   * NodeJs only. maximum response body size in bytes. 0 to disable
+   * @default 0
+   */
   size?: number;
-  agent?: Agent | HttpsAgent;
+  /**
+   * NodeJs only. http(s).Agent instance or function that returns an instance
+   */
+  agent?: RequestOptions['agent'] | ((parsedUrl: URL) => RequestOptions['agent']);
 }
 
 /**
@@ -203,7 +225,7 @@ export interface ClientOptions {
   /**
    * qs 配置，用于序列化 query 参数
    */
-  qsOptions?: IStringifyOptions;
+  qsOptions?: IStringifyOptions<boolean>;
   /**
    * 请求前对Body进行编码的前置钩子
    */

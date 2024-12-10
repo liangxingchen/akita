@@ -1,7 +1,7 @@
 /* eslint no-use-before-define:0 */
 
 import akita from './client';
-import { Client, ClientOptions } from '..';
+import type { Client, ClientOptions } from '..';
 
 export default function inject(fetch: any, FormData: any, ua?: string) {
   function setUA(client: Client) {
@@ -17,15 +17,14 @@ export default function inject(fetch: any, FormData: any, ua?: string) {
     }
   }
 
-  function setOptions(options) {
-    // eslint-disable-next-line @typescript-eslint/no-invalid-this
+  function setOptions(options: ClientOptions) {
     this._setOptions(options);
     if (ua) {
-      // eslint-disable-next-line @typescript-eslint/no-invalid-this
       setUA(this);
     }
   }
 
+  // @ts-ignore _setOptions
   akita._setOptions = akita.setOptions;
   akita.setOptions = setOptions;
 
@@ -48,6 +47,7 @@ export default function inject(fetch: any, FormData: any, ua?: string) {
     client.create = newCreate;
     client.resolve = newResolve;
     if (ua) {
+      // @ts-ignore _setOptions
       client._setOptions = client.setOptions;
       client.setOptions = setOptions;
       setUA(client);
@@ -73,6 +73,7 @@ export default function inject(fetch: any, FormData: any, ua?: string) {
     client.create = newCreate;
     client.resolve = newResolve;
     if (ua) {
+      // @ts-ignore _setOptions
       client._setOptions = client.setOptions;
       client.setOptions = setOptions;
       setUA(client);

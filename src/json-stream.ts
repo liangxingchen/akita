@@ -1,6 +1,6 @@
+import type { Readable } from 'stream';
 import * as Debugger from 'debug';
-import * as Akita from '..';
-import { Readable } from 'stream';
+import type * as Akita from '..';
 
 const debug = Debugger('akita:json-stream');
 
@@ -22,7 +22,6 @@ export default class JsonStream<T> {
   _queue: T[];
   _resolve: Function;
   _reject: Function;
-  // eslint-disable-next-line no-undef
   _reader: ReadableStreamDefaultReader<any>;
   _cache: string;
   _reducer: Akita.Reducer<any>;
@@ -41,7 +40,7 @@ export default class JsonStream<T> {
     // @ts-ignore
     if (stream.getReader) {
       this._reader = (stream as ReadableStream).getReader();
-      const read = ({ done, value }) => {
+      const read = ({ done, value }: any) => {
         if (this.closed) return;
         this._receive(value || (done && this._cache ? '\n' : ''));
         if (done) {
@@ -69,8 +68,8 @@ export default class JsonStream<T> {
     if (this.closed || !this._cache) return;
     let index = this._cache.indexOf('\n');
     if (index < 0) return;
-    let line = this._cache.substr(0, index).trim();
-    this._cache = this._cache.substr(index + 1);
+    let line = this._cache.substring(0, index).trim();
+    this._cache = this._cache.substring(index + 1);
     if (line) {
       let json;
       try {
@@ -139,7 +138,7 @@ export default class JsonStream<T> {
     this._listeners = {};
   };
 
-  on(name: string, fn): this {
+  on(name: string, fn: Function): this {
     if (!this._listeners[name]) {
       this._listeners[name] = [];
     }

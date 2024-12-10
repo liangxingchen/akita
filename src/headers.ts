@@ -30,7 +30,6 @@ export default class Headers {
   }
 
   forEach(callbackfn: (value: string, key: string, parent: Headers) => void, thisArg?: any) {
-    // eslint-disable-next-line guard-for-in
     for (let key in this.data) {
       callbackfn.call(thisArg, this.data[key], key, this);
     }

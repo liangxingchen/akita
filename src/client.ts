@@ -4,9 +4,11 @@ import * as qs from 'qs';
 import methods from './methods';
 import Request from './request';
 import { isUint8Array, isReadableStream, isFile } from './utils';
-import * as Akita from '..';
+import type * as Akita from '..';
 
-const INSTANCES = {};
+const INSTANCES: {
+  [key: string]: Akita.Client;
+} = {};
 
 function resolve(key: string) {
   if (!INSTANCES[key]) {
@@ -32,28 +34,39 @@ function create(options?: Akita.ClientOptions) {
   };
 
   client.on = (event, hook) => {
-    let name = `on${event[0].toUpperCase()}${event.substr(1)}`;
+    let name = `on${event[0].toUpperCase()}${event.substring(1)}`;
+    // @ts-ignore index
     if (!client.options[name]) {
+      // @ts-ignore index
       client.options[name] = hook;
       return client;
     }
+    // @ts-ignore index
     if (Array.isArray(client.options[name])) {
+      // @ts-ignore index
       client.options[name].push(hook);
     } else {
+      // @ts-ignore index
       client.options[name] = [client.options[name], hook];
     }
     return client;
   };
 
   client.off = (event, hook) => {
-    let name = `on${event[0].toUpperCase()}${event.substr(1)}`;
+    let name = `on${event[0].toUpperCase()}${event.substring(1)}`;
+    // @ts-ignore index
     if (!client.options[name]) {
       return client;
     }
+    // @ts-ignore index
     if (Array.isArray(client.options[name])) {
+      // @ts-ignore index
       client.options[name] = client.options[name].filter((f) => f !== hook);
+      // @ts-ignore index
       if (!client.options[name].length) client.options[name] = null;
+      // @ts-ignore index
     } else if (client.options[name] === hook) {
+      // @ts-ignore index
       client.options[name] = null;
     }
     return client;
@@ -93,7 +106,6 @@ function create(options?: Akita.ClientOptions) {
           value = String(value);
         } else if (typeof value === 'object') {
           // array or object
-          // eslint-disable-next-line guard-for-in
           for (let key in value) {
             addField(`${path}[${key}]`, value[key]);
           }
@@ -103,13 +115,11 @@ function create(options?: Akita.ClientOptions) {
       form.append(path, value);
     }
 
-    // eslint-disable-next-line guard-for-in
     for (let key in body) {
       let value = body[key];
       if (isReadableStream(value) || isFile(value) || isUint8Array(value)) {
         // upload file
         form = new FormData();
-        // eslint-disable-next-line no-loop-func
         Object.keys(body).forEach((path) => addField(path, body[path]));
         break;
       }
@@ -204,6 +214,7 @@ function create(options?: Akita.ClientOptions) {
   };
 
   methods.forEach((method) => {
+    // @ts-ignore index
     client[method] = function (path: string, init?: Akita.RequestInit) {
       init = init || {};
       init.method = method.toUpperCase();

@@ -2,11 +2,12 @@ import * as stream from 'stream';
 import * as http from 'http';
 import * as Koa from 'koa';
 import * as Router from 'koa-router';
+// @ts-ignore
 import * as bodyParser from 'koa-bodyparser';
 import upload from './upload';
 
-const router: any = new Router();
-const app: any = new Koa();
+const router = new Router();
+const app = new Koa();
 
 require('koa-qs')(app);
 app.use(bodyParser({}));
@@ -44,15 +45,15 @@ router.get('/goods', (ctx) => {
 
 // paginate
 router.get('/goods/paginate', (ctx) => {
-  let filters = {};
+  let filters: any = {};
   for (let key in ctx.query) {
     if (key[0] === '_') continue;
     filters[key] = ctx.query[key];
   }
   let result = {
     total: data.goods.length,
-    page: parseInt(ctx.query._page) || 1,
-    limit: parseInt(ctx.query._limit) || 1,
+    page: parseInt(ctx.query._page as string) || 1,
+    limit: parseInt(ctx.query._limit as string) || 1,
     totalPage: 1,
     previous: 0,
     next: 0,

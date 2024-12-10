@@ -2,10 +2,10 @@
 
 import FormData from './form-data';
 import Headers from './headers';
-import * as Akita from '..';
+import type * as Akita from '..';
 
 function uint8ArrayToString(data: Uint8Array) {
-  let text: string = '';
+  let text = '';
   // eslint-disable-next-line @typescript-eslint/prefer-for-of
   for (let i = 0; i < data.length; i++) {
     text += String.fromCharCode(data[i]);
@@ -22,7 +22,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
       status: 200,
       statusText: 'OK',
       headers: new Headers(),
-      _result: null,
+      _result: null as any,
       get body() {
         throw new Error('Akita streaming not support for Weixin');
       },
@@ -66,7 +66,6 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
     // 检测上传
     let fn = 'request';
     if (init.body instanceof FormData) {
-      // eslint-disable-next-line guard-for-in
       for (let key in init.body) {
         let value = init.body[key];
         if (value && typeof value === 'object' && value.filePath && Object.keys(value).length === 1) {
@@ -85,10 +84,9 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
       req.data = init.body;
     }
 
-    req.success = function (res) {
+    req.success = function (res: any) {
       response._result = res.data;
       if (res.header) {
-        // eslint-disable-next-line guard-for-in
         for (let key in res.header) {
           response.headers.append(key, res.header[key]);
         }
@@ -104,7 +102,7 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
       resolve(response);
     };
 
-    req.fail = function (res) {
+    req.fail = function (res: any) {
       if (res?.errMsg) {
         reject(new Error(res.errMsg));
       } else {
@@ -112,7 +110,6 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
       }
     };
 
-    /* eslint-disable no-undef */
     // @ts-ignore
     wx[fn](req);
   });

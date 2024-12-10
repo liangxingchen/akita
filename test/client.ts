@@ -1,9 +1,11 @@
 import * as fs from 'fs';
 import * as test from 'tape';
 import * as http from 'http';
-import client from '../src/node';
+import type { Client } from '..';
+import akita from '../src/node';
 import { version } from '../package.json';
 
+const client: Client = akita;
 const client2 = client.resolve('http');
 
 client.setOptions({
@@ -14,10 +16,10 @@ client.setOptions({
   //     // resolve
   //   }),
   onResponse: (request) => {
-    console.log('res ->', request.url, request.res.statusText);
+    console.log('res ->', request.url, request.res?.statusText);
   },
   onDecode: async (request) => {
-    request.value = JSON.parse(request.raw);
+    request.value = JSON.parse(request.raw as string);
   },
   onProgress: (progress) => {
     console.log('progress', progress);

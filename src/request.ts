@@ -1,9 +1,9 @@
 import * as Debugger from 'debug';
 import * as qs from 'qs';
-import { Readable } from 'stream';
+import type { Readable } from 'stream';
 import JsonStream from './json-stream';
 import { isReadableStream, isUint8Array } from './utils';
-import * as Akita from '..';
+import type * as Akita from '..';
 
 const debug = Debugger('akita:request');
 
@@ -140,7 +140,7 @@ export default class Request<T> {
       debug('fetch', url, JSON.stringify(init));
     }
     let promise: Promise<Response> = this._fetch(url, init).then(
-      (res) => {
+      (res: Response) => {
         this._addStep();
         debug('response:', this.url, res.status, res.statusText);
         this.res = res;
@@ -156,7 +156,7 @@ export default class Request<T> {
         }
         return Promise.resolve(res);
       },
-      (error) => {
+      (error: Error) => {
         debug('fetch error:', error.message);
         this._end();
         return Promise.reject(error);
@@ -225,8 +225,9 @@ export default class Request<T> {
         if (res.arrayBuffer) {
           fn = 'arrayBuffer';
         }
+        // @ts-ignore index
         return res[fn]().then(
-          (buf) => {
+          (buf: Buffer) => {
             if (!isUint8Array(buf)) {
               if (typeof Buffer === 'function') {
                 return Buffer.from(buf);
@@ -236,7 +237,7 @@ export default class Request<T> {
             this._addStep();
             return buf;
           },
-          (error) => {
+          (error: Error) => {
             debug('get buffer error:', error.message);
             this._end();
             return Promise.reject(error);
@@ -308,6 +309,7 @@ export default class Request<T> {
       let error = new Error(value.error);
       Object.keys(value).forEach((key) => {
         if (['error', 'message', 'stack'].indexOf(key) === -1) {
+          // @ts-ignore index
           error[key] = value[key];
         }
       });

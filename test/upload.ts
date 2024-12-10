@@ -1,9 +1,8 @@
 import * as os from 'os';
 import * as fs from 'fs';
 import * as Path from 'path';
-import { Readable } from 'stream';
-import { IncomingMessage } from 'http';
-// @ts-ignore
+import type { Readable } from 'stream';
+import type { IncomingMessage } from 'http';
 import * as Busboy from 'busboy';
 
 export interface UploadFile extends Readable {
@@ -104,7 +103,7 @@ function reconcile(obj: any, target: any): any {
 
 function parse(req: IncomingMessage, config: UploadMiddlewareConfig) {
   return new Promise((resolve, reject) => {
-    const busboy: any = new Busboy({ headers: req.headers });
+    const busboy = new Busboy({ headers: req.headers });
     const fields: any = {};
     const promises: Promise<UploadFile>[] = [];
 

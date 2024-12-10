@@ -5,6 +5,5 @@ export default class FormData {
     this[name] = value;
   }
 
-  // eslint-disable-next-line no-undef
   [key: string]: any;
 }
