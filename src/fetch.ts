@@ -2,7 +2,8 @@
 
 import FormData from './form-data';
 import Headers from './headers';
-import type * as Akita from '..';
+import type { RequestInit } from '..';
+import { createNetworkError } from './utils';
 
 function uint8ArrayToString(data: Uint8Array) {
   let text = '';
@@ -13,7 +14,7 @@ function uint8ArrayToString(data: Uint8Array) {
   return text;
 }
 
-export default function fetch(url: string, init: Akita.RequestInit): Promise<Response> {
+export default function fetch(url: string, init: RequestInit): Promise<Response> {
   return new Promise((resolve, reject) => {
     let response = {
       url,
@@ -104,7 +105,8 @@ export default function fetch(url: string, init: Akita.RequestInit): Promise<Res
 
     req.fail = function (res: any) {
       if (res?.errMsg) {
-        reject(new Error(res.errMsg));
+        const error = new Error(res.errMsg);
+        reject(createNetworkError(error, init.method || 'GET', url));
       } else {
         reject(res);
       }

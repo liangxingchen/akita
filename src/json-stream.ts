@@ -1,6 +1,6 @@
 import type { Readable } from 'stream';
-import * as Debugger from 'debug';
-import type * as Akita from '..';
+import Debugger from 'debug';
+import type { Reducer } from '..';
 
 const debug = Debugger('akita:json-stream');
 
@@ -20,22 +20,25 @@ export default class JsonStream<T> {
   closed: boolean;
   _stream: Readable | ReadableStream;
   _queue: T[];
-  _resolve: Function;
-  _reject: Function;
-  _reader: ReadableStreamDefaultReader<any>;
+  _resolve: null | ((res: any) => void);
+  _reject: null | ((error: Error) => void);
+  _reader: null | ReadableStreamDefaultReader<any>;
   _cache: string;
-  _reducer: Akita.Reducer<any>;
+  _reducer: Reducer<any> | null;
   _listeners: {
     [name: string]: Function[];
   };
 
-  constructor(stream: Readable | ReadableStream, reducer: Akita.Reducer<any>) {
+  constructor(stream: Readable | ReadableStream, reducer: Reducer<any> | null) {
     this.closed = false;
     this._stream = stream;
     this._queue = [];
     this._cache = '';
     this._reducer = reducer;
     this._listeners = {};
+    this._resolve = null;
+    this._reject = null;
+    this._reader = null;
 
     // @ts-ignore
     if (stream.getReader) {
@@ -45,7 +48,7 @@ export default class JsonStream<T> {
         this._receive(value || (done && this._cache ? '\n' : ''));
         if (done) {
           this._close();
-        } else {
+        } else if (this._reader) {
           this._reader.read().then(read, this._onError);
         }
       };
@@ -75,7 +78,7 @@ export default class JsonStream<T> {
       try {
         json = JSON.parse(line);
       } catch (e) {
-        this._onError(e);
+        this._onError(e as Error);
         return;
       }
       if (this._reducer && json.object) {
@@ -131,10 +134,13 @@ export default class JsonStream<T> {
       this._stream.removeListener('close', this._close);
     }
 
-    delete this._stream;
-    delete this._reader;
-    delete this._cache;
-    delete this._reducer;
+    // @ts-ignore
+    this._stream = null;
+    this._reader = null;
+    // @ts-ignore
+    this._cache = null;
+    // @ts-ignore
+    this._reducer = null;
     this._listeners = {};
   };
 
@@ -158,7 +164,7 @@ export default class JsonStream<T> {
   }
 
   removeListener(name: string, fn: Function): this {
-    if (!this._listeners[name]) return;
+    if (!this._listeners[name]) return this;
     this._listeners[name] = this._listeners[name].filter((f) => f !== fn);
     return this;
   }
@@ -170,7 +176,7 @@ export default class JsonStream<T> {
 
   read(): Promise<T> {
     if (this._queue.length) {
-      return Promise.resolve(this._queue.shift());
+      return Promise.resolve(this._queue.shift() as T);
     }
     if (this.closed) return Promise.reject(new Error('Can not read from closed stream.'));
     return new Promise((resolve, reject) => {

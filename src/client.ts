@@ -1,13 +1,15 @@
 /* eslint no-use-before-define:0 */
 
-import * as qs from 'qs';
+import qs from 'qs';
 import methods from './methods';
 import Request from './request';
 import { isUint8Array, isReadableStream, isFile } from './utils';
-import type * as Akita from '..';
+import type { Client, ClientOptions, RequestInit, Reducer } from '..';
+
+export { AkitaError, isAkitaError, isNetworkError, isHTTPError, isParseError, isServerError } from './utils';
 
 const INSTANCES: {
-  [key: string]: Akita.Client;
+  [key: string]: Client;
 } = {};
 
 function resolve(key: string) {
@@ -17,9 +19,9 @@ function resolve(key: string) {
   return INSTANCES[key];
 }
 
-function create(options?: Akita.ClientOptions) {
+function create(options?: ClientOptions) {
   // @ts-ignore
-  const client: Akita.Client = {
+  const client: Client = {
     options: options || {}
   };
 
@@ -97,7 +99,7 @@ function create(options?: Akita.ClientOptions) {
     if (!FormData || body instanceof FormData) return body;
 
     // 检查是否需要上传文件
-    let form: FormData = null;
+    let form: FormData | null = null;
 
     function addField(path: string, value: any) {
       if (value === undefined) return;
@@ -112,6 +114,7 @@ function create(options?: Akita.ClientOptions) {
           return;
         }
       }
+      // @ts-ignore 此处form一定不是null
       form.append(path, value);
     }
 
@@ -127,11 +130,8 @@ function create(options?: Akita.ClientOptions) {
     return form || body;
   };
 
-  client.request = function request(
-    path: string,
-    init?: Akita.RequestInit,
-    reducer?: Akita.Reducer<any>
-  ): Akita.Request<any> {
+  // @ts-ignore
+  client.request = function request(path: string, init?: RequestInit, reducer?: Reducer<any>): Request<any> {
     init = Object.assign({}, init);
     let queryParams = Object.assign({}, init.query);
     delete init.query;
@@ -184,14 +184,15 @@ function create(options?: Akita.ClientOptions) {
     if (!client.options.onProgress) return;
     let now = Date.now();
     client._tasks = client._tasks.filter((t) => !t._endAt || now - t._endAt < 1000);
-    if (client._tasks.find((t) => t._endAt)) {
+    if (!client._updateProgressTimer && client._tasks.find((t) => t._endAt)) {
+      // 有刚刚完成的任务，进度要保存1s，所以1s后需要再次促发刷新进度
       setTimeout(() => {
         client._updateProgress();
       }, 1000);
     }
     if (client._updateProgressTimer) return;
     client._updateProgressTimer = setTimeout(() => {
-      client._updateProgressTimer = 0;
+      client._updateProgressTimer = null;
       if (!client.options.onProgress) return;
       let process = 1;
       let total = client._tasks.length * 3;

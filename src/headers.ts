@@ -1,4 +1,4 @@
-// just for weixin
+// 仅供微信小程序兼容使用
 
 export default class Headers {
   data: {

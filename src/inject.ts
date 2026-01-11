@@ -18,8 +18,10 @@ export default function inject(fetch: any, FormData: any, ua?: string) {
   }
 
   function setOptions(options: ClientOptions) {
+    // @ts-ignore
     this._setOptions(options);
     if (ua) {
+      // @ts-ignore
       setUA(this);
     }
   }

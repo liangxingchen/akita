@@ -1,6 +1,6 @@
-import * as fs from 'fs';
-import * as test from 'tape';
-import * as http from 'http';
+import fs from 'fs';
+import test from 'tape';
+import http from 'http';
 import type { Client } from '..';
 import akita from '../src/node';
 import { version } from '../package.json';

@@ -1,13 +1,20 @@
-import * as Debugger from 'debug';
-import * as qs from 'qs';
+import Debugger from 'debug';
+import qs from 'qs';
 import type { Readable } from 'stream';
 import JsonStream from './json-stream';
-import { isReadableStream, isUint8Array } from './utils';
-import type * as Akita from '..';
+import {
+  isReadableStream,
+  isUint8Array,
+  createNetworkError,
+  createHTTPError,
+  createParseError,
+  createServerError
+} from './utils';
+import type { Client, Reducer, RequestHook, RequestInit, Request as RequestType } from '..';
 
 const debug = Debugger('akita:request');
 
-function execHooks(request: Akita.Request<any>, hooks: Akita.RequestHook | Akita.RequestHook[]): void | Promise<void> {
+function execHooks(request: RequestType<any>, hooks: RequestHook | RequestHook[]): void | Promise<void> {
   let promise: void | Promise<void>;
   if (Array.isArray(hooks)) {
     hooks.forEach((h) => {
@@ -23,36 +30,43 @@ function execHooks(request: Akita.Request<any>, hooks: Akita.RequestHook | Akita
   } else {
     promise = hooks(request);
   }
+  // @ts-ignore promise已经初始化
   if (promise) {
     return promise.then(() => Promise.resolve());
   }
 }
 
 export default class Request<T> {
-  client: Akita.Client;
+  client: Client;
   _fetch: any;
   url: string;
-  init: Akita.RequestInit;
+  init: RequestInit;
   res?: Response;
-  _reducer?: Akita.Reducer<T>;
-  _jsPromise: Promise<Akita.JsonStream<any>>;
+  _reducer: Reducer<T> | null;
+  _jsPromise: null | Promise<JsonStream<any>>;
   raw?: string;
   value?: any;
   _steps: number;
   _responsePromise: Promise<Response>;
-  _bufferPromise: Promise<Buffer>;
-  _blobPromise: Promise<Blob>;
-  _textPromise: Promise<string>;
-  _dataPromise: Promise<any>;
+  _bufferPromise: null | Promise<Buffer>;
+  _blobPromise: null | Promise<Blob>;
+  _textPromise: null | Promise<string>;
+  _dataPromise: null | Promise<any>;
   _endAt: number;
 
-  constructor(client: Akita.Client, fetch: Function, url: string, init: any, reducer?: Akita.Reducer<T>) {
+  constructor(client: Client, fetch: Function, url: string, init: any, reducer?: Reducer<T>) {
     this.client = client;
-    this._reducer = reducer;
+    this._reducer = reducer || null;
     this._fetch = fetch;
     this.url = url;
     this.init = init || {};
     this._steps = 0;
+    this._endAt = 0;
+    this._jsPromise = null;
+    this._bufferPromise = null;
+    this._blobPromise = null;
+    this._textPromise = null;
+    this._dataPromise = null;
 
     let promise;
     // onEncode
@@ -65,7 +79,7 @@ export default class Request<T> {
     if (client.options.onRequest) {
       debug('exec onRequest');
       if (promise) {
-        promise = promise.then(() => execHooks(this as any, client.options.onRequest));
+        promise = promise.then(() => execHooks(this as any, client.options.onRequest as RequestHook | RequestHook[]));
       } else {
         promise = execHooks(this as any, client.options.onRequest);
       }
@@ -149,9 +163,7 @@ export default class Request<T> {
           debug('exec onResponse');
           let p = execHooks(this as any, client.options.onResponse);
           if (p) {
-            return p.then(() => {
-              return Promise.resolve(res);
-            });
+            return p.then(() => Promise.resolve(res));
           }
         }
         return Promise.resolve(res);
@@ -159,7 +171,7 @@ export default class Request<T> {
       (error: Error) => {
         debug('fetch error:', error.message);
         this._end();
-        return Promise.reject(error);
+        return Promise.reject(createNetworkError(error, init.method || 'GET', this.url));
       }
     );
     return promise;
@@ -173,6 +185,7 @@ export default class Request<T> {
   stream(): Promise<Readable | ReadableStream> {
     // @ts-ignore
     if (this.res) return Promise.resolve(this.res.body);
+    // @ts-ignore
     return this._responsePromise.then((res) => {
       this._end();
       return res.body;
@@ -222,6 +235,7 @@ export default class Request<T> {
     if (!this._bufferPromise) {
       this._bufferPromise = this._responsePromise.then((res) => {
         let fn = 'buffer';
+        // @ts-ignore
         if (res.arrayBuffer) {
           fn = 'arrayBuffer';
         }
@@ -301,19 +315,14 @@ export default class Request<T> {
     debug('_decode');
     let value;
     try {
-      value = JSON.parse(this.raw);
+      value = JSON.parse(this.raw || '');
     } catch (error) {
-      return Promise.reject(new Error(`invalid json response body at ${this.url} ${error.message}`));
+      this._end();
+      return Promise.reject(createParseError(error as Error, this.init.method || 'GET', this.url, 'json'));
     }
     if (value?.error && ['0', 'null', 'none'].indexOf(value.error) < 0) {
-      let error = new Error(value.error);
-      Object.keys(value).forEach((key) => {
-        if (['error', 'message', 'stack'].indexOf(key) === -1) {
-          // @ts-ignore index
-          error[key] = value[key];
-        }
-      });
-      return Promise.reject(error);
+      this._end();
+      return Promise.reject(createServerError(this.init.method || 'GET', this.url, value));
     }
     this.value = value;
     return value;
@@ -341,6 +350,22 @@ export default class Request<T> {
 
               const client = this.client;
 
+              if (!res.ok) {
+                let serverError;
+                try {
+                  const value = JSON.parse(text);
+                  if (value?.error && ['0', 'null', 'none'].indexOf(value.error) < 0) {
+                    serverError = createServerError(this.init.method || 'GET', this.url, value);
+                  }
+                } catch (_e) {}
+
+                if (serverError) {
+                  return Promise.reject(serverError);
+                }
+
+                return Promise.reject(createHTTPError(res.status, res.statusText, this.init.method || 'GET', this.url));
+              }
+
               if (client.options.onDecode) {
                 debug('exec onDecode');
                 let promise = execHooks(this as any, client.options.onDecode);
@@ -353,7 +378,7 @@ export default class Request<T> {
             (error) => {
               debug('get text raw error:', error.message);
               this._end();
-              return Promise.reject(error);
+              return Promise.reject(createParseError(error as Error, this.init.method || 'GET', this.url, 'text'));
             }
           );
         });
@@ -368,7 +393,15 @@ export default class Request<T> {
    */
   then(onSuccess?: (value: T) => any, onFail?: (reason: any) => PromiseLike<never>): Promise<any> {
     if (this._reducer) {
-      return this.data().then((json: any) => onSuccess(this._reducer(json)), onFail);
+      return this.data().then((json: any) => {
+        if (onSuccess) {
+          // @ts-ignore _reducer 存在
+          onSuccess(this._reducer(json));
+        } else {
+          // @ts-ignore _reducer 存在
+          return this._reducer(json);
+        }
+      }, onFail);
     }
     return this.data().then(onSuccess, onFail);
   }

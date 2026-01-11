@@ -1,9 +1,9 @@
-import * as os from 'os';
-import * as fs from 'fs';
-import * as Path from 'path';
+import os from 'os';
+import fs from 'fs';
+import Path from 'path';
 import type { Readable } from 'stream';
 import type { IncomingMessage } from 'http';
-import * as Busboy from 'busboy';
+import Busboy from 'busboy';
 
 export interface UploadFile extends Readable {
   fieldname: string;

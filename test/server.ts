@@ -1,9 +1,9 @@
-import * as stream from 'stream';
-import * as http from 'http';
-import * as Koa from 'koa';
-import * as Router from 'koa-router';
+import stream from 'stream';
+import http from 'http';
+import Koa from 'koa';
+import Router from 'koa-router';
 // @ts-ignore
-import * as bodyParser from 'koa-bodyparser';
+import bodyParser from 'koa-bodyparser';
 import upload from './upload';
 
 const router = new Router();
@@ -36,6 +36,69 @@ router.get('/timeout', (ctx) => {
   return new Promise((resolve) => {
     setTimeout(resolve, 2000);
   });
+});
+
+// HTTP error endpoints
+router.get('/error/400', (ctx) => {
+  ctx.status = 400;
+  ctx.body = { error: 'Bad Request' };
+});
+
+router.get('/error/401', (ctx) => {
+  ctx.status = 401;
+  ctx.body = { error: 'Unauthorized' };
+});
+
+router.get('/error/403', (ctx) => {
+  ctx.status = 403;
+  ctx.body = { error: 'Forbidden' };
+});
+
+router.get('/error/404', (ctx) => {
+  ctx.status = 404;
+  ctx.body = { error: 'Not Found' };
+});
+
+router.get('/error/500', (ctx) => {
+  ctx.status = 500;
+  ctx.body = { error: 'Internal Server Error' };
+});
+
+router.get('/error/503', (ctx) => {
+  ctx.status = 503;
+  ctx.body = { error: 'Service Unavailable' };
+});
+
+// Server error endpoints (with error field)
+router.get('/error/server-with-code', (ctx) => {
+  ctx.body = { error: 'User not found', code: 'USER_NOT_FOUND', userId: 123 };
+});
+
+router.get('/error/server-without-code', (ctx) => {
+  ctx.body = { error: 'Something went wrong' };
+});
+
+router.get('/error/safe-values', (ctx) => {
+  ctx.body = { error: '0', data: 'success' };
+});
+
+router.get('/error/safe-null', (ctx) => {
+  ctx.body = { error: 'null', data: 'success' };
+});
+
+router.get('/error/safe-none', (ctx) => {
+  ctx.body = { error: 'none', data: 'success' };
+});
+
+// Invalid JSON endpoint
+router.get('/error/invalid-json', (ctx) => {
+  ctx.body = '{invalid json';
+});
+
+// Empty response with error status
+router.get('/error/empty-404', (ctx) => {
+  ctx.status = 404;
+  ctx.body = '';
 });
 
 // list
