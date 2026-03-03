@@ -7,6 +7,7 @@ server.listen(28000);
 require('./client.ts');
 require('./errors.ts');
 require('./parser.ts');
+require('./stream-parser.ts');
 
 require('tape').onFinish(() => {
   server.close();

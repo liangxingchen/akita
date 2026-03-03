@@ -1,0 +1,463 @@
+=== ESLint Fix Verification ===
+yarn run v1.22.22
+$ eslint
+Done in 0.80s.
+
+=== Test Verification ===
+yarn run v1.22.22
+$ cross-env DEBUG=akita* tape test/ts.js
+TAP version 13
+# HTTP
+# test get
+2026-03-03T08:44:49.712Z akita:request exec onRequest
+request hook: http://localhost:28000/get?a=b&c=d
+request hook: http://localhost:28000/get?a=b&c=d
+2026-03-03T08:44:49.713Z akita:request GET http://localhost:28000/get?a=b&c=d {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.713Z akita:request fetch http://localhost:28000/get?a=b&c=d {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+progress 0.3333333333333333
+2026-03-03T08:44:49.738Z akita:request response: http://localhost:28000/get?a=b&c=d 200 OK
+2026-03-03T08:44:49.738Z akita:request exec onResponse
+res -> http://localhost:28000/get?a=b&c=d OK
+2026-03-03T08:44:49.738Z akita:request response text: {"method":"GET","url":"/get?a=b&c=d","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{"a":"b","c":"d"},"body":{}}
+2026-03-03T08:44:49.738Z akita:request exec onDecode
+ok 1 typeof result data
+ok 2 should be strictly equal
+ok 3 should be truthy
+# test query
+2026-03-03T08:44:49.739Z akita:request exec onRequest
+request hook: http://localhost:28000/get?foo%5Bbar%5D=baz
+request hook: http://localhost:28000/get?foo%5Bbar%5D=baz
+2026-03-03T08:44:49.739Z akita:request GET http://localhost:28000/get?foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.739Z akita:request fetch http://localhost:28000/get?foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.741Z akita:request response: http://localhost:28000/get?foo%5Bbar%5D=baz 200 OK
+2026-03-03T08:44:49.741Z akita:request exec onResponse
+res -> http://localhost:28000/get?foo%5Bbar%5D=baz OK
+2026-03-03T08:44:49.741Z akita:request response text: {"method":"GET","url":"/get?foo%5Bbar%5D=baz","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{"foo":{"bar":"baz"}},"body":{}}
+2026-03-03T08:44:49.741Z akita:request exec onDecode
+ok 4 should be strictly equal
+ok 5 should be deeply equivalent
+# test query
+2026-03-03T08:44:49.742Z akita:request exec onRequest
+request hook: http://localhost:28000/get?foo%5Bbar%5D=baz
+request hook: http://localhost:28000/get?foo%5Bbar%5D=baz
+2026-03-03T08:44:49.742Z akita:request GET http://localhost:28000/get?foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.742Z akita:request fetch http://localhost:28000/get?foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.743Z akita:request response: http://localhost:28000/get?foo%5Bbar%5D=baz 200 OK
+2026-03-03T08:44:49.743Z akita:request exec onResponse
+res -> http://localhost:28000/get?foo%5Bbar%5D=baz OK
+2026-03-03T08:44:49.743Z akita:request response text: {"method":"GET","url":"/get?foo%5Bbar%5D=baz","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{"foo":{"bar":"baz"}},"body":{}}
+2026-03-03T08:44:49.743Z akita:request exec onDecode
+ok 6 should be strictly equal
+ok 7 should be deeply equivalent
+# test query
+2026-03-03T08:44:49.743Z akita:request exec onRequest
+request hook: http://localhost:28000/get?a=b&foo%5Bbar%5D=baz
+request hook: http://localhost:28000/get?a=b&foo%5Bbar%5D=baz
+2026-03-03T08:44:49.743Z akita:request GET http://localhost:28000/get?a=b&foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.743Z akita:request fetch http://localhost:28000/get?a=b&foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+progress 0.8333333333333334
+2026-03-03T08:44:49.744Z akita:request response: http://localhost:28000/get?a=b&foo%5Bbar%5D=baz 200 OK
+2026-03-03T08:44:49.744Z akita:request exec onResponse
+res -> http://localhost:28000/get?a=b&foo%5Bbar%5D=baz OK
+2026-03-03T08:44:49.744Z akita:request response text: {"method":"GET","url":"/get?a=b&foo%5Bbar%5D=baz","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{"a":"b","foo":{"bar":"baz"}},"body":{}}
+2026-03-03T08:44:49.744Z akita:request exec onDecode
+ok 8 should be strictly equal
+ok 9 should be deeply equivalent
+# test query
+2026-03-03T08:44:49.745Z akita:request exec onRequest
+request hook: http://localhost:28000/get?a=b&foo%5Bbar%5D=baz
+request hook: http://localhost:28000/get?a=b&foo%5Bbar%5D=baz
+2026-03-03T08:44:49.745Z akita:request GET http://localhost:28000/get?a=b&foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.745Z akita:request fetch http://localhost:28000/get?a=b&foo%5Bbar%5D=baz {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.746Z akita:request response: http://localhost:28000/get?a=b&foo%5Bbar%5D=baz 200 OK
+2026-03-03T08:44:49.746Z akita:request exec onResponse
+res -> http://localhost:28000/get?a=b&foo%5Bbar%5D=baz OK
+2026-03-03T08:44:49.746Z akita:request response text: {"method":"GET","url":"/get?a=b&foo%5Bbar%5D=baz","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{"a":"b","foo":{"bar":"baz"}},"body":{}}
+2026-03-03T08:44:49.746Z akita:request exec onDecode
+ok 10 should be strictly equal
+ok 11 should be deeply equivalent
+# test headers
+2026-03-03T08:44:49.746Z akita:request exec onRequest
+request hook: http://localhost:28000
+request hook: http://localhost:28000
+2026-03-03T08:44:49.746Z akita:request GET http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","foo":"bar"},"method":"GET"}
+2026-03-03T08:44:49.746Z akita:request fetch http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","foo":"bar"},"method":"GET"}
+2026-03-03T08:44:49.747Z akita:request response: http://localhost:28000 200 OK
+2026-03-03T08:44:49.747Z akita:request exec onResponse
+res -> http://localhost:28000 OK
+2026-03-03T08:44:49.747Z akita:request response text: {"method":"GET","url":"/","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","foo":"bar","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{}}
+2026-03-03T08:44:49.747Z akita:request exec onDecode
+ok 12 should be strictly equal
+ok 13 should be strictly equal
+# test post
+2026-03-03T08:44:49.747Z akita:request exec onRequest
+request hook: http://localhost:28000
+request hook: http://localhost:28000
+2026-03-03T08:44:49.747Z akita:request POST http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"body":{"foo":"bar"},"method":"POST"}
+2026-03-03T08:44:49.747Z akita:request fetch http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","Content-Type":"application/json"},"body":"{\"foo\":\"bar\"}","method":"POST"}
+progress 0.9047619047619048
+2026-03-03T08:44:49.753Z akita:request response: http://localhost:28000 200 OK
+2026-03-03T08:44:49.753Z akita:request exec onResponse
+res -> http://localhost:28000 OK
+2026-03-03T08:44:49.753Z akita:request response text: {"method":"POST","url":"/","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","content-type":"application/json","accept":"*/*","content-length":"13","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{"foo":"bar"}}
+2026-03-03T08:44:49.753Z akita:request exec onDecode
+ok 14 should be deeply equivalent
+# test post buffer
+2026-03-03T08:44:49.753Z akita:request exec onRequest
+request hook: http://localhost:28000
+request hook: http://localhost:28000
+2026-03-03T08:44:49.753Z akita:request POST http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","Content-Type":"application/json"},"body":{"type":"Buffer","data":[123,34,102,111,111,34,58,34,98,97,114,34,125]},"method":"POST"}
+2026-03-03T08:44:49.753Z akita:request fetch http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","Content-Type":"application/json"},"body":{"type":"Buffer","data":[123,34,102,111,111,34,58,34,98,97,114,34,125]},"method":"POST"}
+2026-03-03T08:44:49.754Z akita:request response: http://localhost:28000 200 OK
+2026-03-03T08:44:49.755Z akita:request exec onResponse
+res -> http://localhost:28000 OK
+2026-03-03T08:44:49.755Z akita:request response text: {"method":"POST","url":"/","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","content-type":"application/json","accept":"*/*","content-length":"13","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{"foo":"bar"}}
+2026-03-03T08:44:49.755Z akita:request exec onDecode
+ok 15 should be deeply equivalent
+# test post form data
+2026-03-03T08:44:49.755Z akita:request exec onRequest
+request hook: http://localhost:28000
+request hook: http://localhost:28000
+2026-03-03T08:44:49.755Z akita:request POST http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","Content-Type":"application/x-www-form-urlencoded"},"body":{"foo":"bar"},"method":"POST"}
+2026-03-03T08:44:49.755Z akita:request fetch http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","Content-Type":"application/x-www-form-urlencoded"},"body":"foo=bar","method":"POST"}
+2026-03-03T08:44:49.757Z akita:request response: http://localhost:28000 200 OK
+2026-03-03T08:44:49.757Z akita:request exec onResponse
+res -> http://localhost:28000 OK
+2026-03-03T08:44:49.757Z akita:request response text: {"method":"POST","url":"/","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","content-type":"application/x-www-form-urlencoded","accept":"*/*","content-length":"7","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{"foo":"bar"}}
+2026-03-03T08:44:49.757Z akita:request exec onDecode
+ok 16 should be strictly equal
+ok 17 should be deeply equivalent
+# test upload
+2026-03-03T08:44:49.758Z akita:request exec onRequest
+request hook: http://localhost:28000
+request hook: http://localhost:28000
+2026-03-03T08:44:49.758Z akita:request POST http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"body":{"foo":"bar","file":{"fd":null,"path":"/home/liang/workspace/akita/LICENSE","flags":"r","mode":438,"end":null,"bytesRead":0,"_events":{},"_readableState":{"highWaterMark":65536,"buffer":[],"bufferIndex":0,"length":0,"pipes":[],"awaitDrainWriters":null},"_eventsCount":1}},"method":"POST"}
+2026-03-03T08:44:49.758Z akita:request fetch http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"body":{"_overheadLength":265,"_valueLength":3,"_valuesToMeasure":[{"fd":null,"path":"/home/liang/workspace/akita/LICENSE","flags":"r","mode":438,"end":null,"bytesRead":0,"_events":{},"_readableState":{"highWaterMark":65536,"buffer":[],"bufferIndex":0,"length":0,"pipes":[],"awaitDrainWriters":null},"_eventsCount":3}],"writable":false,"readable":true,"dataSize":0,"maxDataSize":2097152,"pauseStreams":true,"_released":false,"_streams":["----------------------------ca530bbcc78128e4522cc2f4\r\nContent-Disposition: form-data; name=\"foo\"\r\n\r\n","bar",null,"----------------------------ca530bbcc78128e4522cc2f4\r\nContent-Disposition: form-data; name=\"file\"; filename=\"LICENSE\"\r\nContent-Type: application/octet-stream\r\n\r\n",{"source":{"fd":null,"path":"/home/liang/workspace/akita/LICENSE","flags":"r","mode":438,"end":null,"bytesRead":0,"_events":{},"_readableState":{"highWaterMark":65536,"buffer":[],"bufferIndex":0,"length":0,"pipes":[],"awaitDrainWriters":null},"_eventsCount":3},"dataSize":0,"maxDataSize":null,"pauseStream":true,"_maxDataSizeExceeded":false,"_released":false,"_bufferedEvents":[{"0":"pause"}],"_events":{},"_eventsCount":1},null],"_currentStream":null,"_insideLoop":false,"_pendingNext":false,"_boundary":"--------------------------ca530bbcc78128e4522cc2f4"},"method":"POST"}
+progress 0.9333333333333333
+2026-03-03T08:44:49.763Z akita:request response: http://localhost:28000 200 OK
+2026-03-03T08:44:49.763Z akita:request exec onResponse
+res -> http://localhost:28000 OK
+2026-03-03T08:44:49.763Z akita:request response text: {"method":"POST","url":"/","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","content-type":"multipart/form-data;boundary=--------------------------ca530bbcc78128e4522cc2f4","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive","transfer-encoding":"chunked"},"query":{},"body":{"foo":"bar"},"files":{"file":{"fd":null,"path":"/tmp/2c09fc918816-LICENSE","flags":"r","mode":438,"end":null,"bytesRead":0,"_events":{},"_readableState":{"highWaterMark":65536,"buffer":[],"bufferIndex":0,"length":0,"pipes":[],"awaitDrainWriters":null},"_eventsCount":1,"fieldname":"file","filename":"LICENSE","encoding":"7bit","transferEncoding":"7bit","mimeType":"application/octet-stream","mime":"application/octet-stream"}}}
+2026-03-03T08:44:49.763Z akita:request exec onDecode
+ok 18 should be deeply equivalent
+ok 19 should be deeply equivalent
+ok 20 should be deeply equivalent
+# test upload buffer
+2026-03-03T08:44:49.764Z akita:request exec onRequest
+request hook: http://localhost:28000
+request hook: http://localhost:28000
+2026-03-03T08:44:49.764Z akita:request POST http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"body":{"foo":"bar","file":{"type":"Buffer","data":[77,73,84,32,76,105,99,101,110,115,101,10,10,67,111,112,121,114,105,103,104,116,32,40,99,41,32,50,48,49,54,45,50,48,50,50,32,76,105,97,110,103,32,88,105,110,103,99,104,101,110,32,104,116,116,112,115,58,47,47,103,105,116,104,117,98,46,99,111,109,47,108,105,97,110,103,120,105,110,103,99,104,101,110,10,10,80,101,114,109,105,115,115,105,111,110,32,105,115,32,104,101,114,101,98,121,32,103,114,97,110,116,101,100,44,32,102,114,101,101,32,111,102,32,99,104,97,114,103,101,44,32,116,111,32,97,110,121,32,112,101,114,115,111,110,32,111,98,116,97,105,110,105,110,103,32,97,32,99,111,112,121,10,111,102,32,116,104,105,115,32,115,111,102,116,119,97,114,101,32,97,110,100,32,97,115,115,111,99,105,97,116,101,100,32,100,111,99,117,109,101,110,116,97,116,105,111,110,32,102,105,108,101,115,32,40,116,104,101,32,34,83,111,102,116,119,97,114,101,34,41,44,32,116,111,32,100,101,97,108,10,105,110,32,116,104,101,32,83,111,102,116,119,97,114,101,32,119,105,116,104,111,117,116,32,114,101,115,116,114,105,99,116,105,111,110,44,32,105,110,99,108,117,100,105,110,103,32,119,105,116,104,111,117,116,32,108,105,109,105,116,97,116,105,111,110,32,116,104,101,32,114,105,103,104,116,115,10,116,111,32,117,115,101,44,32,99,111,112,121,44,32,109,111,100,105,102,121,44,32,109,101,114,103,101,44,32,112,117,98,108,105,115,104,44,32,100,105,115,116,114,105,98,117,116,101,44,32,115,117,98,108,105,99,101,110,115,101,44,32,97,110,100,47,111,114,32,115,101,108,108,10,99,111,112,105,101,115,32,111,102,32,116,104,101,32,83,111,102,116,119,97,114,101,44,32,97,110,100,32,116,111,32,112,101,114,109,105,116,32,112,101,114,115,111,110,115,32,116,111,32,119,104,111,109,32,116,104,101,32,83,111,102,116,119,97,114,101,32,105,115,10,102,117,114,110,105,115,104,101,100,32,116,111,32,100,111,32,115,111,44,32,115,117,98,106,101,99,116,32,116,111,32,116,104,101,32,102,111,108,108,111,119,105,110,103,32,99,111,110,100,105,116,105,111,110,115,58,10,10,84,104,101,32,97,98,111,118,101,32,99,111,112,121,114,105,103,104,116,32,110,111,116,105,99,101,32,97,110,100,32,116,104,105,115,32,112,101,114,109,105,115,115,105,111,110,32,110,111,116,105,99,101,32,115,104,97,108,108,32,98,101,32,105,110,99,108,117,100,101,100,32,105,110,32,97,108,108,10,99,111,112,105,101,115,32,111,114,32,115,117,98,115,116,97,110,116,105,97,108,32,112,111,114,116,105,111,110,115,32,111,102,32,116,104,101,32,83,111,102,116,119,97,114,101,46,10,10,84,72,69,32,83,79,70,84,87,65,82,69,32,73,83,32,80,82,79,86,73,68,69,68,32,34,65,83,32,73,83,34,44,32,87,73,84,72,79,85,84,32,87,65,82,82,65,78,84,89,32,79,70,32,65,78,89,32,75,73,78,68,44,32,69,88,80,82,69,83,83,32,79,82,10,73,77,80,76,73,69,68,44,32,73,78,67,76,85,68,73,78,71,32,66,85,84,32,78,79,84,32,76,73,77,73,84,69,68,32,84,79,32,84,72,69,32,87,65,82,82,65,78,84,73,69,83,32,79,70,32,77,69,82,67,72,65,78,84,65,66,73,76,73,84,89,44,10,70,73,84,78,69,83,83,32,70,79,82,32,65,32,80,65,82,84,73,67,85,76,65,82,32,80,85,82,80,79,83,69,32,65,78,68,32,78,79,78,73,78,70,82,73,78,71,69,77,69,78,84,46,32,73,78,32,78,79,32,69,86,69,78,84,32,83,72,65,76,76,32,84,72,69,10,65,85,84,72,79,82,83,32,79,82,32,67,79,80,89,82,73,71,72,84,32,72,79,76,68,69,82,83,32,66,69,32,76,73,65,66,76,69,32,70,79,82,32,65,78,89,32,67,76,65,73,77,44,32,68,65,77,65,71,69,83,32,79,82,32,79,84,72,69,82,10,76,73,65,66,73,76,73,84,89,44,32,87,72,69,84,72,69,82,32,73,78,32,65,78,32,65,67,84,73,79,78,32,79,70,32,67,79,78,84,82,65,67,84,44,32,84,79,82,84,32,79,82,32,79,84,72,69,82,87,73,83,69,44,32,65,82,73,83,73,78,71,32,70,82,79,77,44,10,79,85,84,32,79,70,32,79,82,32,73,78,32,67,79,78,78,69,67,84,73,79,78,32,87,73,84,72,32,84,72,69,32,83,79,70,84,87,65,82,69,32,79,82,32,84,72,69,32,85,83,69,32,79,82,32,79,84,72,69,82,32,68,69,65,76,73,78,71,83,32,73,78,32,84,72,69,10,83,79,70,84,87,65,82,69,46,10]}},"method":"POST"}
+2026-03-03T08:44:49.764Z akita:request fetch http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"body":{"_overheadLength":265,"_valueLength":1112,"_valuesToMeasure":[],"writable":false,"readable":true,"dataSize":0,"maxDataSize":2097152,"pauseStreams":true,"_released":false,"_streams":["----------------------------b78244abf923f0b69327a5fd\r\nContent-Disposition: form-data; name=\"foo\"\r\n\r\n","bar",null,"----------------------------b78244abf923f0b69327a5fd\r\nContent-Disposition: form-data; name=\"file\"; filename=\"LICENSE\"\r\nContent-Type: application/octet-stream\r\n\r\n",{"type":"Buffer","data":[77,73,84,32,76,105,99,101,110,115,101,10,10,67,111,112,121,114,105,103,104,116,32,40,99,41,32,50,48,49,54,45,50,48,50,50,32,76,105,97,110,103,32,88,105,110,103,99,104,101,110,32,104,116,116,112,115,58,47,47,103,105,116,104,117,98,46,99,111,109,47,108,105,97,110,103,120,105,110,103,99,104,101,110,10,10,80,101,114,109,105,115,115,105,111,110,32,105,115,32,104,101,114,101,98,121,32,103,114,97,110,116,101,100,44,32,102,114,101,101,32,111,102,32,99,104,97,114,103,101,44,32,116,111,32,97,110,121,32,112,101,114,115,111,110,32,111,98,116,97,105,110,105,110,103,32,97,32,99,111,112,121,10,111,102,32,116,104,105,115,32,115,111,102,116,119,97,114,101,32,97,110,100,32,97,115,115,111,99,105,97,116,101,100,32,100,111,99,117,109,101,110,116,97,116,105,111,110,32,102,105,108,101,115,32,40,116,104,101,32,34,83,111,102,116,119,97,114,101,34,41,44,32,116,111,32,100,101,97,108,10,105,110,32,116,104,101,32,83,111,102,116,119,97,114,101,32,119,105,116,104,111,117,116,32,114,101,115,116,114,105,99,116,105,111,110,44,32,105,110,99,108,117,100,105,110,103,32,119,105,116,104,111,117,116,32,108,105,109,105,116,97,116,105,111,110,32,116,104,101,32,114,105,103,104,116,115,10,116,111,32,117,115,101,44,32,99,111,112,121,44,32,109,111,100,105,102,121,44,32,109,101,114,103,101,44,32,112,117,98,108,105,115,104,44,32,100,105,115,116,114,105,98,117,116,101,44,32,115,117,98,108,105,99,101,110,115,101,44,32,97,110,100,47,111,114,32,115,101,108,108,10,99,111,112,105,101,115,32,111,102,32,116,104,101,32,83,111,102,116,119,97,114,101,44,32,97,110,100,32,116,111,32,112,101,114,109,105,116,32,112,101,114,115,111,110,115,32,116,111,32,119,104,111,109,32,116,104,101,32,83,111,102,116,119,97,114,101,32,105,115,10,102,117,114,110,105,115,104,101,100,32,116,111,32,100,111,32,115,111,44,32,115,117,98,106,101,99,116,32,116,111,32,116,104,101,32,102,111,108,108,111,119,105,110,103,32,99,111,110,100,105,116,105,111,110,115,58,10,10,84,104,101,32,97,98,111,118,101,32,99,111,112,121,114,105,103,104,116,32,110,111,116,105,99,101,32,97,110,100,32,116,104,105,115,32,112,101,114,109,105,115,115,105,111,110,32,110,111,116,105,99,101,32,115,104,97,108,108,32,98,101,32,105,110,99,108,117,100,101,100,32,105,110,32,97,108,108,10,99,111,112,105,101,115,32,111,114,32,115,117,98,115,116,97,110,116,105,97,108,32,112,111,114,116,105,111,110,115,32,111,102,32,116,104,101,32,83,111,102,116,119,97,114,101,46,10,10,84,72,69,32,83,79,70,84,87,65,82,69,32,73,83,32,80,82,79,86,73,68,69,68,32,34,65,83,32,73,83,34,44,32,87,73,84,72,79,85,84,32,87,65,82,82,65,78,84,89,32,79,70,32,65,78,89,32,75,73,78,68,44,32,69,88,80,82,69,83,83,32,79,82,10,73,77,80,76,73,69,68,44,32,73,78,67,76,85,68,73,78,71,32,66,85,84,32,78,79,84,32,76,73,77,73,84,69,68,32,84,79,32,84,72,69,32,87,65,82,82,65,78,84,73,69,83,32,79,70,32,77,69,82,67,72,65,78,84,65,66,73,76,73,84,89,44,10,70,73,84,78,69,83,83,32,70,79,82,32,65,32,80,65,82,84,73,67,85,76,65,82,32,80,85,82,80,79,83,69,32,65,78,68,32,78,79,78,73,78,70,82,73,78,71,69,77,69,78,84,46,32,73,78,32,78,79,32,69,86,69,78,84,32,83,72,65,76,76,32,84,72,69,10,65,85,84,72,79,82,83,32,79,82,32,67,79,80,89,82,73,71,72,84,32,72,79,76,68,69,82,83,32,66,69,32,76,73,65,66,76,69,32,70,79,82,32,65,78,89,32,67,76,65,73,77,44,32,68,65,77,65,71,69,83,32,79,82,32,79,84,72,69,82,10,76,73,65,66,73,76,73,84,89,44,32,87,72,69,84,72,69,82,32,73,78,32,65,78,32,65,67,84,73,79,78,32,79,70,32,67,79,78,84,82,65,67,84,44,32,84,79,82,84,32,79,82,32,79,84,72,69,82,87,73,83,69,44,32,65,82,73,83,73,78,71,32,70,82,79,77,44,10,79,85,84,32,79,70,32,79,82,32,73,78,32,67,79,78,78,69,67,84,73,79,78,32,87,73,84,72,32,84,72,69,32,83,79,70,84,87,65,82,69,32,79,82,32,84,72,69,32,85,83,69,32,79,82,32,79,84,72,69,82,32,68,69,65,76,73,78,71,83,32,73,78,32,84,72,69,10,83,79,70,84,87,65,82,69,46,10]},null],"_currentStream":null,"_insideLoop":false,"_pendingNext":false,"_boundary":"--------------------------b78244abf923f0b69327a5fd"},"method":"POST"}
+2026-03-03T08:44:49.765Z akita:request response: http://localhost:28000 200 OK
+2026-03-03T08:44:49.765Z akita:request exec onResponse
+res -> http://localhost:28000 OK
+2026-03-03T08:44:49.765Z akita:request response text: {"method":"POST","url":"/","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","content-type":"multipart/form-data;boundary=--------------------------b78244abf923f0b69327a5fd","accept":"*/*","content-length":"1433","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{"foo":"bar"},"files":{"file":{"fd":null,"path":"/tmp/77df3118cd93b-LICENSE","flags":"r","mode":438,"end":null,"bytesRead":0,"_events":{},"_readableState":{"highWaterMark":65536,"buffer":[],"bufferIndex":0,"length":0,"pipes":[],"awaitDrainWriters":null},"_eventsCount":1,"fieldname":"file","filename":"LICENSE","encoding":"7bit","transferEncoding":"7bit","mimeType":"application/octet-stream","mime":"application/octet-stream"}}}
+2026-03-03T08:44:49.765Z akita:request exec onDecode
+ok 21 should be deeply equivalent
+ok 22 should be deeply equivalent
+ok 23 should be deeply equivalent
+# test text
+2026-03-03T08:44:49.766Z akita:request exec onRequest
+request hook: http://localhost:28000
+request hook: http://localhost:28000
+2026-03-03T08:44:49.766Z akita:request GET http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.766Z akita:request fetch http://localhost:28000 {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.766Z akita:request response: http://localhost:28000 200 OK
+2026-03-03T08:44:49.766Z akita:request exec onResponse
+res -> http://localhost:28000 OK
+2026-03-03T08:44:49.766Z akita:request response text: {"method":"GET","url":"/","headers":{"agent":"Akita","user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{}}
+ok 24 should be strictly equal
+# test buffer
+2026-03-03T08:44:49.766Z akita:request GET http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.766Z akita:request fetch http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.767Z akita:request response: http://localhost:28000/get 200 OK
+ok 25 should be truthy
+# HTTP Agent 
+2026-03-03T08:44:49.767Z akita:request GET http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"agent":{"_events":{},"_eventsCount":2,"defaultPort":80,"protocol":"http:","options":{"keepAlive":false,"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0},"method":"GET"}
+2026-03-03T08:44:49.767Z akita:request fetch http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"agent":{"_events":{},"_eventsCount":2,"defaultPort":80,"protocol":"http:","options":{"keepAlive":false,"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":false,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0},"method":"GET"}
+progress 1
+2026-03-03T08:44:49.768Z akita:request response: http://localhost:28000/get 200 OK
+2026-03-03T08:44:49.769Z akita:request response text: {"method":"GET","url":"/get","headers":{"user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"close"},"query":{},"body":{}}
+2026-03-03T08:44:49.769Z akita:request _decode
+ok 26 should be strictly equal
+# HTTP Agent keepAlive
+2026-03-03T08:44:49.769Z akita:request GET http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"agent":{"_events":{},"_eventsCount":2,"defaultPort":80,"protocol":"http:","options":{"keepAlive":true,"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":true,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0},"method":"GET"}
+2026-03-03T08:44:49.769Z akita:request fetch http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"agent":{"_events":{},"_eventsCount":2,"defaultPort":80,"protocol":"http:","options":{"keepAlive":true,"noDelay":true,"path":null},"requests":{},"sockets":{},"freeSockets":{},"keepAliveMsecs":1000,"keepAlive":true,"maxSockets":null,"maxFreeSockets":256,"scheduling":"lifo","maxTotalSockets":null,"totalSocketCount":0},"method":"GET"}
+2026-03-03T08:44:49.770Z akita:request response: http://localhost:28000/get 200 OK
+2026-03-03T08:44:49.770Z akita:request response text: {"method":"GET","url":"/get","headers":{"user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{}}
+2026-03-03T08:44:49.770Z akita:request _decode
+ok 27 should be strictly equal
+# json stream
+2026-03-03T08:44:49.770Z akita:request GET http://localhost:28000/goods/watch {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.770Z akita:request fetch http://localhost:28000/goods/watch {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:49.771Z akita:request response: http://localhost:28000/goods/watch 200 OK
+2026-03-03T08:44:49.771Z akita:json-stream receive {"type":"ADDED","object":{"id":1001,"title":"iPhone"}}
+
+ok 28 should be strictly equal
+ok 29 should be strictly equal
+ok 30 should be strictly equal
+2026-03-03T08:44:50.771Z akita:json-stream receive {"type":"MODIFIED","object":{"id":1002,"title":"iMac"}}
+
+ok 31 should be strictly equal
+ok 32 should be strictly equal
+ok 33 should be strictly equal
+2026-03-03T08:44:51.772Z akita:json-stream _close
+ok 34 should be strictly equal
+# close json stream
+2026-03-03T08:44:51.773Z akita:request GET http://localhost:28000/goods/watch {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:51.773Z akita:request fetch http://localhost:28000/goods/watch {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:51.774Z akita:request response: http://localhost:28000/goods/watch 200 OK
+2026-03-03T08:44:51.774Z akita:json-stream receive {"type":"ADDED","object":{"id":1001,"title":"iPhone"}}
+
+ok 35 should be strictly equal
+ok 36 should be strictly equal
+ok 37 should be strictly equal
+2026-03-03T08:44:52.274Z akita:json-stream close json stream
+2026-03-03T08:44:52.274Z akita:json-stream _close
+ok 38 should be strictly equal
+# json stream event
+2026-03-03T08:44:52.274Z akita:request GET http://localhost:28000/goods/watch {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.274Z akita:request fetch http://localhost:28000/goods/watch {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.275Z akita:request response: http://localhost:28000/goods/watch 200 OK
+2026-03-03T08:44:52.276Z akita:json-stream receive {"type":"ADDED","object":{"id":1001,"title":"iPhone"}}
+
+ok 39 should be strictly equal
+ok 40 should be strictly equal
+ok 41 should be strictly equal
+2026-03-03T08:44:52.276Z akita:json-stream close json stream
+2026-03-03T08:44:52.276Z akita:json-stream _close
+ok 42 stream should be closed
+# Error Handling
+# Parser
+# 默认行为 - 使用 JSON.parse
+2026-03-03T08:44:52.277Z akita:request GET http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.277Z akita:request fetch http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.278Z akita:request response: http://localhost:28000/get 200 OK
+2026-03-03T08:44:52.278Z akita:request response text: {"method":"GET","url":"/get","headers":{"user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{}}
+2026-03-03T08:44:52.278Z akita:request _decode
+ok 43 response is object
+ok 44 has url property
+# 自定义解析器 - XML 解析模拟
+2026-03-03T08:44:52.278Z akita:request GET http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.278Z akita:request fetch http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.279Z akita:request response: http://localhost:28000/get 200 OK
+2026-03-03T08:44:52.279Z akita:request response text: {"method":"GET","url":"/get","headers":{"user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{}}
+2026-03-03T08:44:52.279Z akita:request _decode
+ok 45 custom parser was called
+ok 46 response parsed by custom parser
+ok 47 received raw text
+# 解析器错误 - 包装为 ParseError
+2026-03-03T08:44:52.279Z akita:request GET http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.279Z akita:request fetch http://localhost:28000/get {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.279Z akita:request response: http://localhost:28000/get 200 OK
+2026-03-03T08:44:52.279Z akita:request response text: {"method":"GET","url":"/get","headers":{"user-agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)","accept":"*/*","accept-encoding":"gzip,deflate","host":"localhost:28000","connection":"keep-alive"},"query":{},"body":{}}
+2026-03-03T08:44:52.279Z akita:request _decode
+ok 48 error type is parse
+ok 49 error code is PARSE_JSON_ERROR
+ok 50 has cause property
+ok 51 cause has correct message
+# 错误响应 - 使用自定义解析器
+2026-03-03T08:44:52.280Z akita:request GET http://localhost:28000/error/invalid-json {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.280Z akita:request fetch http://localhost:28000/error/invalid-json {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.280Z akita:request response: http://localhost:28000/error/invalid-json 200 OK
+2026-03-03T08:44:52.280Z akita:request response text: {invalid json
+2026-03-03T08:44:52.280Z akita:request _decode
+ok 52 error type is server or http
+# 204 No Content - 跳过解析器
+2026-03-03T08:44:52.280Z akita:request GET http://localhost:28000/204 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.280Z akita:request fetch http://localhost:28000/204 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.281Z akita:request response: http://localhost:28000/204 204 No Content
+ok 53 response is null for 204
+ok 54 parser should not be called for 204
+# Network Errors
+# timeout error
+2026-03-03T08:44:52.281Z akita:request GET http://localhost:28000/timeout {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"signal":{},"method":"GET"}
+2026-03-03T08:44:52.281Z akita:request fetch http://localhost:28000/timeout {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"signal":{},"method":"GET"}
+2026-03-03T08:44:52.782Z akita:request fetch error: The user aborted a request.
+ok 55 should be AkitaError
+ok 56 error type should be network
+ok 57 should have networkType
+ok 58 code should start with NETWORK_
+ok 59 should have url
+ok 60 should have method
+ok 61 should have original error in cause
+ok 62 should have timestamp
+# connection refused error
+2026-03-03T08:44:52.782Z akita:request exec onRequest
+request hook: http://localhost:29999/test
+request hook: http://localhost:29999/test
+2026-03-03T08:44:52.782Z akita:request GET http://localhost:29999/test {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.782Z akita:request fetch http://localhost:29999/test {"headers":{"Agent":"Akita","User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.784Z akita:request fetch error: request to http://localhost:29999/test failed, reason: 
+ok 63 should be AkitaError
+ok 64 error type should be network
+ok 65 should have networkType (actual: unknown)
+ok 66 code should start with NETWORK_
+# HTTP Errors
+# 400 Bad Request
+2026-03-03T08:44:52.785Z akita:request GET http://localhost:28000/error/400 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.785Z akita:request fetch http://localhost:28000/error/400 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.787Z akita:request response: http://localhost:28000/error/400 400 Bad Request
+2026-03-03T08:44:52.787Z akita:request response text: {"error":"Bad Request"}
+ok 67 should be AkitaError
+ok 68 error type should be server (has error field in body)
+ok 69 message should match
+ok 70 code should be SERVER_ERROR
+ok 71 should have timestamp
+# 401 Unauthorized
+2026-03-03T08:44:52.787Z akita:request GET http://localhost:28000/error/401 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.787Z akita:request fetch http://localhost:28000/error/401 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.788Z akita:request response: http://localhost:28000/error/401 401 Unauthorized
+2026-03-03T08:44:52.788Z akita:request response text: {"error":"Unauthorized"}
+ok 72 should be AkitaError
+ok 73 error should be server or http type
+ok 74 should have code
+ok 75 should have timestamp
+# 403 Forbidden
+2026-03-03T08:44:52.788Z akita:request GET http://localhost:28000/error/403 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.788Z akita:request fetch http://localhost:28000/error/403 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.788Z akita:request response: http://localhost:28000/error/403 403 Forbidden
+2026-03-03T08:44:52.788Z akita:request response text: {"error":"Forbidden"}
+ok 76 should be AkitaError
+ok 77 error should be server or http type
+ok 78 should have code
+ok 79 should have timestamp
+# 404 Not Found
+2026-03-03T08:44:52.788Z akita:request GET http://localhost:28000/error/404 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.788Z akita:request fetch http://localhost:28000/error/404 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.789Z akita:request response: http://localhost:28000/error/404 404 Not Found
+2026-03-03T08:44:52.789Z akita:request response text: {"error":"Not Found"}
+ok 80 should be AkitaError
+ok 81 error should be server or http type
+ok 82 should have code
+ok 83 should have timestamp
+# 500 Internal Server Error
+2026-03-03T08:44:52.789Z akita:request GET http://localhost:28000/error/500 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.789Z akita:request fetch http://localhost:28000/error/500 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.789Z akita:request response: http://localhost:28000/error/500 500 Internal Server Error
+2026-03-03T08:44:52.789Z akita:request response text: {"error":"Internal Server Error"}
+ok 84 should be AkitaError
+ok 85 error should be server or http type
+ok 86 should have code
+ok 87 should have timestamp
+# 503 Service Unavailable
+2026-03-03T08:44:52.789Z akita:request GET http://localhost:28000/error/503 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.789Z akita:request fetch http://localhost:28000/error/503 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.790Z akita:request response: http://localhost:28000/error/503 503 Service Unavailable
+2026-03-03T08:44:52.790Z akita:request response text: {"error":"Service Unavailable"}
+ok 88 should be AkitaError
+ok 89 error should be server or http type
+ok 90 should have code
+ok 91 should have timestamp
+# 404 with empty body
+2026-03-03T08:44:52.790Z akita:request GET http://localhost:28000/error/empty-404 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.790Z akita:request fetch http://localhost:28000/error/empty-404 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.791Z akita:request response: http://localhost:28000/error/empty-404 404 Not Found
+2026-03-03T08:44:52.791Z akita:request response text: 
+ok 92 should be AkitaError
+ok 93 error type should be http (no error field)
+ok 94 status should be 404
+ok 95 code should be HTTP_404
+# Parse Errors
+# invalid JSON
+2026-03-03T08:44:52.791Z akita:request GET http://localhost:28000/error/invalid-json {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.791Z akita:request fetch http://localhost:28000/error/invalid-json {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.791Z akita:request response: http://localhost:28000/error/invalid-json 200 OK
+2026-03-03T08:44:52.791Z akita:request response text: {invalid json
+2026-03-03T08:44:52.791Z akita:request _decode
+ok 96 should be AkitaError
+ok 97 error type should be parse
+ok 98 code should be PARSE_JSON_ERROR
+ok 99 message should indicate parse failure
+ok 100 should have original error in cause
+ok 101 should have url
+ok 102 should have method
+ok 103 should have timestamp
+# Server Errors
+# server error with custom code
+2026-03-03T08:44:52.792Z akita:request GET http://localhost:28000/error/server-with-code {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.792Z akita:request fetch http://localhost:28000/error/server-with-code {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.792Z akita:request response: http://localhost:28000/error/server-with-code 200 OK
+2026-03-03T08:44:52.792Z akita:request response text: {"error":"User not found","code":"USER_NOT_FOUND","userId":123}
+2026-03-03T08:44:52.792Z akita:request _decode
+ok 104 should be AkitaError
+ok 105 error type should be server
+ok 106 code should be USER_NOT_FOUND
+ok 107 message should match server error
+ok 108 should have timestamp
+# server error without custom code
+2026-03-03T08:44:52.793Z akita:request GET http://localhost:28000/error/server-without-code {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.793Z akita:request fetch http://localhost:28000/error/server-without-code {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.793Z akita:request response: http://localhost:28000/error/server-without-code 200 OK
+2026-03-03T08:44:52.793Z akita:request response text: {"error":"Something went wrong"}
+2026-03-03T08:44:52.793Z akita:request _decode
+ok 109 should be server error
+ok 110 error type should be server
+ok 111 code should default to SERVER_ERROR
+ok 112 message should match server error
+# safe error values - error: "0"
+2026-03-03T08:44:52.793Z akita:request GET http://localhost:28000/error/safe-values {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.793Z akita:request fetch http://localhost:28000/error/safe-values {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.794Z akita:request response: http://localhost:28000/error/safe-values 200 OK
+2026-03-03T08:44:52.794Z akita:request response text: {"error":"0","data":"success"}
+2026-03-03T08:44:52.794Z akita:request _decode
+ok 113 should return data successfully when error is "0"
+# safe error values - error: "null"
+2026-03-03T08:44:52.794Z akita:request GET http://localhost:28000/error/safe-null {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.794Z akita:request fetch http://localhost:28000/error/safe-null {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.794Z akita:request response: http://localhost:28000/error/safe-null 200 OK
+2026-03-03T08:44:52.794Z akita:request response text: {"error":"null","data":"success"}
+2026-03-03T08:44:52.794Z akita:request _decode
+ok 114 should return data successfully when error is "null"
+# safe error values - error: "none"
+2026-03-03T08:44:52.794Z akita:request GET http://localhost:28000/error/safe-none {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.794Z akita:request fetch http://localhost:28000/error/safe-none {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.795Z akita:request response: http://localhost:28000/error/safe-none 200 OK
+2026-03-03T08:44:52.795Z akita:request response text: {"error":"none","data":"success"}
+2026-03-03T08:44:52.795Z akita:request _decode
+ok 115 should return data successfully when error is "none"
+# Type Guards
+# isAkitaError
+ok 116 should return false for regular Error
+# isNetworkError
+ok 117 should return false for http error
+# isHTTPError
+ok 118 should return false for network error
+# isParseError
+ok 119 should return false for http error
+# isServerError
+ok 120 should return false for http error
+# Error Properties
+# error contains timestamp
+2026-03-03T08:44:52.796Z akita:request GET http://localhost:28000/error/500 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.796Z akita:request fetch http://localhost:28000/error/500 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.796Z akita:request response: http://localhost:28000/error/500 500 Internal Server Error
+2026-03-03T08:44:52.796Z akita:request response text: {"error":"Internal Server Error"}
+ok 121 should have timestamp property
+ok 122 timestamp should be a number
+ok 123 timestamp should be recent (within 5 seconds)
+# error contains timestamp
+2026-03-03T08:44:52.796Z akita:request GET http://localhost:28000/error/500 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.796Z akita:request fetch http://localhost:28000/error/500 {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.797Z akita:request response: http://localhost:28000/error/500 500 Internal Server Error
+2026-03-03T08:44:52.797Z akita:request response text: {"error":"Internal Server Error"}
+ok 124 should have timestamp property
+ok 125 timestamp should be a number
+ok 126 timestamp should be recent (within 5 seconds)
+# parse error has cause chain
+2026-03-03T08:44:52.797Z akita:request GET http://localhost:28000/error/invalid-json {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.797Z akita:request fetch http://localhost:28000/error/invalid-json {"headers":{"User-Agent":"Akita/1.2.0 (+https://github.com/liangxingchen/akita)"},"method":"GET"}
+2026-03-03T08:44:52.797Z akita:request response: http://localhost:28000/error/invalid-json 200 OK
+2026-03-03T08:44:52.797Z akita:request response text: {invalid json
+2026-03-03T08:44:52.797Z akita:request _decode
+ok 127 should have cause property
+ok 128 cause should be an Error instance
+ok 129 cause should have message
+
+1..129
+# tests 129
+# pass  129
+
+# ok
+
+Done in 4.26s.

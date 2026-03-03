@@ -194,7 +194,8 @@ export default class Request<T> {
 
   jsonStream(): Promise<JsonStream<any>> {
     if (!this._jsPromise) {
-      this._jsPromise = this.stream().then((stream) => new JsonStream(stream, this._reducer));
+      const parser = this.client.options.parser || JSON.parse;
+      this._jsPromise = this.stream().then((stream) => new JsonStream(stream, this._reducer, parser));
     }
     // @ts-ignore
     return this._jsPromise;

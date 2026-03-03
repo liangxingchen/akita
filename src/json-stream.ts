@@ -25,16 +25,18 @@ export default class JsonStream<T> {
   _reader: null | ReadableStreamDefaultReader<any>;
   _cache: string;
   _reducer: Reducer<any> | null;
+  _parser: (text: string) => any;
   _listeners: {
     [name: string]: Function[];
   };
 
-  constructor(stream: Readable | ReadableStream, reducer: Reducer<any> | null) {
+  constructor(stream: Readable | ReadableStream, reducer: Reducer<any> | null, parser: (text: string) => any) {
     this.closed = false;
     this._stream = stream;
     this._queue = [];
     this._cache = '';
     this._reducer = reducer;
+    this._parser = parser || JSON.parse;
     this._listeners = {};
     this._resolve = null;
     this._reject = null;
@@ -76,7 +78,7 @@ export default class JsonStream<T> {
     if (line) {
       let json;
       try {
-        json = JSON.parse(line);
+        json = this._parser(line);
       } catch (e) {
         this._onError(e as Error);
         return;

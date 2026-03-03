@@ -1,0 +1,18 @@
+yarn run v1.22.22
+$ eslint
+
+/home/liang/workspace/akita/test/parser.ts
+  26:33  error  Always prefer const x: T = { ... }                                            @typescript-eslint/consistent-type-assertions
+  40:24  error  'text' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  44:33  error  Always prefer const x: T = { ... }                                            @typescript-eslint/consistent-type-assertions
+  49:8   error  'res' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  65:33  error  Always prefer const x: T = { ... }                                            @typescript-eslint/consistent-type-assertions
+  69:18  error  'e' is defined but never used. Allowed unused caught errors must match /^_/u  @typescript-eslint/no-unused-vars
+  77:8   error  'res' is defined but never used. Allowed unused args must match /^_/u         @typescript-eslint/no-unused-vars
+  93:27  error  'text' is defined but never used. Allowed unused args must match /^_/u        @typescript-eslint/no-unused-vars
+  98:33  error  Always prefer const x: T = { ... }                                            @typescript-eslint/consistent-type-assertions
+
+✖ 9 problems (9 errors, 0 warnings)
+
+error Command failed with exit code 1.
+info Visit https://yarnpkg.com/en/docs/cli/run for documentation about this command.
