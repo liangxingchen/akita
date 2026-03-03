@@ -1074,6 +1074,41 @@ export interface ClientOptions {
   qsOptions?: IStringifyOptions<boolean>;
 
   /**
+   * 自定义响应解析函数
+   *
+   * 用于解析非 JSON 格式的响应（如 XML、纯文本等）
+   * 如果不提供此选项，默认使用 JSON.parse 解析响应
+   *
+   * @param text - 响应的原始文本内容
+   * @returns 解析后的数据对象
+   *
+   * @example
+   * ```typescript
+   * // 使用 XML 解析器
+   * import { parseString } from 'xml2js';
+   *
+   * const client = akita.create({
+   *   parser: (text) => {
+   *     let result;
+   *     parseString(text, (err, res) => {
+   *       if (err) throw err;
+   *       result = res;
+   *     });
+   *     return result;
+   *   }
+   * });
+   *
+   * const xmlData = await client.get('/api/xml-endpoint');
+   * ```
+   *
+   * @remarks
+   * - 解析器应该是同步函数
+   * - 解析器抛出的错误会被包装为 ParseError
+   * - 204 No Content 响应不会调用此解析器
+   */
+  parser?: (text: string) => any;
+
+  /**
    * 请求前对 Body 进行编码的前置钩子
    *
    * 在 Body 被编码为 JSON/FormData 之前执行

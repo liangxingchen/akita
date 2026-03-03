@@ -314,8 +314,9 @@ export default class Request<T> {
     if (this.value !== undefined) return this.value;
     debug('_decode');
     let value;
+    const parse = this.client.options.parser || JSON.parse;
     try {
-      value = JSON.parse(this.raw || '');
+      value = parse(this.raw || '');
     } catch (error) {
       this._end();
       return Promise.reject(createParseError(error as Error, this.init.method || 'GET', this.url, 'json'));
@@ -353,7 +354,8 @@ export default class Request<T> {
               if (!res.ok) {
                 let serverError;
                 try {
-                  const value = JSON.parse(text);
+                  const parse = client.options.parser || JSON.parse;
+                  const value = parse(text);
                   if (value?.error && ['0', 'null', 'none'].indexOf(value.error) < 0) {
                     serverError = createServerError(this.init.method || 'GET', this.url, value);
                   }
