@@ -69,6 +69,12 @@ router.get('/error/503', (ctx) => {
   ctx.body = { error: 'Service Unavailable' };
 });
 
+// 204 No Content endpoint
+router.get('/204', (ctx) => {
+  ctx.status = 204;
+  ctx.body = null;
+});
+
 // Server error endpoints (with error field)
 router.get('/error/server-with-code', (ctx) => {
   ctx.body = { error: 'User not found', code: 'USER_NOT_FOUND', userId: 123 };
