@@ -159,122 +159,18 @@ export interface Reducer<T> {
  *
  * @see {@link ClientOptions.onDecode} 可结合 Reducer 使用
  */
-export interface JsonStream<T> {
-  /**
-   * 流是否已关闭
-   *
-   * 当流被服务器端关闭、客户端主动关闭或发生错误时，closed 为 true
-   */
+export interface LineStream<T = string> {
   readonly closed: boolean;
-
-  /**
-   * 从数据流中读取一条数据
-   *
-   * 如果流已关闭且无数据可用，返回 undefined
-   * 如果有缓存数据，立即返回，否则等待下一条数据
-   *
-   * @returns Promise<T> 单条 JSON 数据，如果流已关闭则返回 undefined
-   */
-  read(): Promise<T>;
-
-  /**
-   * 监听数据事件
-   *
-   * 每当从流中解析出一条 JSON 对象时触发
-   *
-   * @param event - 事件名称，固定为 'data'
-   * @param fn - 事件处理函数，接收解析出的 JSON 数据
-   * @returns this 返回自身以支持链式调用
-   *
-   * @example
-   * ```typescript
-   * stream.on('data', (event) => {
-   *   console.log('Event received:', event.type, event.object);
-   * });
-   * ```
-   */
+  read(): Promise<T | undefined>;
   on(event: 'data', fn: (data: T) => void): this;
-
-  /**
-   * 监听错误事件
-   *
-   * 当流解析 JSON 失败或底层流发生错误时触发
-   *
-   * @param event - 事件名称，固定为 'error'
-   * @param fn - 错误处理函数，接收 Error 对象
-   * @returns this 返回自身以支持链式调用
-   *
-   * @example
-   * ```typescript
-   * stream.on('error', (error) => {
-   *   console.error('Stream error:', error.message);
-   * });
-   * ```
-   */
   on(event: 'error', fn: (error: Error) => void): this;
-
-  /**
-   * 监听关闭事件
-   *
-   * 当流被关闭时触发（正常结束、错误关闭或手动关闭）
-   *
-   * @param event - 事件名称，固定为 'close'
-   * @param fn - 关闭处理函数，无参数
-   * @returns this 返回自身以支持链式调用
-   *
-   * @example
-   * ```typescript
-   * stream.on('close', () => {
-   *   console.log('Stream closed');
-   * });
-   * ```
-   */
   on(event: 'close', fn: () => void): this;
-
-  /**
-   * 移除事件的单个监听器
-   *
-   * @param name - 事件名称：'data' | 'error' | 'close'
-   * @param fn - 要移除的监听器函数引用
-   * @returns this 返回自身以支持链式调用
-   *
-   * @example
-   * ```typescript
-   * const handler = (event) => console.log(event);
-   * stream.on('data', handler);
-   * // ...
-   * stream.removeListener('data', handler);
-   * ```
-   */
   removeListener(name: string, fn: Function): this;
-
-  /**
-   * 移除事件的所有监听器
-   *
-   * @param name - 事件名称：'data' | 'error' | 'close'
-   * @returns this 返回自身以支持链式调用
-   *
-   * @example
-   * ```typescript
-   * stream.removeAllListeners('data');
-   * ```
-   */
   removeAllListeners(name: string): this;
-
-  /**
-   * 关闭流
-   *
-   * 主动关闭流，停止接收新数据
-   * 关闭后不能再读取数据，也不能再添加监听器
-   *
-   * @example
-   * ```typescript
-   * // 5 秒后自动关闭流
-   * setTimeout(() => stream.close(), 5000);
-   * ```
-   */
   close(): void;
 }
+
+export interface JsonStream<T> extends LineStream<T> {}
 
 /**
  * 请求参数（RequestInit）
@@ -790,6 +686,25 @@ export interface Request<R> extends Promise<R> {
    * ```
    */
   jsonStream<T = R>(): Promise<JsonStream<T>>;
+
+  /**
+   * 获取文本数据流，按 \n 分割
+   *
+   * 每次读取返回一行文本
+   *
+   * @returns Promise<LineStream<string>> 文本行流
+   *
+   * @example
+   * ```typescript
+   * const stream = await client.get('/api/logs').lineStream();
+   * let line = await stream.read();
+   * while (line !== undefined) {
+   *   console.log(line);
+   *   line = await stream.read();
+   * }
+   * ```
+   */
+  lineStream(): Promise<LineStream<string>>;
 
   /**
    * 获取返回的原始 Response 对象

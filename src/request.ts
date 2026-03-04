@@ -2,6 +2,7 @@ import Debugger from 'debug';
 import qs from 'qs';
 import type { Readable } from 'stream';
 import JsonStream from './json-stream';
+import LineStream from './line-stream';
 import {
   isReadableStream,
   isUint8Array,
@@ -44,6 +45,7 @@ export default class Request<T> {
   res?: Response;
   _reducer: Reducer<T> | null;
   _jsPromise: null | Promise<JsonStream<any>>;
+  _lineStreamPromise: null | Promise<LineStream<string>>;
   raw?: string;
   value?: any;
   _steps: number;
@@ -63,6 +65,7 @@ export default class Request<T> {
     this._steps = 0;
     this._endAt = 0;
     this._jsPromise = null;
+    this._lineStreamPromise = null;
     this._bufferPromise = null;
     this._blobPromise = null;
     this._textPromise = null;
@@ -199,6 +202,13 @@ export default class Request<T> {
     }
     // @ts-ignore
     return this._jsPromise;
+  }
+
+  lineStream(): Promise<LineStream<string>> {
+    if (!this._lineStreamPromise) {
+      this._lineStreamPromise = this.stream().then((stream) => new LineStream<string>(stream));
+    }
+    return this._lineStreamPromise;
   }
 
   ok(): Promise<boolean> {

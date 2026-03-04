@@ -1,6 +1,7 @@
 import test from 'tape';
-import JsonStream from '../src/json-stream';
 import { Readable } from 'stream';
+import JsonStream from '../src/json-stream';
+import LineStream from '../src/line-stream';
 
 function createMockStream(data: string[]): Readable {
   const stream = new Readable({
@@ -109,6 +110,97 @@ test('JsonStream parser tests', (troot) => {
     jsonStream.read().catch(() => {
       // expected to reject, test completes via error event
     });
+  });
+
+  troot.end();
+});
+
+test('LineStream tests', (troot) => {
+  troot.test('LineStream 按行读取文本', async (t) => {
+    const textData = ['line 1', 'line 2', 'line 3'];
+
+    const stream = createMockStream([...textData]);
+    const lineStream = new LineStream<string>(stream);
+
+    const line1 = await lineStream.read();
+    t.equal(line1, 'line 1', 'first line should match');
+
+    const line2 = await lineStream.read();
+    t.equal(line2, 'line 2', 'second line should match');
+
+    const line3 = await lineStream.read();
+    t.equal(line3, 'line 3', 'third line should match');
+
+    // 流结束后，需要等待 close 事件或使用第四个 read
+    // 因为 Node.js Readable 是同步关闭的
+    const line4 = await new Promise<string | undefined>((resolve) => {
+      lineStream.on('close', () => resolve(undefined));
+      // 如果还有数据在队列中会先返回数据
+      lineStream.read().then(resolve, () => resolve(undefined));
+    });
+    t.equal(line4, undefined, 'after stream ends should return undefined');
+
+    t.end();
+  });
+
+  troot.test('LineStream 事件监听', async (t) => {
+    const textData = ['a', 'b', 'c'];
+    const stream = createMockStream([...textData]);
+    const lineStream = new LineStream<string>(stream);
+
+    const received: string[] = [];
+
+    lineStream.on('data', (line: string) => {
+      received.push(line);
+    });
+
+    lineStream.on('close', () => {
+      t.deepEqual(received, ['a', 'b', 'c'], 'should receive all lines via event');
+      t.end();
+    });
+
+    // 等待流结束
+    await new Promise((resolve) => {
+      setTimeout(resolve, 100);
+    });
+  });
+
+  troot.test('LineStream 手动关闭', async (t) => {
+    // 使用单行数据，确保关闭时队列为空
+    const textData = ['line 1'];
+    const stream = createMockStream([...textData]);
+    const lineStream = new LineStream<string>(stream);
+
+    const line1 = await lineStream.read();
+    t.equal(line1, 'line 1', 'first line should match');
+
+    lineStream.close();
+    t.equal(lineStream.closed, true, 'stream should be closed');
+
+    // 队列为空且已关闭时，read 应该抛出错误
+    try {
+      await lineStream.read();
+      t.fail('should throw error when reading closed stream');
+    } catch (error: any) {
+      t.ok(error.message.includes('closed'), 'should throw closed error');
+    }
+
+    t.end();
+  });
+
+  troot.test('LineStream 空行处理', async (t) => {
+    const textData = ['line 1', '', 'line 3'];
+    const stream = createMockStream([...textData]);
+    const lineStream = new LineStream<string>(stream);
+
+    const line1 = await lineStream.read();
+    t.equal(line1, 'line 1', 'first line should match');
+
+    // 空行会被 trim() 忽略
+    const line2 = await lineStream.read();
+    t.equal(line2, 'line 3', 'should skip empty line and return line 3');
+
+    t.end();
   });
 
   troot.end();

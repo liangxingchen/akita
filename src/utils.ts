@@ -181,7 +181,17 @@ export function createParseError(originalError: Error, method: string, url: stri
 }
 
 export function createServerError(method: string, url: string, serverData: any): AkitaError {
-  return new AkitaError(serverData.error, 'server', serverData.code || 'SERVER_ERROR', {
+  let message = serverData.error;
+  let code = serverData.code;
+  if (typeof message === 'object') {
+    if (message.code && !code) {
+      code = message.code;
+    }
+    if (message.message) {
+      message = message.message;
+    }
+  }
+  return new AkitaError(message, 'server', code || 'SERVER_ERROR', {
     url,
     method,
     timestamp: Date.now()
