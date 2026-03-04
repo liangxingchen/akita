@@ -172,6 +172,18 @@ export interface LineStream<T = string> {
 
 export interface JsonStream<T> extends LineStream<T> {}
 
+export interface SSEEvent {
+  type: string;
+  data: string;
+  id?: string;
+  retry?: number;
+}
+
+export interface SSEStream extends LineStream<SSEEvent> {
+  lastEventId: string;
+  retryInterval: number;
+}
+
 /**
  * 请求参数（RequestInit）
  *
@@ -705,6 +717,25 @@ export interface Request<R> extends Promise<R> {
    * ```
    */
   lineStream(): Promise<LineStream<string>>;
+
+  /**
+   * 获取 SSE (Server-Sent Events) 数据流
+   *
+   * 解析 SSE 格式的事件流，支持字段：data、event、id、retry
+   *
+   * @returns Promise<SSEStream> SSEStream 对象
+   *
+   * @example
+   * ```typescript
+   * const stream = await client.get('/api/chat').sseStream();
+   * let event = await stream.read();
+   * while (event) {
+   *   console.log(`[${event.type}]`, event.data);
+   *   event = await stream.read();
+   * }
+   * ```
+   */
+  sseStream(): Promise<SSEStream>;
 
   /**
    * 获取返回的原始 Response 对象

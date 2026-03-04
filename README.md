@@ -6,7 +6,8 @@
 
 - **Promise 接口风格** - 现代 async/await 语法
 - **自动 JSON 解析** - 直接获取解析后的数据 `users = await client.get('/api/users')`
-- **多种响应格式** - 支持 JSON、文本、Buffer、Blob、Stream、JsonStream
+- **多种响应格式** - 支持 JSON、文本、Buffer、Blob、Stream、JsonStream、SSEStream
+- **流式数据处理** - 支持 NDJSON (JsonStream) 和 SSE (Server-Sent Events) 实时流
 - **自动查询参数序列化** - 使用 qs 库处理复杂对象和数组
 - **自动表单数据转换** - 智能识别并转换为 FormData
 - **自动文件上传** - 检测到文件/Blob/Uint8Array 时自动处理
@@ -225,6 +226,52 @@ const validated = await akita.get('/api/user/1', {}, (json) => {
 });
 ```
 
+### 自定义 JSON 解析器
+
+通过 `parser` 选项自定义 JSON 解析逻辑：
+
+```typescript
+// 使用更快的 JSON 解析器
+const client = akita.create({
+  parser: (text) => JSON.parse(text)
+});
+
+// 安全的 JSON 解析
+const safeParser = (text: string) => {
+  try {
+    return JSON.parse(text);
+  } catch (e) {
+    console.error('JSON parse failed:', text);
+    return null;
+  }
+};
+
+const client = akita.create({
+  parser: safeParser
+});
+```
+
+### Reducer 与 Parser 的区别
+
+| 特性 | Reducer | Parser |
+|------|---------|--------|
+| **作用时机** | JSON.parse 之后 | JSON.parse 本身 |
+| **用途** | 转换/验证数据 | 替换 JSON.parse |
+| **使用位置** | 单个请求 | 客户端全局配置 |
+| **返回值** | 任意类型 | 必须是解析后的对象 |
+
+```typescript
+// Parser - 替换 JSON.parse
+const client = akita.create({
+  parser: (text) => JSON5.parse(text)  // 解析 JSON5 格式
+});
+
+// Reducer - 转换解析后的数据
+const data = await client.get('/api/users', {}, 
+  (json) => json.data  // 提取 data 字段
+);
+```
+
 ## 请求体处理
 
 ### JSON 请求（默认）
@@ -347,6 +394,246 @@ while (event) {
   event = await stream.read();
 }
 // 10 秒后，event 会是 undefined
+```
+
+## SSE 事件流（SSEStream）
+
+### 处理 Server-Sent Events (SSE) 实时事件流
+
+SSE 格式（WHATWG 标准）：
+```
+event: message_start
+data: {"type": "message_start", "message": {"id": "msg_123"}}
+
+event: content_block_delta
+data: {"type": "content_block_delta", "index": 0, "text": "Hello"}
+
+event: message_stop
+data: {"type": "message_stop"}
+```
+
+SSE 支持字段：
+- `data:` - 事件数据（可多行拼接）
+- `event:` - 事件类型（默认 `'message'`）
+- `id:` - 事件 ID（用于重连）
+- `retry:` - 重连间隔（毫秒）
+- `:` - 注释行（自动忽略）
+- 空行 - 事件分隔符
+
+### 逐事件读取
+
+```typescript
+const stream = await client.get('/api/chat').sseStream();
+let event = await stream.read();
+while (event) {
+  console.log(`[${event.type}]`, event.data);
+  event = await stream.read();
+}
+```
+
+### 使用事件监听
+
+```typescript
+const stream = await client.get('/api/chat').sseStream();
+
+stream.on('data', (event) => {
+  console.log('Event received:', event.type, event.data);
+});
+
+stream.on('error', (error) => {
+  console.error('Stream error:', error.message);
+});
+
+stream.on('close', () => {
+  console.log('Stream closed');
+});
+```
+
+### 解析 SSE + JSON 数据
+
+大多数 SSE 服务的 data 字段是 JSON 格式：
+
+```typescript
+const stream = await client.get('/api/chat').sseStream();
+
+stream.on('data', (event) => {
+  if (event.data) {
+    const data = JSON.parse(event.data);
+    console.log('Parsed data:', data);
+  }
+});
+```
+
+### OpenAI API 特殊处理（data: [DONE]）
+
+OpenAI 使用 `data: [DONE]` 作为流结束标记，**不是有效 JSON**：
+
+```typescript
+const stream = await client.post('/v1/chat/completions', {
+  body: { model: 'gpt-4', messages: [...], stream: true }
+}).sseStream();
+
+stream.on('data', (event) => {
+  // 处理 [DONE] 结束标记
+  if (event.data === '[DONE]') {
+    console.log('Stream complete');
+    stream.close();
+    return;
+  }
+  
+  // 正常 JSON 数据
+  const data = JSON.parse(event.data);
+  process.stdout.write(data.choices[0].delta.content);
+});
+```
+
+### 辅助函数处理 OpenAI 流
+
+```typescript
+async function streamOpenAI(prompt: string) {
+  const stream = await client.post('/v1/chat/completions', {
+    body: { model: 'gpt-4', messages: [{ role: 'user', content: prompt }], stream: true }
+  }).sseStream();
+
+  for await (const event of stream) {
+    // 检查结束标记
+    if (event.data === '[DONE]') {
+      break;
+    }
+    
+    // 解析 JSON
+    const data = JSON.parse(event.data);
+    const content = data.choices[0].delta?.content;
+    
+    if (content) {
+      process.stdout.write(content);
+    }
+  }
+  
+  console.log('\nComplete!');
+}
+```
+
+### 获取 lastEventId 和 retry
+
+```typescript
+const stream = await client.get('/api/events').sseStream();
+
+stream.on('data', (event) => {
+  console.log('Event ID:', event.id);      // 事件 ID
+  console.log('Retry:', event.retry);      // 重连间隔（毫秒）
+});
+
+// 获取最后的 Event ID（用于重连时发送 Last-Event-ID header）
+console.log('Last Event ID:', stream.lastEventId);
+console.log('Retry Interval:', stream.retryInterval);
+```
+
+### 实际案例：OpenAI ChatGPT API
+
+```typescript
+const stream = await client.post('/v1/chat/completions', {
+  body: {
+    model: 'gpt-4',
+    messages: [{ role: 'user', content: 'Hello' }],
+    stream: true
+  }
+}).sseStream();
+
+stream.on('data', (event) => {
+  if (event.type === 'message_start') {
+    const data = JSON.parse(event.data);
+    console.log('Started:', data.message.id);
+  } else if (event.type === 'content_block_delta') {
+    const data = JSON.parse(event.data);
+    process.stdout.write(data.delta.text);
+  } else if (event.type === 'message_stop') {
+    stream.close();
+  }
+});
+```
+
+### 实际案例：GitHub Actions Logs
+
+```typescript
+const stream = await client.get('/repos/owner/repo/actions/runs/123/logs').sseStream();
+
+stream.on('data', (event) => {
+  // Log lines are plain text in data field
+  console.log('Log:', event.data);
+});
+```
+
+## 文本行流（LineStream）
+
+### 按行读取文本数据流
+
+适用于：
+- 日志文件流式读取
+- 大文本文件逐行处理
+- NDJSON 手动解析
+
+### 逐行读取
+
+```typescript
+const stream = await client.get('/api/logs').lineStream();
+let line = await stream.read();
+while (line !== undefined) {
+  console.log('Line:', line);
+  line = await stream.read();
+}
+```
+
+### 使用事件监听
+
+```typescript
+const stream = await client.get('/api/logs').lineStream();
+
+stream.on('data', (line) => {
+  console.log('Received line:', line);
+});
+
+stream.on('error', (error) => {
+  console.error('Stream error:', error.message);
+});
+
+stream.on('close', () => {
+  console.log('Stream closed');
+});
+```
+
+### 手动解析 NDJSON
+
+```typescript
+const stream = await client.get('/api/events').lineStream();
+let line = await stream.read();
+while (line) {
+  const event = JSON.parse(line);
+  console.log('Event:', event);
+  line = await stream.read();
+}
+```
+
+### LineStream vs JsonStream
+
+| 特性 | LineStream | JsonStream |
+|------|-----------|-----------|
+| **解析格式** | 纯文本行 | NDJSON（每行 JSON） |
+| **返回值** | `string` | JSON 对象 |
+| **自定义解析器** | ❌ 不支持 | ✅ 支持 |
+| **数据转换** | 手动解析 | 自动 JSON.parse + Reducer |
+| **适用场景** | 日志、手动解析 | 服务器推送的 JSON 事件 |
+
+```typescript
+// LineStream - 返回字符串
+const lineStream = await client.get('/api/logs').lineStream();
+const line = await lineStream.read();
+console.log(typeof line); // string
+
+// JsonStream - 返回 JSON 对象
+const jsonStream = await client.get('/api/events').jsonStream();
+const event = await jsonStream.read();
+console.log(typeof event); // object
 ```
 
 ## 钩子系统
@@ -1295,6 +1582,8 @@ uploadFile('./document.pdf')
 
 ### 实时数据流处理
 
+#### NDJSON 数据流（JsonStream）
+
 ```typescript
 import akita from 'akita';
 
@@ -1353,6 +1642,67 @@ async function watchStock(symbol: string) {
 watchStock('AAPL');
 ```
 
+#### SSE 事件流（SSEStream）
+
+```typescript
+import akita from 'akita';
+
+interface ChatEvent {
+  type: 'message_start' | 'content_block_delta' | 'message_stop';
+  message?: {
+    id: string;
+    role: string;
+  };
+  delta?: {
+    type: string;
+    text: string;
+  };
+}
+
+const chatClient = akita.create({
+  apiRoot: 'https://api.example.com'
+});
+
+async function streamChat() {
+  const stream = await chatClient.post<ChatEvent>('/v1/chat/completions', {
+    body: {
+      model: 'gpt-4',
+      messages: [{ role: 'user', content: 'Tell me a story' }],
+      stream: true
+    }
+  }).sseStream();
+
+  stream.on('data', (event) => {
+    switch (event.type) {
+      case 'message_start':
+        const start = JSON.parse(event.data);
+        console.log('Started message:', start.message.id);
+        break;
+      
+      case 'content_block_delta':
+        const delta = JSON.parse(event.data);
+        process.stdout.write(delta.delta.text);
+        break;
+      
+      case 'message_stop':
+        console.log('\nChat complete');
+        stream.close();
+        break;
+    }
+  });
+
+  stream.on('error', (error) => {
+    console.error('SSE error:', error.message);
+  });
+
+  stream.on('close', () => {
+    console.log('Stream closed');
+  });
+}
+
+streamChat();
+```
+
 ## TypeScript 支持
 
 Akita 提供完整的 TypeScript 类型定义：
@@ -1393,7 +1743,10 @@ const userIds = await akita.get<number[]>('/users', {}, (json: User[]) =>
 - `ClientOptions` - 客户端配置选项
 - `RequestInit` - 请求配置参数
 - `Request<R>` - 请求对象（继承自 Promise）
+- `LineStream<T>` - 文本行流接口
 - `JsonStream<T>` - JSON 数据流
+- `SSEEvent` - SSE 事件对象
+- `SSEStream` - SSE 事件流
 - `Reducer<T>` - 数据处理器
 - `RequestHook` - 请求钩子函数
 - `ProgressHook` - 进度钩子函数
@@ -1419,7 +1772,9 @@ const userIds = await akita.get<number[]>('/users', {}, (json: User[]) =>
 - `buffer()` - 获取 Buffer 数据
 - `blob()` - 获取 Blob 数据
 - `stream()` - 获取流数据
-- `jsonStream<T>()` - 获取 JSON 数据流
+- `lineStream()` - 获取文本行流（LineStream）
+- `jsonStream<T>()` - 获取 JSON 数据流（JsonStream）
+- `sseStream()` - 获取 SSE 事件流（SSEStream）
 - `response()` - 获取 Response 对象
 - `ok()` - 判断请求是否成功
 - `status()` - 获取状态码

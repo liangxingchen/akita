@@ -3,6 +3,7 @@ import qs from 'qs';
 import type { Readable } from 'stream';
 import JsonStream from './json-stream';
 import LineStream from './line-stream';
+import SSEStream from './sse-stream';
 import {
   isReadableStream,
   isUint8Array,
@@ -46,6 +47,7 @@ export default class Request<T> {
   _reducer: Reducer<T> | null;
   _jsPromise: null | Promise<JsonStream<any>>;
   _lineStreamPromise: null | Promise<LineStream<string>>;
+  _ssePromise: null | Promise<SSEStream>;
   raw?: string;
   value?: any;
   _steps: number;
@@ -66,6 +68,7 @@ export default class Request<T> {
     this._endAt = 0;
     this._jsPromise = null;
     this._lineStreamPromise = null;
+    this._ssePromise = null;
     this._bufferPromise = null;
     this._blobPromise = null;
     this._textPromise = null;
@@ -209,6 +212,13 @@ export default class Request<T> {
       this._lineStreamPromise = this.stream().then((stream) => new LineStream<string>(stream));
     }
     return this._lineStreamPromise;
+  }
+
+  sseStream(): Promise<SSEStream> {
+    if (!this._ssePromise) {
+      this._ssePromise = this.stream().then((stream) => new SSEStream(stream));
+    }
+    return this._ssePromise;
   }
 
   ok(): Promise<boolean> {

@@ -5,4 +5,4 @@ import inject from './inject';
 
 export { AkitaError, isAkitaError, isNetworkError, isHTTPError, isParseError, isServerError } from './utils';
 
-export default inject(fetch, FormData, 'Akita/1.2.1 (+https://github.com/liangxingchen/akita)');
+export default inject(fetch, FormData, 'Akita/1.3.0 (+https://github.com/liangxingchen/akita)');

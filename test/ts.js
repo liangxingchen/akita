@@ -8,6 +8,7 @@ require('./client.ts');
 require('./errors.ts');
 require('./parser.ts');
 require('./stream-parser.ts');
+require('./sse-stream.ts');
 
 require('tape').onFinish(() => {
   server.close();
