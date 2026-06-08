@@ -12,11 +12,8 @@
     "alwaysStrict": true,
     "resolveJsonModule": true,
     "typeRoots": ["./node_modules/@types"],
-    "outDir": "lib",
-    "baseUrl": "./src",
-    "paths": {
-      "*": ["typings/*"]
-    },
+    "rootDir": "./src",
+    "outDir": "./lib",
     "useDefineForClassFields": false,
     "target": "ES2022",
     "lib": ["ES2022", "DOM"]
