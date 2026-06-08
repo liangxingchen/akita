@@ -41,3 +41,5 @@ package-lock.json
 .history
 lib/*.js
 .sisyphus/
+.omo/
+.opencode/

@@ -1,12 +1,10 @@
 # 项目知识库
 
-**生成时间**: 2026-01-11
-**Commit**: [HEAD]
-**分支**: main
-
 ## 概述
 
 多平台 HTTP 客户端，支持 Node.js、浏览器和微信小程序，基于 Fetch API 实现。采用 TypeScript 编写，提供 Promise 风格 API 和钩子系统。**源代码：15 文件（1992 行）**，**类型定义：1625 行**。
+
+---
 
 ## 结构
 
@@ -27,6 +25,8 @@ akita/
 ├── index.d.ts     # 根目录类型定义（1625 行）
 └── 配置文件
 ```
+
+---
 
 ## 查找位置
 
@@ -62,6 +62,8 @@ akita/
 | `parse` | - | JSON/text 解析失败 |
 | `server` | - | 应用层错误（response.error 字段） |
 
+---
+
 ## 约定（与标准差异）
 
 ### 多平台入口
@@ -92,6 +94,8 @@ client.setOptions({ init: { headers: { 'Authorization': token } } });
 const shared = akita.resolve('api');
 ```
 
+---
+
 ## 反模式（禁止）
 
 ### 代码风格
@@ -112,6 +116,8 @@ const shared = akita.resolve('api');
 - **禁止**重复创建 Promise（使用 `_xxxPromise` 缓存）
 - **禁止**在构造函数中执行异步操作（延迟到 `_send()`）
 
+---
+
 ## 代码重复（待重构）
 
 ### Promise Response Getter 模式（src/request.ts, 5 处重复）
@@ -128,6 +134,8 @@ ok(): Promise<boolean> {
 - `src/fetch.ts` (lines 8-15) - 基础实现
 - `src/json-stream.ts` (lines 7-17) - 增强实现（Buffer/TextDecoder 检查）
 **重构建议**: 移至 `utils.ts` 统一实现。
+
+---
 
 ## 独特风格
 
@@ -175,6 +183,8 @@ const client = akita.create({ apiRoot: 'https://api.example.com' });
 akita.get('/users');
 ```
 
+---
+
 ## 错误处理架构
 
 ### AkitaError 结构
@@ -218,6 +228,8 @@ try {
 }
 ```
 
+---
+
 ## 命令
 
 ```bash
@@ -227,6 +239,8 @@ yarn cover        # 生成覆盖率报告（nyc, 输出到 coverage/）
 yarn fix          # eslint:fix + prettier:fix
 yarn eslint       # 代码检查
 ```
+
+---
 
 ## 注意事项
 

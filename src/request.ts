@@ -142,16 +142,21 @@ export default class Request<T> {
         if (!init.headers) {
           init.headers = {};
         }
-        if (!init.headers['Content-Type'] || init.headers['Content-Type'].indexOf('json') > -1) {
-          if (!init.headers['Content-Type']) {
+        // 提取不含 charset 等参数的 base Content-Type
+        // 处理 "application/x-www-form-urlencoded;charset=UTF-8" 等带参数的情况
+        const contentType = init.headers['Content-Type'];
+        const baseType = contentType ? contentType.split(';')[0].trim() : '';
+
+        if (!baseType || baseType === 'application/json') {
+          if (!contentType) {
             init.headers['Content-Type'] = 'application/json';
           }
           init.body = JSON.stringify(init.body);
-        } else if (init.headers['Content-Type'] === 'application/x-www-form-urlencoded') {
+        } else if (baseType === 'application/x-www-form-urlencoded') {
           init.body = qs.stringify(init.body);
         } else {
           /* istanbul ignore next */
-          throw new Error(`Akita Error: Unsupported Content-Type ${init.headers['Content-Type']}`);
+          throw new Error(`Akita Error: Unsupported Content-Type ${contentType}`);
         }
       }
     }
