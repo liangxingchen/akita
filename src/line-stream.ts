@@ -216,7 +216,13 @@ export default class LineStream<T = string> {
     const stream = this._stream;
     if (stream) {
       // @ts-ignore
-      if (stream.destroy) {
+      if (stream.getReader) {
+        // 浏览器 ReadableStream：通过 reader.cancel() 释放，无 removeListener/destroy
+        if (this._reader) {
+          this._reader.cancel().catch(() => {});
+        }
+        // @ts-ignore
+      } else if (stream.destroy) {
         // @ts-ignore
         stream.destroy();
       } else {

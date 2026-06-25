@@ -9,6 +9,9 @@ require('./errors.ts');
 require('./parser.ts');
 require('./stream-parser.ts');
 require('./sse-stream.ts');
+require('./utils.ts');
+require('./request.ts');
+require('./inject.ts');
 
 require('tape').onFinish(() => {
   server.close();

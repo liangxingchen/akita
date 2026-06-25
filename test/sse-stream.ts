@@ -244,5 +244,81 @@ data: {"type": "test"}
     t.end();
   });
 
+  troot.test('SSEStream 无冒号字段解析', async (t) => {
+    const sseContent = `eventwithoutcolon
+data: payload
+
+`;
+
+    const stream = createMockStream(sseContent);
+    const sseStream = new SSEStream(stream);
+
+    const event = await sseStream.read();
+    t.ok(event, 'event should exist');
+    t.equal(event!.data, 'payload', 'data should be parsed');
+
+    t.end();
+  });
+
+  troot.test('SSEStream lastEventId getter', async (t) => {
+    const sseContent = `id: evt_999
+data: hello
+
+`;
+
+    const stream = createMockStream(sseContent);
+    const sseStream = new SSEStream(stream);
+
+    await sseStream.read();
+    t.equal(sseStream.lastEventId, 'evt_999', 'lastEventId getter should return parsed id');
+
+    t.end();
+  });
+
+  troot.test('SSEStream retryInterval getter', async (t) => {
+    const sseContent = `retry: 3000
+data: hello
+
+`;
+
+    const stream = createMockStream(sseContent);
+    const sseStream = new SSEStream(stream);
+
+    await sseStream.read();
+    t.equal(sseStream.retryInterval, 3000, 'retryInterval getter should return parsed retry');
+
+    t.end();
+  });
+
+  troot.test('SSEStream id 含空字节被忽略', async (t) => {
+    const sseContent = `id: bad\0id
+data: hello
+
+`;
+
+    const stream = createMockStream(sseContent);
+    const sseStream = new SSEStream(stream);
+
+    await sseStream.read();
+    t.equal(sseStream.lastEventId, '', 'id with null char should be ignored');
+
+    t.end();
+  });
+
+  troot.test('SSEStream retry 非数字被忽略', async (t) => {
+    const sseContent = `retry: notanumber
+data: hello
+
+`;
+
+    const stream = createMockStream(sseContent);
+    const sseStream = new SSEStream(stream);
+
+    await sseStream.read();
+    t.equal(sseStream.retryInterval, 0, 'non-numeric retry should be ignored');
+
+    t.end();
+  });
+
   troot.end();
 });

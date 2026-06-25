@@ -203,5 +203,109 @@ test('LineStream tests', (troot) => {
     t.end();
   });
 
+  troot.test('LineStream removeListener 方法', async (t) => {
+    const stream = createMockStream(['a']);
+    const lineStream = new LineStream<string>(stream);
+    const fn = () => {};
+    lineStream.on('data', fn);
+    lineStream.removeListener('data', fn);
+    t.equal(lineStream.listenerCount('data'), 0);
+    lineStream.close();
+    t.end();
+  });
+
+  troot.test('LineStream removeAllListeners 方法', async (t) => {
+    const stream = createMockStream(['a']);
+    const lineStream = new LineStream<string>(stream);
+    lineStream.on('data', () => {});
+    lineStream.on('data', () => {});
+    lineStream.removeAllListeners('data');
+    t.equal(lineStream.listenerCount('data'), 0);
+    lineStream.close();
+    t.end();
+  });
+
+  troot.test('LineStream emit 无监听器时不报错', async (t) => {
+    const stream = createMockStream(['a']);
+    const lineStream = new LineStream<string>(stream);
+    t.doesNotThrow(() => lineStream.emit('unknown', 'arg'));
+    lineStream.close();
+    t.end();
+  });
+
+  troot.test('LineStream getReader 分支（ReadableStream API）', async (t) => {
+    const chunks = ['line-a\n', 'line-b\n'];
+    let index = 0;
+    const fakeReadableStream: any = {
+      getReader() {
+        return {
+          read() {
+            if (index < chunks.length) {
+              return Promise.resolve({ done: false, value: chunks[index++] });
+            }
+            return Promise.resolve({ done: true, value: undefined });
+          },
+          cancel() {
+            return Promise.resolve();
+          }
+        };
+      }
+    };
+    const lineStream = new LineStream<string>(fakeReadableStream);
+    const line1 = await lineStream.read();
+    t.equal(line1, 'line-a');
+    const line2 = await lineStream.read();
+    t.equal(line2, 'line-b');
+    // close() 不应抛错（浏览器 ReadableStream 无 removeListener/destroy）
+    t.doesNotThrow(() => lineStream.close());
+    t.end();
+  });
+
+  troot.test('LineStream getReader 流自然结束触发 _close', async (t) => {
+    const fakeReadableStream: any = {
+      getReader() {
+        let done = false;
+        return {
+          read() {
+            if (!done) {
+              done = true;
+              return Promise.resolve({ done: false, value: 'only-line\n' });
+            }
+            return Promise.resolve({ done: true, value: undefined });
+          },
+          cancel() {
+            return Promise.resolve();
+          }
+        };
+      }
+    };
+    const lineStream = new LineStream<string>(fakeReadableStream);
+    const line1 = await lineStream.read();
+    t.equal(line1, 'only-line');
+    // done=true 触发 _close，后续 read 返回 undefined
+    await new Promise((r) => {
+      setTimeout(r, 50);
+    });
+    const line2 = await lineStream.read().catch(() => undefined);
+    t.equal(line2, undefined);
+    t.end();
+  });
+
+  troot.end();
+});
+
+test('JsonStream reducer 处理 object 字段', (troot) => {
+  troot.test('reducer 转换 json.object', async (t) => {
+    const reducer = (object: any) => ({ ...object, processed: true });
+    const ndjsonData = ['{"type":"ADDED","object":{"id":1,"name":"x"}}'];
+    const stream = createMockStream([...ndjsonData]);
+    const jsonStream = new JsonStream(stream, reducer, JSON.parse);
+    const event: any = await jsonStream.read();
+    t.equal(event.object.processed, true);
+    t.equal(event.object.id, 1);
+    jsonStream.close();
+    t.end();
+  });
+
   troot.end();
 });

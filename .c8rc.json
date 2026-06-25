@@ -1,0 +1,7 @@
+{
+  "all": true,
+  "include": ["src/**"],
+  "exclude": ["src/fetch.ts", "src/form-data.ts", "src/headers.ts", "src/index.ts", "src/node.d.ts"],
+  "reporter": ["text", "html", "lcov"],
+  "reports-directory": "./coverage"
+}

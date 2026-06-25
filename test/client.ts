@@ -256,3 +256,145 @@ test('HTTP', (troot) => {
 
   troot.end();
 });
+
+test('Client - apiRoot 路径拼接组合', (troot) => {
+  troot.test('apiRoot 有 / + path 有 /', (t) => {
+    const c = akita.create({ apiRoot: 'http://localhost:28000/' });
+    c.get('/get').then((res: any) => {
+      t.equal(res.url, '/get');
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('apiRoot 无 / + path 无 /', (t) => {
+    const c = akita.create({ apiRoot: 'http://localhost:28000' });
+    c.get('get').then((res: any) => {
+      t.equal(res.url, '/get');
+      t.end();
+    }, t.end);
+  });
+
+  troot.end();
+});
+
+test('Client - createBody 嵌套对象与 onProgress 数组', (troot) => {
+  troot.test('嵌套对象 + 文件字段上传', (t) => {
+    const c = akita.create({});
+    c.post('http://localhost:28000', {
+      body: {
+        meta: { type: 'doc', tags: ['a', 'b'] },
+        file: fs.createReadStream(`${process.cwd()}/LICENSE`)
+      }
+    }).then((res: any) => {
+      t.deepEqual(res.method, 'POST');
+      t.deepEqual(res.body, { meta: { type: 'doc', tags: ['a', 'b'] } });
+      t.ok(res.files.file);
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('body 含原始类型字段转字符串', (t) => {
+    const c = akita.create({});
+    const FormData = c.getFormDataClass();
+    if (FormData) {
+      const form = c.createBody({
+        file: Buffer.from('test'),
+        active: true,
+        count: 5,
+        empty: null,
+        date: new Date('2024-01-01')
+      });
+      t.ok(form instanceof FormData);
+    }
+    t.end();
+  });
+
+  troot.test('onProgress 数组形式', (t) => {
+    const progresses: number[] = [];
+    const c = akita.create({
+      apiRoot: 'http://localhost:28000',
+      onProgress: [(p) => progresses.push(p)]
+    });
+    // /timeout 端点 2s 后才响应，确保 5ms 防抖 timer 在请求完成前触发中间进度值
+    c.get('/timeout').then(() => {
+      t.ok(progresses.length > 0, `progress fired ${progresses.length} times`);
+      t.end();
+    }, t.end);
+  });
+
+  troot.end();
+});
+
+test('Client - hook 注册与移除', (troot) => {
+  troot.test('off 移除单个 hook 后不再触发', (t) => {
+    const c = akita.create({ apiRoot: 'http://localhost:28000' });
+    let called = 0;
+    const hook = () => {
+      called++;
+    };
+    c.on('request', hook);
+    c.off('request', hook);
+    c.get('/get').then(() => {
+      t.equal(called, 0, 'removed hook should not fire');
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('off 移除单个 hook 后内部状态为 null', (t) => {
+    const c = akita.create({});
+    const hook = () => {};
+    c.on('request', hook);
+    c.off('request', hook);
+    t.equal(c.options.onRequest, null);
+    t.end();
+  });
+
+  troot.test('off 从多 hook 数组移除一个后剩余仍生效', (t) => {
+    const c = akita.create({ apiRoot: 'http://localhost:28000' });
+    let called1 = 0;
+    let called2 = 0;
+    const h1 = () => {
+      called1++;
+    };
+    const h2 = () => {
+      called2++;
+    };
+    c.on('request', h1);
+    c.on('request', h2);
+    c.off('request', h1);
+    c.get('/get').then(() => {
+      t.equal(called1, 0, 'removed h1 should not fire');
+      t.equal(called2, 1, 'remaining h2 should fire');
+      t.end();
+    }, t.end);
+  });
+
+  troot.test('off 使 hook 数组清空置 null', (t) => {
+    const c = akita.create({});
+    const h1 = () => {};
+    const h2 = () => {};
+    c.on('request', h1);
+    c.on('request', h2);
+    c.off('request', h1);
+    c.off('request', h2);
+    t.ok(!c.options.onRequest);
+    t.end();
+  });
+
+  troot.test('off 无 hook 时直接返回', (t) => {
+    const c = akita.create({});
+    const fn = () => {};
+    t.doesNotThrow(() => c.off('request', fn));
+    t.end();
+  });
+
+  troot.test('createBody 处理 ArrayBuffer', (t) => {
+    const c = akita.create({});
+    const buf = new ArrayBuffer(4);
+    const result = c.createBody(buf);
+    t.ok(result instanceof Uint8Array);
+    t.end();
+  });
+
+  troot.end();
+});
