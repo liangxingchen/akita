@@ -9,3 +9,7 @@ yarn.lock
 .prettierignore
 eslint.config.js
 AGENTS.md
+.vscode
+.omo
+.opencode
+.codegraph

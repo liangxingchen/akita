@@ -188,6 +188,56 @@ test('Error Handling', (troot) => {
       });
     });
 
+    // 正向：server 响应体含 data 字段时，AkitaError.data 应透传完整对象
+    t.test('server error with additional data', (t) => {
+      client2.get('/error/server-with-data').catch((error) => {
+        t.ok(isServerError(error), 'should be server error');
+        t.equal(error.code, 'VALIDATION_ERROR', 'code should match');
+        t.equal(error.message, 'Validation failed', 'message should match');
+        t.ok(error.data, 'should have data property');
+        t.equal(error.data.field, 'email', 'data.field should match');
+        t.equal(error.data.reason, 'already exists', 'data.reason should match');
+        t.equal(error.data.userId, 456, 'data.userId should match');
+        t.end();
+      });
+    });
+
+    // 负向：server 响应体未提供 data 字段时，AkitaError.data 应为 undefined（不报错）
+    t.test('server error without data field', (t) => {
+      client2.get('/error/server-without-code').catch((error) => {
+        t.ok(isServerError(error), 'should be server error');
+        t.equal(error.data, undefined, 'data should be undefined when not provided');
+        t.end();
+      });
+    });
+
+    // 边界：server 返回 data:null 时，AkitaError.data 应为 undefined（运行时校验排除 null）
+    t.test('server error with null data', (t) => {
+      client2.get('/error/server-with-null-data').catch((error) => {
+        t.ok(isServerError(error), 'should be server error');
+        t.equal(error.data, undefined, 'data should be undefined when server returns null');
+        t.end();
+      });
+    });
+
+    // 边界：server 返回 data 为数组时，AkitaError.data 应为 undefined（排除数组）
+    t.test('server error with array data', (t) => {
+      client2.get('/error/server-with-array-data').catch((error) => {
+        t.ok(isServerError(error), 'should be server error');
+        t.equal(error.data, undefined, 'data should be undefined when server returns array');
+        t.end();
+      });
+    });
+
+    // 边界：server 返回 data 为原始类型时，AkitaError.data 应为 undefined（排除原始类型）
+    t.test('server error with primitive data', (t) => {
+      client2.get('/error/server-with-primitive-data').catch((error) => {
+        t.ok(isServerError(error), 'should be server error');
+        t.equal(error.data, undefined, 'data should be undefined when server returns primitive');
+        t.end();
+      });
+    });
+
     t.test('safe error values - error: "0"', (t) => {
       client2
         .get('/error/safe-values')

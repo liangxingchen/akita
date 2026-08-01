@@ -84,6 +84,30 @@ router.get('/error/server-without-code', (ctx) => {
   ctx.body = { error: 'Something went wrong' };
 });
 
+// 携带附加 data 字段的 server 错误端点
+// 用于测试 AkitaError.data 是否正确透传 server 响应体的 data 字段
+router.get('/error/server-with-data', (ctx) => {
+  ctx.body = {
+    error: 'Validation failed',
+    code: 'VALIDATION_ERROR',
+    data: { field: 'email', reason: 'already exists', userId: 456 }
+  };
+});
+
+// 非 plain object 形态的 data：用于验证运行时校验逻辑
+// 预期：AkitaError.data 应为 undefined（不透传 null / 数组 / 原始值）
+router.get('/error/server-with-null-data', (ctx) => {
+  ctx.body = { error: 'null data case', data: null };
+});
+
+router.get('/error/server-with-array-data', (ctx) => {
+  ctx.body = { error: 'array data case', data: [1, 2, 3] };
+});
+
+router.get('/error/server-with-primitive-data', (ctx) => {
+  ctx.body = { error: 'primitive data case', data: 'just a string' };
+});
+
 router.get('/error/safe-values', (ctx) => {
   ctx.body = { error: '0', data: 'success' };
 });

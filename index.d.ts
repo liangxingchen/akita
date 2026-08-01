@@ -1841,6 +1841,26 @@ export class AkitaError extends Error {
    */
   timestamp?: number;
 
+  /**
+   * 服务器返回的附加错误数据
+   *
+   * 仅当 type='server' 时由 createServerError 从响应体的 data 字段填充。
+   * 用于携带业务方所需的额外错误上下文（如 userId、quota、retryAfter 等）。
+   * 其他错误类型（network/http/parse）不会填充此字段。
+   *
+   * @example
+   * ```typescript
+   * try {
+   *   await client.get('/api/users/999');
+   * } catch (error) {
+   *   if (isServerError(error) && error.data) {
+   *     console.log('Additional context:', error.data.userId);
+   *   }
+   * }
+   * ```
+   */
+  data?: { [key: string]: any };
+
   constructor(
     message: string,
     type: ErrorType,
@@ -1853,6 +1873,7 @@ export class AkitaError extends Error {
       method?: string;
       cause?: Error;
       timestamp?: number;
+      data?: { [key: string]: any };
     }
   );
 }

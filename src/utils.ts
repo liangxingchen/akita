@@ -40,6 +40,9 @@ export class AkitaError extends Error {
   method?: string;
   cause?: Error;
   timestamp?: number;
+  // server 错误的附加数据：由 createServerError 从响应体 data 字段透传
+  // 其他错误类型（network/http/parse）不会填充此字段
+  data?: { [key: string]: any };
 
   constructor(
     message: string,
@@ -53,6 +56,7 @@ export class AkitaError extends Error {
       method?: string;
       cause?: Error;
       timestamp?: number;
+      data?: { [key: string]: any };
     }
   ) {
     super(message);
@@ -190,11 +194,19 @@ export function createServerError(method: string, url: string, serverData: any):
     if (message.message) {
       message = message.message;
     }
+    // 注意：此处有意不提取 message.data。data 字段只从响应体顶层 serverData.data 提取
+    // （已与需求确认），保持单一提取位置避免歧义
   }
+  // 透传 server 响应体的 data 字段：携带附加错误上下文（如 userId、quota 等）
+  // 运行时校验：仅当 data 是普通对象（{[key:string]:any}）时才设置，
+  // 排除 null / 数组 / 原始类型，使运行时值与类型声明一致
+  const rawData = serverData.data;
+  const data = rawData && typeof rawData === 'object' && !Array.isArray(rawData) ? rawData : undefined;
   return new AkitaError(message, 'server', code || 'SERVER_ERROR', {
     url,
     method,
-    timestamp: Date.now()
+    timestamp: Date.now(),
+    data
   });
 }
 

@@ -43,3 +43,4 @@ lib/*.js
 .sisyphus/
 .omo/
 .opencode/
+.codegraph/
